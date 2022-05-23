@@ -104,12 +104,75 @@ url=true,
 
 \tableofcontents
 
+\part{Problem statement}
+
+Pipe networks can be analogous to Electrical Circuits. Therefore, it can be tempting to use electrical flow solvers for pipe networks.
+
+\section{Unit Comparison}
+
+Voltage is energy per unit charge unit wise. $\frac{J}{C}$ Joules per coulomb.
+
+Whereas Pressure can be thought of as Energy per unit volume. $\frac{J}{m^3}$ Joules per meter cubed. That would be the unit of pascals.
+
+$$(workDone)\ Joules = (pressure)\ Pa * (volume)\ m^3$$
+$$(pressure)\ Pa = \frac{(workDone)\ Joules}{(volume)\ m^3}$$
+
+Compare this to voltage:
+
+$$(voltage)\ Volts = \frac{(workDone)\ Joules}{(Charge)\ Coulomb}$$
+
+Likewise for volumetric flowrate, this is
+
+$$(flowrate)\ m^3/s = \frac{(vol)\ m^3}{(time)\ s}$$
+
+And for current,
+
+$$(current)\ C/s = \frac{(Charge)\ Coulomb}{(time)\ s}$$
+
+\section{nonlinearities in flow resistance}
+
+However, the components exhibiting flow resistance often do not obey Ohm's law.
+
+$$electrical\ resistance\ (\Omega) = \frac{V\ (Volts)}{I\ (Ampere)}$$
+$$flow\ resistance = \frac{\Delta P\ (Pa)}{\dot{V}\ (m^3)}$$
+
+
+For ohm's law, the ratio V/I reduces to a constant, but flow resistance often reduces to some expression. 
+
+If we were to use Fanning friction factor for pipe (cite perry's handbook)
+
+$$f = \frac{\Delta P}{ (\frac{4L}{D}) \  \frac{1}{2} \rho u^2 }$$
+
+$$\Delta P = f  (\frac{4L}{D}) \  \frac{1}{2} \rho u^2 $$
+
+In Perry's chemical engineering handbook, the formula used for fanning's friction factor by Churchill is:
+
+$$f = 2 \left[\\
+\left( \frac{8}{Re} \right)^{12} + \\
+\left( \frac{1}{A+B}\right)^{3/2} \\
+\right]^{1/12} $$
+ 
+Where:
+
+$$A = \left[ 2.457 \ln \frac{1}{\left( \frac{1}{(7/Re)^{0.9}} + \\
+0.27 \frac{\varepsilon}{D} \right)} \\
+\right]\ \ ; \ \ \\
+B = \left( \frac{37530}{Re} \\ 
+\right)^{16} $$
+
+
+$$Re = \frac{ux}{\nu} = \frac{\dot{V} x}{A_{XS} \nu}$$
+
+Where $A_{XS}$ represents cross sectional area.
+We can see that this is strongly non linear with respect to volumetric flowrate.
+
+
 \part{Matrices}
 
-$\begin{bmatrix}
+$$\begin{bmatrix}
 1 & 2 & 3 \\
 a & b & c
-\end{bmatrix}$
+\end{bmatrix}$$
 
-
+ 
 \end{document}
