@@ -165,8 +165,167 @@ $$Re = \frac{ux}{\nu} = \frac{\dot{V} x}{A_{XS} \nu}$$
 
 Where $A_{XS}$ represents cross sectional area.
 We can see that this is strongly non linear with respect to volumetric flowrate.
+abcde
+
+\part{Newton Raphson method for Nonlinear Equations}
+
+\section{one equation example of Newton Raphson}
+We want to solve if we have some equation y=f(x)
+
+$$f(x)=0$$
+
+We are going to make use of derivatives to help us get there:
+
+We do a first order Taylor series approximation of derivatives
+
+$$\frac{d f(x)}{dx} = \frac{f(x + \Delta x) - f(x)}{\Delta x}$$
+
+we want to make it such that:
+
+$$f(x + \Delta x) \approx 0$$
+
+So we have this:
+
+$$f(x) >> f(x+\Delta x)$$
+
+$$\frac{d f(x)}{dx} = \frac{ - f(x)}{\Delta x}$$
+
+$$\frac{d f(x)}{dx} = \frac{ - f(x)}{\Delta x}$$
+
+Solve for $\Delta x$:
+
+$$\Delta x = \frac{ - f(x)}{\frac{d f(x)}{dx}}$$
+
+Once we solve for $\Delta x$, we can update:
+
+$$f(x_{i+1}) = f(x + \Delta x) $$
+
+and repeat the method after we solve for $f(x_{i+1})$
+\section{Newton Raphson for multiple equations}
+
+$$f_1 (x_1 ,x_2, x_3) = 0$$
+$$f_2 (x_1 ,x_2, x_3) = 0$$
+$$f_3 (x_1 ,x_2, x_3) = 0$$
+
+We need derivatives as well if we want to solve above system of eqns:
+
+$$df_1 = f_1 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3) - f_1 (x_1,x_2,x_3)$$
+
+Let's expand the LHS:
+
+$$df_1 = \frac{\partial f_1}{\partial x_1} \Delta x_1 + \frac{\partial f_1}{\partial x_2} \Delta x_2 + \frac{\partial f_1}{\partial x_3} \Delta x_3$$
+
+$$\frac{\partial f_1}{\partial x_1} \Delta x_1 + \frac{\partial f_1}{\partial x_2} \Delta x_2 + \frac{\partial f_1}{\partial x_3} \Delta x_3 = f_1 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3) - f_1 (x_1,x_2,x_3)$$
+
+We need to do this for $f_2$ and $f_3 $ as well:
+
+$$\frac{\partial f_2}{\partial x_1} \Delta x_1 + \frac{\partial f_2}{\partial x_2} \Delta x_2 + \frac{\partial f_2}{\partial x_3} \Delta x_3 = f_2 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3) - f_2 (x_1,x_2,x_3)$$
+
+$$\frac{\partial f_3}{\partial x_1} \Delta x_1 + \frac{\partial f_3}{\partial x_2} \Delta x_2 + \frac{\partial f_3}{\partial x_3} \Delta x_3 = f_3 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3) - f_3 (x_1,x_2,x_3)$$
 
 
+Let's write this in matrix form
+
+$$ \begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix} \\ 
+\begin{bmatrix}
+\Delta x_1 \\
+\Delta x_2 \\
+\Delta x_3
+\end{bmatrix} = \\
+\begin{bmatrix}
+f_1 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3) \\
+f_2 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3) \\
+f_3 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3)
+\end{bmatrix} - \\
+\begin{bmatrix}
+f_1 (x_1,x_2,x_3) \\
+f_2 (x_1,x_2,x_3) \\
+f_3 (x_1,x_2,x_3)
+\end{bmatrix}
+$$
+
+Again, we need to approx:
+
+$$\begin{bmatrix}
+f_1 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3) \\
+f_2 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3) \\
+f_3 (x_1+\Delta x_1,x_2+\Delta x_2 , x_3+\Delta x_3)
+\end{bmatrix} \approx \vec{0}$$
+
+And we just solve:
+
+$$ \begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix} \\ 
+\begin{bmatrix}
+\Delta x_1 \\
+\Delta x_2 \\
+\Delta x_3
+\end{bmatrix} = \\
+-\begin{bmatrix}
+f_1 (x_1,x_2,x_3) \\
+f_2 (x_1,x_2,x_3) \\
+f_3 (x_1,x_2,x_3)
+\end{bmatrix}
+$$
+
+We shall say that the Jacobian matrix is:
+$$ \vec{J} = \begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix}$$
+
+We need to find the inverse in order to solve the above equation
+
+$$\vec{J}^{-1}$$
+
+So that we can find:
+
+$$  
+\begin{bmatrix}
+\Delta x_1 \\
+\Delta x_2 \\
+\Delta x_3
+\end{bmatrix} = - \vec{J}^{-1} \\
+\begin{bmatrix}
+f_1 (x_1,x_2,x_3) \\
+f_2 (x_1,x_2,x_3) \\
+f_3 (x_1,x_2,x_3)
+\end{bmatrix}
+$$
+
+Once we find $\vec{\Delta x}$, we can update the values:
+
+$$\vec{\Delta x} = \begin{bmatrix}
+\Delta x_1 \\
+\Delta x_2 \\
+\Delta x_3
+\end{bmatrix}$$
+This is the part where we find the next iteration
+
+$$\overrightarrow{x_{i+1}} = \overrightarrow{x_i} + \overrightarrow{\Delta x}$$
+
+$$\overrightarrow{x_i} = \begin{bmatrix}
+x_{1(i)} \\
+x_{2(i)} \\
+x_{3(i)}
+\end{bmatrix} $$
+
+$$\overrightarrow{x_{i+1}} = \begin{bmatrix}
+x_{1(i+1)} \\
+x_{2(i+1)} \\
+x_{3(i+1)}
+\end{bmatrix} $$
+
+Keep substituting until the solution is found within tolerance.
+\part{Matrices}
 \part{Matrices}
 
 $$\begin{bmatrix}
