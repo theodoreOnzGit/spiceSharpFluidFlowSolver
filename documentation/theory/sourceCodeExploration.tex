@@ -350,6 +350,73 @@ IBiasingBehaviour is found here:
 
 
 \part{Matrix Solvers}
+Note we are solving for (in a 3x3 matrix case):
+
+$$ \begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix} \\ 
+\begin{bmatrix}
+\Delta x_1 \\
+\Delta x_2 \\
+\Delta x_3
+\end{bmatrix} = \\
+-\begin{bmatrix}
+f_1 (x_1,x_2,x_3) \\
+f_2 (x_1,x_2,x_3) \\
+f_3 (x_1,x_2,x_3)
+\end{bmatrix}
+$$
+
+We rewrite this as:
+
+$$ \begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix} \\ 
+\begin{bmatrix}
+\ x_1^{(k+1)} - x_1^{(k)} \\
+\ x_2^{(k+1)} - x_2^{(k)}\\
+\ x_3^{(k+1)} - x_3^{(k)}
+\end{bmatrix} = \\
+-\begin{bmatrix}
+f_1 (x_1,x_2,x_3) \\
+f_2 (x_1,x_2,x_3) \\
+f_3 (x_1,x_2,x_3)
+\end{bmatrix}
+$$
+
+$$ \begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix} \\ 
+\begin{bmatrix}
+\ x_1^{(k+1)}  \\
+\ x_2^{(k+1)} \\
+\ x_3^{(k+1)} 
+\end{bmatrix} = \\
+-\begin{bmatrix}
+f_1 (x_1,x_2,x_3) \\
+f_2 (x_1,x_2,x_3) \\
+f_3 (x_1,x_2,x_3)
+\end{bmatrix} + \\
+\begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix} \\
+\begin{bmatrix}
+\ x_1^{(k)} \\
+\ x_2^{(k)}\\
+\ x_3^{(k)}
+\end{bmatrix}
+$$
+
+Note, that the Ymatrix or Jacobian will be evaulated at \textbf{$\overrightarrow{x^{(k)}}$}. We substitute all the partial derivatives in the Jacobian with the x values at the current iteration. And these all become constants for that iteration.
+
 
 These are found under:
 \url{https://github.com/SpiceSharp/SpiceSharp/tree/master/SpiceSharp/Algebra}
@@ -433,6 +500,20 @@ Sparse vectors or Matrices have most of their elements set to zero.
 
 Why do we have different classes for sparse vectors and dense vectors? Likely their solving strategies may be different.
 
+\subsection{Solving the system of equations with Ymatrix and RHS vector}
+
+see line 174-234 of
+
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/dace7bddaadf7ac22bc32abd2dc61b4d28afb13d/SpiceSharpTest/Algebra/SparseSolverTests.cs}
+
+\begin{itemize}
+\item (1) define RHS and Y vector using for loops
+\item (2) OrderAndFactor
+\item (3) create a new solution vector
+\item (4) feed solution vector into solver.Solve() method
+\item (5) check the solution vector
+\end{itemize}
 
 
 \part{Simulation Algorithm}
