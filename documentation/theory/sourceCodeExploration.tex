@@ -325,7 +325,124 @@ x_{3(i+1)}
 \end{bmatrix} $$
 
 Keep substituting until the solution is found within tolerance.
-\part{Matrices}
+
+\part{How are Matrices Constructed}
+
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/structure/flow.html}
+
+The Y-matrix (Jacobian) and the RHS matrix: \textbf{$-F(x^{(k)}) + J(x^{(k)}) \bullet x^{(k)}$}
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/custom_components/modified_nodal_analysis.html}
+
+This is done in the IBiasingBehaviour: "contains methods that are called each iteration in order to build up the Y-matrix and right-hand side vector."
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/structure/flow.html}
+
+IBehaviour is found here:
+
+\url{https://github.com/SpiceSharp/SpiceSharp/tree/master/SpiceSharp/Simulations/Behaviors}
+
+IBiasingBehaviour is found here:
+
+\url{https://github.com/SpiceSharp/SpiceSharp/tree/dace7bddaadf7ac22bc32abd2dc61b4d28afb13d/SpiceSharp/Simulations/Base/Biasing}
+
+
+
+\part{Matrix Solvers}
+
+These are found under:
+\url{https://github.com/SpiceSharp/SpiceSharp/tree/master/SpiceSharp/Algebra}
+
+So once we have our Jacobians, the matrix solver takes care of the rest.
+So the inversion of the Jacobian (Y matrix), and matrix multiplication are taken care of by these solvers.
+
+Now let's say we want to solve a matrix, where we have a Y matrix and a RHS vector.
+
+How do we put them into a class?
+
+\section{Where the Y matrix is defined}
+
+Each solver class, eg. SparseRealSolver
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/dace7bddaadf7ac22bc32abd2dc61b4d28afb13d/SpiceSharp/Algebra/Solve/LU/SparseSolver/SparseRealSolver.cs}
+
+\url{https://spicesharp.github.io/SpiceSharp/api/SpiceSharp.Algebra.SparseRealSolver.html}
+
+will have a way of setting the matrix.
+
+For example,
+
+under the sparseSolverTests
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/dace7bddaadf7ac22bc32abd2dc61b4d28afb13d/SpiceSharpTest/Algebra/SparseSolverTests.cs}
+
+from line 43-72, 
+
+\subsection{setting matrices and RHS vector values within the solver}
+
+we can clearly see a matrix and rhs being defined for us.
+
+the matrix there is just a array of array of doubles. Whereas the rhs vector is simply an array of doubles. 
+
+The Solver.GetElement method will modify the matrix within the solver object if a row and column is supplied.
+
+And the Solver.GetElement method will modify the RHS vector within the solver object if a row value is supplied.
+
+GetElement methods are defined in SparseLUSolver.cs, and two overloads are given. One gets the element of the matrix within the solver, one gets the vector.
+
+Both of these return Element<T>, and this class represents the properties of elements within matrices and vectors.
+
+\subsection{getting no. of equations within the solver}
+
+The solver.size represents the number of equations represented by the matrix
+
+\url{https://spicesharp.github.io/SpiceSharp/api/SpiceSharp.Algebra.SparseRealSolver.html}
+
+The sparseRealSolver inherits from sparseLUSolver which in turn inherits from pivotingSolver.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/dace7bddaadf7ac22bc32abd2dc61b4d28afb13d/SpiceSharp/Algebra/Solve/PivotingSolver.cs}
+
+the pivoting solver in turn defines the size property. Which returns the maximum value of the size of the matrix and size of the vector (which is the RHS vector).
+
+The size attribute is defined in the constructor
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/dace7bddaadf7ac22bc32abd2dc61b4d28afb13d/SpiceSharp/Algebra/Matrix/SparseMatrix/SparseMatrix.cs}
+
+At least for the sparseMatrix.cs, we can see that these matrices are necessarily square matrices from line 75-94 of SpiceSharp/Algebra/Matrix/SparseMatrix/SparseMatrix.cs
+
+The same size attribute is used to defined \textbf{both} rows and columns of the matrices. This defines the matrix size.
+
+A similar process can be said for the vector:
+
+/SpiceSharp/Algebra/Vector/SparseVector/SparseVector.cs
+
+in lines 54-59.
+
+We can see that getting the maximum value of the size and vectors will get us the number of equations.
+
+What if they weren't the same?
+
+It should be apparent that an error should occur.
+
+But that is kind of an exception than the norm. Shouldn't happen if we define our matrices and vectors properly.
+
+\subsection{Sparse vs Dense Vectors or Matrices}
+
+Sparse vectors or Matrices have most of their elements set to zero.
+
+Why do we have different classes for sparse vectors and dense vectors? Likely their solving strategies may be different.
+
+
+
+\part{Simulation Algorithm}
+
+This is taken care of by ISimulation
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/structure/flow.html}
+\url{https://github.com/SpiceSharp/SpiceSharp/tree/master/SpiceSharp/Simulations}
+
+
 \part{Matrices}
 
 $$\begin{bmatrix}
