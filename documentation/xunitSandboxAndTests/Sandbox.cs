@@ -10,11 +10,65 @@ namespace xunitSandboxAndTests;
 
 public class Sandbox
 {
-    [Fact]
+	[Theory]
+	[InlineData()]
     public void Test1()
     {
-		Console.WriteLine("hi");
+		Console.WriteLine("hi  \n");
+    }
 
+
+	[Theory]
+	[InlineData()]
+    public void Sandbox_MatrixPrint()
+    {
+		Console.WriteLine("Matrix Row printing Test  \n");
+
+		double[][] matrix =
+		{
+			new double[] { 0, 0, 1, 0 },
+			new double[] { 1, 12, 1, 1 },
+			new double[] { 0, 0, 0, 1 },
+			new double[] { 1, 0, 0, 0 }
+		};
+
+		var solver = new SparseRealSolver();
+
+		string matrixRow;
+		matrixRow = "";
+
+		for (var r = 0; r < matrix.Length; r++)
+		{
+			for (var c = 0; c < matrix[r].Length; c++)
+			{
+				if (!matrix[r][c].Equals(0.0)){
+					solver.GetElement(new MatrixLocation(r + 1, c + 1)).Value = matrix[r][c];
+
+				}
+				matrixRow += matrix[r][c].ToString() + " ";
+
+				
+			}
+			// i'll write the matrixRow for each row, and set it to 0
+			Console.WriteLine(matrixRow + "\n");
+			matrixRow="";
+			
+		}
+
+		Console.WriteLine("printing matrix within the solver");
+
+		// note that this works only for a square matrix
+		for (var r = 0; r < solver.Size; r++)
+		{
+			for (var c = 0; c < solver.Size; c++)
+			{
+				matrixRow += solver.GetElement(new MatrixLocation(r + 1, c + 1)).Value.ToString()  + " ";
+			}
+			// i'll write the matrixRow for each row, and set it to 0
+			Console.WriteLine(matrixRow + "\n");
+			matrixRow="";
+			
+		}
     }
 
 	[Fact]

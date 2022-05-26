@@ -347,6 +347,79 @@ IBiasingBehaviour is found here:
 
 \url{https://github.com/SpiceSharp/SpiceSharp/tree/dace7bddaadf7ac22bc32abd2dc61b4d28afb13d/SpiceSharp/Simulations/Base/Biasing}
 
+\subsection{Example of How matrices are constructed for ISRC (current Source)}
+We can see how matrices are constructed in current sources, under the biasing class:
+
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/ea977448c74aaa1cd515678585529e707b29f655/SpiceSharp/Components/Currentsources/ISRC/Biasing.cs}
+
+Dependency injection for Biasing is done using IComponentBiasingContext.
+Context classes contain objects used for Dependency injection.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Components/IComponentBindingContext.cs#L11}
+
+And one class that implements this is componentBindingContext:
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Components/ComponentBindingContext.cs}
+
+It inherits from bindingContext.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Entities/BindingContext.cs#L19}
+
+\subsubsection{matrices and RHS vectors are contained in elementSet type objects under the Biasing class for each component}
+
+For matrix construction, we see that in the constructor,
+
+\begin{verbatim}
+ _elements = new ElementSet<double>(_biasing.Solver, null,
+  _variables.GetRhsIndices(_biasing.Map));
+\end{verbatim}
+
+This is what constructs the system of equations.
+
+In the load method, we actually manipulate this elementSet object to add a value.
+
+\begin{verbatim}
+_elements.Add(-value, value);
+\end{verbatim}
+
+So elementSet is important. It contains the solver object, which in turn contains the YMatrix and RHS vector directly.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/ea977448c74aaa1cd515678585529e707b29f655/SpiceSharp/Algebra/ElementSet.cs}
+
+Elementsets also contain arrays of matrix locations (ie rows and columns) and rhsPins.
+
+These are arrays of locations to access variables within the Ymatrix and rhs vector respectively.
+
+\paragraph{How constructors for the ElementSet works}
+
+The elementSet constructor takes in a few arguments. The solver object, the matrixPins and the rhsPins.
+
+As said before, the matrix pins help to index certain variables and elements within the Ymatrix or jacobian. And the rhs pins help to index the rhs vector.
+
+the solver object contains the Ymatrix, rhsVector and methods to solve the system of equations. 
+
+Other than that, the elementSet doesn't seem to invoke anything else. It's just a class that contains the data needed. 
+
+It seems to build its own internal array of elements here.
+
+So it extracts specific values of elements from the solver matrices and rhs vectors based on the pins (indices) you give.
+
+This will give it the initial set of elements to work with.
+
+\paragraph{How the addition function works}
+
+To manipulate the matrices, for example for the current source,
+
+we extract the elements in the matrix pertaining to this specific current source using the rhsPins. 
+
+then we use the ElementSet.Add() method to add and subtract values to it.
+
+Int the currentSource example, two values of current are added and subtracted from the RHS matrix. Possibly to the node before and after the current source. 
+
+The node before and after the current source is accessed using the getRHSIndices using in the OnePort method. Which then takes in the biasing variable and context variable.
+
+
 
 
 \part{Matrix Solvers}
