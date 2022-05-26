@@ -419,11 +419,65 @@ Int the currentSource example, two values of current are added and subtracted fr
 
 The node before and after the current source is accessed using the getRHSIndices using in the OnePort method. Which then takes in the biasing variable and context variable.
 
+\subsubsection{How are variables mapped to circuit components?}
+
+Our clue in 
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/ea977448c74aaa1cd515678585529e707b29f655/SpiceSharp/Components/Currentsources/ISRC/Biasing.cs}
+
+Is that the variables object has a getRhsIndices method to return the correct rhsVector Index.
+
+The input to this method is a biasing map object, which implemnts the IBiasingSimulationState interface.
+
+So the oneport object has a positive and negative connection. Much like an inlet and outlet.
+
+\paragraph{onePort Source code}
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/ea977448c74aaa1cd515678585529e707b29f655/SpiceSharp/Components/Common/OnePort.cs}
+
+The OnePort class is located under common behaviours.
+
+Note again that behaviours deal with how matrices are created and solved.
+
+As we can see, oneport refers to a behaviour of a device with two pins with current in one pin being equal to current going out of one pin.
+
+The positive and negative nodes are represented by objects implementing IVariable Interfaces.
+
+Matrix locations and rhsVector locations are both mapped using IVariableMap type objects.
+
+This is line 59-83 of the OnePort code.
+
+One thing though is that for the Ymatrix, there are four elements.
+
+How does that work? we can take a look at the example below to find out
+
+\subparagraph{Modified Nodal Analysis Example}
 
 
+\url{https://spicesharp.github.io/SpiceSharp/articles/custom_components/example_resistor.html}
 
-\part{Matrix Solvers}
-Note we are solving for (in a 3x3 matrix case):
+We can see from here a single resistor has two contributinos to the RHS vector and four to the Ymatrix.
+
+The individual equations are constructing taking current balances over nodes.
+
+On the inlet node, the current balance equation is $f_A$, which means the sum of currents coming out of node A is zero.
+
+$$f_{A} = i_{out} - i_{in} = 0 $$
+
+For $f_A$, we only have the current flowing into resistor being the current output for this node,
+
+$$f_A = \frac{v_A - v_B}{R} - i_{in}$$
+
+Likewise for node B, we have current flowing in and out of node B
+
+$$f_B =  i_{out} - \frac{v_A - v_B}{R} $$
+
+
+Let a resistor with an inlet voltage $v_A$ and outlet voltage $v_B$ have a resistance r and current $i_R$
+
+Now how does this contribute to our matrix and RHS vector?
+
+For starters, take a look at the example for this simple case, a 3x3 vector, which represents our newton raphson method.
 
 $$ \begin{bmatrix}
 \frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
@@ -460,6 +514,105 @@ f_2 (x_1,x_2,x_3) \\
 f_3 (x_1,x_2,x_3)
 \end{bmatrix}
 $$
+
+$$ \begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix} \\ 
+\begin{bmatrix}
+\ x_1^{(k+1)}  \\
+\ x_2^{(k+1)} \\
+\ x_3^{(k+1)} 
+\end{bmatrix} = \\
+-\begin{bmatrix}
+f_1 (x_1,x_2,x_3) \\
+f_2 (x_1,x_2,x_3) \\
+f_3 (x_1,x_2,x_3)
+\end{bmatrix} + \\
+\begin{bmatrix}
+\frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
+\frac{\partial f_2}{\partial x_1}  & \frac{\partial f_2}{\partial x_2}  & \frac{\partial f_2}{\partial x_3} \\
+\frac{\partial f_3}{\partial x_1}  & \frac{\partial f_3}{\partial x_2}  & \frac{\partial f_3}{\partial x_3} 
+\end{bmatrix} \\
+\begin{bmatrix}
+\ x_1^{(k)} \\
+\ x_2^{(k)}\\
+\ x_3^{(k)}
+\end{bmatrix}
+$$
+
+In spicesharp, the RHS vector isn't simply a result of the current balance equations. But rather that plus contributions from the jacobian.
+
+For our case, we will need to compute the Jacobian first in order to find out contributions to both RHS vector and Y matrix.
+
+For contributions to the jacobian, four partial derivatives are taken. 
+
+$$\frac{\partial f_A}{\partial v_A}, \frac{\partial f_A}{\partial v_B}, \\
+\frac{\partial f_B}{\partial v_A}, \frac{\partial f_B}{\partial v_B}, $$
+
+This is why there are four contributions to the matrix. 
+
+Take for example we have a vector
+
+$$
+\begin{bmatrix}
+v_A \\
+... \\
+v_B \\
+...
+\end{bmatrix}
+$$
+
+Let's say $v_A$ is at index 1.
+
+From this we know A correponds to index one.
+
+And to locate $\frac{\partial f_A}{\partial v_A}$ within the jacobian. the numerator $\partial f_A$ corresponds to the row number. The denominator $\partial v_B$ corresponds to the column number.
+
+So $\frac{\partial f_A}{\partial v_A}$ corresponds to row 1 col 1. If $v_B$ is at row 7, then B corresponds to index no. 7.
+
+$\frac{\partial f_B}{\partial v_A}$ then belongs to row 7 (see B in numerator) and col 1 (see A in denominator).
+
+Under the GetMatrixMethod in oneport,
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/ea977448c74aaa1cd515678585529e707b29f655/SpiceSharp/Components/Common/OnePort.cs}
+
+We see that the (pos,pos) which is the positive row index and positive column index, this will correspond to $\frac{\partial f_B}{\partial v_B}$, while the negative row index and negative column index (neg,neg) will correspond to $\frac{\partial f_A}{\partial v_A}$.
+
+whereas, $\frac{\partial f_A}{\partial v_B}$, we note that equation indices correspond to the row index of the jacobian, while the variable with which we perform partial derivatives corrsponds to the column. So this will then correspond to (neg,pos) coordinates within the MatrixLocation method.
+
+Likewise $\frac{\partial f_B}{\partial v_A}$ will correspond to the (pos,neg) location. (I think) since node B is the positive end of the resistor and node A is the negative end. 
+
+In summary:
+
+(pos, pos) will correspond to
+$$\frac{\partial f_{pos}}{v_{pos}}$$
+
+(pos, neg) will correspond to:
+$$\frac{\partial f_{pos}}{v_{neg}}$$
+
+(neg, pos) will correspond to:
+$$\frac{\partial f_{neg}}{v_{pos}}$$
+
+
+
+
+For resistors, the biasing code is here:
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/ea977448c74aaa1cd515678585529e707b29f655/SpiceSharp/Components/RLC/Resistors/Biasing.cs}
+
+We can see a Conductance value given to (pos,pos), (neg,neg) index. And a negative conductance value given to the (neg,pos) and (pos,neg) index. Can't really tell which is which here.
+
+For diodes, i also cannot tell which is which
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/custom_components/example_diode.html}
+
+
+\part{Matrix Solvers}
+Note we are solving for (in a 3x3 matrix case):
+
+
 
 $$ \begin{bmatrix}
 \frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
