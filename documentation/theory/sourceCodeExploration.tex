@@ -587,13 +587,13 @@ Likewise $\frac{\partial f_B}{\partial v_A}$ will correspond to the (pos,neg) lo
 In summary:
 
 (pos, pos) will correspond to
-$$\frac{\partial f_{pos}}{v_{pos}}$$
+$$\frac{\partial f_{pos}}{\partial v_{pos}}$$
 
 (pos, neg) will correspond to:
-$$\frac{\partial f_{pos}}{v_{neg}}$$
+$$\frac{\partial f_{pos}}{\partial v_{neg}}$$
 
 (neg, pos) will correspond to:
-$$\frac{\partial f_{neg}}{v_{pos}}$$
+$$\frac{\partial f_{neg}}{\partial v_{pos}}$$
 
 
 
@@ -607,6 +607,77 @@ We can see a Conductance value given to (pos,pos), (neg,neg) index. And a negati
 For diodes, i also cannot tell which is which
 
 \url{https://spicesharp.github.io/SpiceSharp/articles/custom_components/example_diode.html}
+
+\subparagraph{which terminal is positive and negative?}
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/tutorials/gettingstarted.html}
+
+We can see that from the constructor for resistor, the second argument is the name of the +ve terminal and the first argument is the name of the -ve terminal.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/master/SpiceSharp/Components/RLC/Resistors/Resistor.cs}
+
+\begin{verbatim}
+     public Resistor(string name, string pos, string neg, double res): this(name)
+\end{verbatim}
+
+This code proves the above statement.
+
+Then we can look at the diagram shown here:
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/tutorials/gettingstarted.html}
+
+We see for resistors and voltage sources, the second argument is the positive node, and the third argument is the negative node.
+
+For resistors, current flows from positive to negative within the resistor.
+
+For voltage sources, current flows from positive to negative AROUND the circuit rather than within the voltage source. 
+
+Conventions are reversed for resistor and voltage sources. 
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/master/SpiceSharp/Components/Voltagesources/VSRC/VoltageSource.cs}
+
+\subparagraph{How nodes are indexed (continued...)}
+
+in the Biasing.cs code under resistor
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/master/SpiceSharp/Components/RLC/Resistors/Biasing.cs}
+
+The oneport type object has a method called getmatrixlocations.
+Getmatrixlocations takes in an IVariableMap type object and returns matrix indices.
+
+(if we go down the rabit hole of IBiasingSimulationState which contains the VariableMap, we likely will get lost in code)
+
+So let's just go straight to see IVariableMap.
+
+What's this IVariableMap?
+
+\url{https://github.com/SpiceSharp/SpiceSharp/tree/ea977448c74aaa1cd515678585529e707b29f655/SpiceSharp/Simulations/Variables}
+
+VariableMap is here:
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/ea977448c74aaa1cd515678585529e707b29f655/SpiceSharp/Simulations/Variables/VariableMap.cs}
+
+VariableMap contains a dictionary storing pairs of IVariable vs their index (int).
+
+The constructor of the variableMap will add a "ground" variable to the unknown vector with index 0. 
+
+\begin{verbatim}
+public VariableMap(IVariable ground)
+        {
+            _map.Add(ground, 0);
+        }
+\end{verbatim}
+
+VariableMaps store the name of the node with an index number (integer).
+
+\paragraph{Question is: how are Variables Indexed in variableMaps?}
+
+The circuit class doesn't store the data of variableMaps, rather it is essentially a list of entities (or components if that makes more sense)
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Entities/Circuit.cs}
+
+So the code that deals with it is the resistor Class. Which uses the Connect(pos,neg) method.
+
 
 
 \part{Matrix Solvers}
