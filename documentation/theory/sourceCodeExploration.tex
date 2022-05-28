@@ -678,6 +678,81 @@ The circuit class doesn't store the data of variableMaps, rather it is essential
 
 So the code that deals with it is the resistor Class. Which uses the Connect(pos,neg) method.
 
+The connect method is inherited from Component line 42-60 as of may 2022.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Components/Component.cs}
+
+The connect method just populates the connections private variable (line 21 in Component.cs as of May 2022).
+
+If you want to access the connections private variable, you call the Nodes method within the entity (component). It will return a readonly list of strings (names of the nodes).  
+
+Next place to look for where variableMaps is constructed is DC simulation (i'm looking at the getting started example.
+\url{https://spicesharp.github.io/SpiceSharp/articles/tutorials/gettingstarted.html}
+
+The DC simulation code is found here:
+
+\url{https://github.com/SpiceSharp/SpiceSharp/tree/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Implementations/DC}
+
+So we looked at the constructor of the DC simulation, no information of nodes is supplied here.
+
+The only place we supply information to the DC simulation object is in the line:
+
+\begin{verbatim}
+dc.Run(ckt)
+\end{verbatim}
+
+So where is the Run method?
+
+we want to look at the parent(base) classes where DC inherits from. 
+
+DC inherits from Biasing Simulation
+
+Biasing Simulation is split into three files (partial classes), and is not meant to be instantiated on its own (abstract class).
+
+\textbf{BiasingSimulation Partial Classes}
+\begin{itemize}
+\item \url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Base/Biasing/BiasingSimulation.IterationState.cs#L3}
+\item \url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Base/Biasing/BiasingSimulation.SimulationState.cs#L8}
+\item \url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Base/Biasing/BiasingSimulation.cs#L23}
+\end{itemize}
+
+Under simulation state, we see VariableMap appear for the first time in our code exploration. Under the SimulationState nested class. 
+
+The Map method accesses the variable map using a lambda function. 
+
+In simulationState constructor, a new solver variable called gnd (ground) is constructed and loaded into a newly instantiated variable map.
+
+\begin{verbatim}
+
+var gnd = new SolverVariable<double>(this, Constants.Ground, 0, Units.Volt);
+_map = new VariableMap(gnd);
+Add(Constants.Ground, gnd);
+\end{verbatim}
+
+So besides adding the ground variable to the new variable map,
+we also use the CreatePrivateVariable method within the simulationstate to construct the variable map. 
+
+\begin{verbatim}
+public IVariable<double> CreatePrivateVariable(string name, IUnit unit)
+{
+var index = _map.Count;
+var result = new SolverVariable<double>(this, name, index, unit);
+_map.Add(result, index);
+return result;
+}
+\end{verbatim}
+
+The first variable to be put in here is the ground variable. Followed by whatever variables we make using createPrivateVariable. 
+
+And everytime we make a shared variable, we also call the createPrivateVariable method. (look at later)
+
+SimulationState plays an important role in matrix construction by constructing the variableMap. 
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Base/Biasing/BiasingSimulation.SimulationState.cs#L45}
+
+
+Note: the Run method is within the Simulation Class
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Simulation.cs#L18}
 
 
 \part{Matrix Solvers}
