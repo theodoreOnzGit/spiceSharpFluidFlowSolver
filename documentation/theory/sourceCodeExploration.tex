@@ -864,9 +864,50 @@ EntityBehaviors is the class which is instantiated in CreateBehaviors.
 EntityBehaviors = new BehaviorContainerCollection(entities.Comparer);
 \end{verbatim}
 
-\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Simulation.cs#L270}
 
 
+this is of the type BehaviorContainerCollection 
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Behaviors/BehaviorContainerCollection.cs#L12}
+
+The BehaviorContainerCollection class takes in a IEqualityComparer Class from the 
+entities.Comparer attribute or object
+
+it uses it to initiate a new dictionary of String and IBehaviourContainer
+\url{https://github.dev/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Behaviors/BehaviorContainerCollection.cs#L12}
+
+\begin{verbatim}
+public virtual BehaviorList<T> GetBehaviorList<T>() where T : IBehavior
+{
+	_lock.EnterReadLock();
+	try
+	{
+		var list = new List<T>(_values.Count);
+		foreach (var elt in _values)
+		{
+			if (elt.TryGetValue(out T value))
+				list.Add(value);
+		}
+		return new BehaviorList<T>(list.ToArray());
+	}
+	finally
+	{
+		_lock.ExitReadLock();
+	}
+}
+\end{verbatim}
+
+
+Basically what it looks like the code is doing is that we are looking at the \_values attribute.
+The \_values attribute and trying to extract behaviours from this list according to the 
+type supplied.
+
+The next question is where is this list generated in the first place?
+
+One clue is that the Add method in line 90
+\url{https://github.dev/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Behaviors/BehaviorContainerCollection.cs#L90}
+
+This method actually adds to both the dictionary and the \_values variable inside the BehaviorContainerCollection object.
 
 
 \part{Matrix Solvers}
