@@ -754,6 +754,120 @@ SimulationState plays an important role in matrix construction by constructing t
 Note: the Run method is within the Simulation Class
 \url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Simulation.cs#L18}
 
+The run method takes in an entityCollection, which is a circuit object essentially.
+
+it first sets up the entities like so:
+\begin{verbatim}
+try
+{
+	Status = SimulationStatus.Setup;
+	Setup(entities);
+}
+\end{verbatim}
+
+Then it validates the entities
+
+\begin{verbatim}
+try
+{
+	Status = SimulationStatus.Validation;
+	Validate(entities);
+}
+\end{verbatim}
+
+once the simulation is setup and we start to run
+
+\begin{verbatim}
+do
+{
+	// Before execution
+	OnBeforeExecute(beforeArgs);
+
+	// Execute simulation
+	Statistics.ExecutionTime.Start();
+	try
+	{
+		Execute();
+	}
+	finally
+	{
+		Statistics.ExecutionTime.Stop();
+	}
+
+	// Reset
+	afterArgs.Repeat = false;
+	OnAfterExecute(afterArgs);
+
+	// We're going to repeat the simulation, change the event arguments
+	if (afterArgs.Repeat)
+	beforeArgs = new BeforeExecuteEventArgs(true);
+} while (afterArgs.Repeat);
+\end{verbatim}
+
+the Execute() method is used. So three important functions here here:
+
+(1) firstly, the setup method, then (2) secondly the Validate method
+(3) thirdly the Execute() method
+
+Here, the Setup method has both the CreateBehaviours method and CreateStates Method.
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Simulation.cs#L240}
+
+CreateStates is found under BiasingSimulation, a child class
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Base/Biasing/BiasingSimulation.cs#L141}
+
+this feels like another setup class.
+
+\subparagraph{CreateBehaviors}
+
+But most of the matrix creation would be found under CreateBehaviours
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Simulation.cs#L267}
+
+this CreateBehaviours method simply cycles through all the CreateBehaviours methods stored
+within each entity
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Simulation.cs#L288}
+
+CreateBehaviours is found as an abstract method under entities (essentially like an interface) 
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Entities/Entity.cs#L39}
+
+
+This is exactly what is shown in the documentation here:
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/structure/flow.html}
+
+Now, not all entities have special behaviours to create. For example, a linear (ohm's law obeying) resistor doesn't have a CreateBehaviours method explicitly defined. It doesn't do anything. 
+
+However, the createBehaviours doesn't end there. (It does for simulation). But for a DC simulation, which inherits from BiasingSimulation, createbehaviours is also defined there.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Base/Biasing/BiasingSimulation.cs#L153}
+
+We see that the EntityBehavior objects are used extensively here to load behaviours (change the system of eqns to solve).
+
+
+
+\begin{verbatim}
+protected override void CreateBehaviors(IEntityCollection entities)
+{
+	base.CreateBehaviors(entities);
+	_temperatureBehaviors = EntityBehaviors.GetBehaviorList<ITemperatureBehavior>();
+	_loadBehaviors = EntityBehaviors.GetBehaviorList<IBiasingBehavior>();
+	_convergenceBehaviors = EntityBehaviors.GetBehaviorList<IConvergenceBehavior>();
+	_updateBehaviors = EntityBehaviors.GetBehaviorList<IBiasingUpdateBehavior>();
+\end{verbatim}
+
+EntityBehaviors is the class which is instantiated in CreateBehaviors.
+
+\begin{verbatim}
+EntityBehaviors = new BehaviorContainerCollection(entities.Comparer);
+\end{verbatim}
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Simulation.cs#L270}
+
+
+
 
 \part{Matrix Solvers}
 Note we are solving for (in a 3x3 matrix case):
