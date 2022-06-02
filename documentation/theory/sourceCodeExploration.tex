@@ -874,7 +874,7 @@ The BehaviorContainerCollection class takes in a IEqualityComparer Class from th
 entities.Comparer attribute or object
 
 it uses it to initiate a new dictionary of String and IBehaviourContainer
-\url{https://github.dev/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Behaviors/BehaviorContainerCollection.cs#L12}
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Behaviors/BehaviorContainerCollection.cs#L12}
 
 \begin{verbatim}
 public virtual BehaviorList<T> GetBehaviorList<T>() where T : IBehavior
@@ -905,9 +905,16 @@ type supplied.
 The next question is where is this list generated in the first place?
 
 One clue is that the Add method in line 90
-\url{https://github.dev/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Behaviors/BehaviorContainerCollection.cs#L90}
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/4d118c3458a1f4921ebab4c8ed9e9ec3f08dd5f9/SpiceSharp/Simulations/Behaviors/BehaviorContainerCollection.cs#L90}
 
 This method actually adds to both the dictionary and the \_values variable inside the BehaviorContainerCollection object.
+
+The value 
+\subparagraph[Void functions can return change values of referenced variables using the out keyword]{How to make void functions "return" values}
+And it is here i found the out keyword, this is what actually makes it possible
+for a void method to modify a value outside itself.
+
+\url{https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/out-parameter-modifier}
 
 
 \part{Matrix Solvers}
