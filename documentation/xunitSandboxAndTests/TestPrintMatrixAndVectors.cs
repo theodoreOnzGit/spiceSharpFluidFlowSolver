@@ -45,7 +45,6 @@ public class TestPrintMatrixAndVectors
 	[Fact]
     public void Test_shouldPrintMatrixAndRHSVectorWithinSolver()
     {
-		Console.WriteLine("Matrix Row printing Test  \n");
 
 		// here we have a matrix and a double vector
 		// both of them i want to load into the solver
@@ -86,97 +85,72 @@ public class TestPrintMatrixAndVectors
     }
 
 	[Fact]
-	public void When_SingletonPivoting_Expect_NoException()
-	{
-		// Build the solver with only the singleton pivoting
-		var solver = new SparseRealSolver();
-		solver.Parameters.Strategies.Clear();
-		solver.Parameters.Strategies.Add(new MarkowitzSingleton<double>());
+    public void Test_WhatIfYmatrixNotDefined()
+    {
 
-		// Build the matrix that should be solvable using only the singleton pivoting strategy
+		Console.WriteLine("This test is if the solver object is missing YMatrix ");
+		// here we have a matrix and a double vector
+		// both of them i want to load into the solver
+
+		double[] rhs = { 0, 1, 133, 0 };
+
+
+		// so first i load the solver object
+		var solver = new SparseRealSolver();
+
+		// then i load the double vector values into the solver 
+		// and RHS vector
+
+		for (var r = 0; r < rhs.Length; r++)
+		{
+			solver.GetElement(r + 1).Value = rhs[r];
+		}
+
+
+		_printObj.print(solver);
+
+
+    }
+
+	[Fact]
+    public void Test_WhatIfRHSVectorNotDefined()
+    {
+
+		Console.WriteLine("this is a test if the solver is missing RHS Vector ");
+		// here we have a matrix and a double vector
+		// both of them i want to load into the solver
+
+
 		double[][] matrix =
 		{
 			new double[] { 0, 0, 1, 0 },
-			new double[] { 1, 1, 1, 1 },
+			new double[] { 1, 12, 1, 1 },
 			new double[] { 0, 0, 0, 1 },
 			new double[] { 1, 0, 0, 0 }
 		};
-		double[] rhs = { 0, 1, 0, 0 };
+
+		// so first i load the solver object
+		var solver = new SparseRealSolver();
+
+		// then i load the double vector values into the solver 
+		// and RHS vector
+
 		for (var r = 0; r < matrix.Length; r++)
 		{
 			for (var c = 0; c < matrix[r].Length; c++)
 			{
-				if (!matrix[r][c].Equals(0.0))
+				if (!matrix[r][c].Equals(0.0)){
 					solver.GetElement(new MatrixLocation(r + 1, c + 1)).Value = matrix[r][c];
-			}
-			if (!rhs[r].Equals(0.0))
-				solver.GetElement(r + 1).Value = rhs[r];
-		}
+				}
 
-		// This should run without throwing an exception
-		Assert.Equal(solver.Size, solver.OrderAndFactor());
-	}
-
-	[Fact]
-	public void When_ExampleComplexMatrix1_Expect_MatlabReference()
-	{
-		// Build the example matrix
-		Complex[][] matrix =
-		{
-			new Complex[] { 0, 0, 0, 0, 1, 0, 1, 0 },
-			new Complex[] { 0, 0, 0, 0, -1, 1, 0, 0 },
-			new[] { 0, 0, new Complex(0.0, 0.000628318530717959), 0, 0, 0, -1, 1 },
-			new Complex[] { 0, 0, 0, 0.001, 0, 0, 0, -1 },
-			new Complex[] { 1, -1, 0, 0, 0, 0, 0, 0 },
-			new Complex[] { 0, 1, 0, 0, 0, 0, 0, 0 },
-			new Complex[] { 1, 0, -1, 0, 0, 0, 0, 0 },
-			new[] { 0, 0, 1, -1, 0, 0, 0, new Complex(0.0, -1.5707963267949) }
-		};
-		Complex[] rhs = { 0, 0, 0, 0, 0, 24.0 };
-		Complex[] reference =
-		{
-			new Complex(24, 0),
-			new Complex(24, 0),
-			new Complex(24, 0),
-			new Complex(23.999940782519708, -0.037699018824477),
-			new Complex(-0.023999940782520, -0.015041945718407),
-			new Complex(-0.023999940782520, -0.015041945718407),
-			new Complex(0.023999940782520, 0.015041945718407),
-			new Complex(0.023999940782520, -0.000037699018824)
-		};
-
-		// build the matrix
-		var solver = new SparseComplexSolver();
-		for (var r = 0; r < matrix.Length; r++)
-		{
-			for (var c = 0; c < matrix[r].Length; c++)
-			{
-				if (!matrix[r][c].Equals(Complex.Zero))
-					solver.GetElement(new MatrixLocation(r + 1, c + 1)).Value = matrix[r][c];
 			}
 		}
 
-		// Add some zero elements
-		solver.GetElement(new MatrixLocation(7, 7));
-		solver.GetElement(5);
 
-		// Build the Rhs vector
-		for (var r = 0; r < rhs.Length; r++)
-		{
-			if (!rhs[r].Equals(Complex.Zero))
-				solver.GetElement(r + 1).Value = rhs[r];
-		}
 
-		// Solver
-		Assert.Equal(solver.Size, solver.OrderAndFactor());
-		var solution = new DenseVector<Complex>(solver.Size);
-		solver.Solve(solution);
+		_printObj.print(solver);
 
-		// Check!
-		for (var r = 0; r < reference.Length; r++)
-		{
-			Assert.Equal(reference[r].Real, solution[r + 1].Real, 12);
-			Assert.Equal(reference[r].Imaginary, solution[r + 1].Imaginary, 12);
-		}
-	}
+
+    }
+
 }
