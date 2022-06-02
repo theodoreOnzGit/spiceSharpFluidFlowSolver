@@ -77,6 +77,15 @@ namespace solverDiagnostics
 				matrixRow="";
 
 			}
+
+			// next i want to print the RHS vector
+			Console.WriteLine("printing RHS Vector within the solver");
+			for (var r = 0; r < solver.Size; r++)
+			{
+				matrixRow += solver[r+1].ToString();
+				Console.WriteLine(matrixRow + "\n");
+				matrixRow="";
+			}
 		}
 
 	}

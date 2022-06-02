@@ -47,6 +47,8 @@ public class TestPrintMatrixAndVectors
     {
 		Console.WriteLine("Matrix Row printing Test  \n");
 
+		// here we have a matrix and a double vector
+		// both of them i want to load into the solver
 		double[][] matrix =
 		{
 			new double[] { 0, 0, 1, 0 },
@@ -55,8 +57,14 @@ public class TestPrintMatrixAndVectors
 			new double[] { 1, 0, 0, 0 }
 		};
 
+		double[] rhs = { 0, 1, 133, 0 };
+
+
+		// so first i load the solver object
 		var solver = new SparseRealSolver();
 
+		// then i load the matrix and double values into the solver matrix
+		// and RHS vector
 
 		for (var r = 0; r < matrix.Length; r++)
 		{
@@ -67,6 +75,8 @@ public class TestPrintMatrixAndVectors
 				}
 
 			}
+			if (!rhs[r].Equals(0.0))
+				solver.GetElement(r + 1).Value = rhs[r];
 		}
 
 
