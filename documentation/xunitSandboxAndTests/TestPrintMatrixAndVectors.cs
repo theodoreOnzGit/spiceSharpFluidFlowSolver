@@ -9,24 +9,17 @@ using solverDiagnostics;
 
 namespace xunitSandboxAndTests;
 
-public class Sandbox
+public class TestPrintMatrixAndVectors
 {
 	public IprintMatrixAndVectors _printObj { get; set; }
-	public Sandbox()
+	public TestPrintMatrixAndVectors()
 	{
 		this._printObj = new printMatrixAndVectors();
 	}
 
-	[Theory]
-	[InlineData()]
-    public void Test1()
-    {
-		Console.WriteLine("hi  \n");
-    }
-
 	// this test is here to check out the solverDiagnosticsTools
 	[Fact]
-	public void Sandbox_shouldPrintDoubleArray(){
+	public void Test_shouldPrintDoubleArray(){
 		
 		Console.WriteLine("printMatrixAndVectors double[][] test \n");
 		double[][] matrix =
@@ -41,7 +34,7 @@ public class Sandbox
 	}
 
 	[Fact]
-	public void Sandbox_shouldPrintDoubleEnumerable(){
+	public void Test_shouldPrintDoubleEnumerable(){
 		
 		Console.WriteLine("printMatrixAndVectors double[] test \n");
 		double[] vector = new double[] { 0, 0, 1, 0 };
@@ -49,9 +42,8 @@ public class Sandbox
 		_printObj.print(vector);
 	}
 
-	[Theory]
-	[InlineData()]
-    public void Sandbox_MatrixPrint()
+	[Fact]
+    public void Test_shouldPrintMatrixAndRHSVectorWithinSolver()
     {
 		Console.WriteLine("Matrix Row printing Test  \n");
 
@@ -65,8 +57,6 @@ public class Sandbox
 
 		var solver = new SparseRealSolver();
 
-		string matrixRow;
-		matrixRow = "";
 
 		for (var r = 0; r < matrix.Length; r++)
 		{
@@ -74,32 +64,15 @@ public class Sandbox
 			{
 				if (!matrix[r][c].Equals(0.0)){
 					solver.GetElement(new MatrixLocation(r + 1, c + 1)).Value = matrix[r][c];
-
 				}
-				matrixRow += matrix[r][c].ToString() + " ";
 
-				
 			}
-			// i'll write the matrixRow for each row, and set it to 0
-			Console.WriteLine(matrixRow + "\n");
-			matrixRow="";
-			
 		}
 
-		Console.WriteLine("printing matrix within the solver");
 
-		// note that this works only for a square matrix
-		for (var r = 0; r < solver.Size; r++)
-		{
-			for (var c = 0; c < solver.Size; c++)
-			{
-				matrixRow += solver.GetElement(new MatrixLocation(r + 1, c + 1)).Value.ToString()  + " ";
-			}
-			// i'll write the matrixRow for each row, and set it to 0
-			Console.WriteLine(matrixRow + "\n");
-			matrixRow="";
-			
-		}
+		_printObj.print(solver);
+
+
     }
 
 	[Fact]
