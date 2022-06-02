@@ -909,7 +909,16 @@ One clue is that the Add method in line 90
 
 This method actually adds to both the dictionary and the \_values variable inside the BehaviorContainerCollection object.
 
-The value 
+The \_value variable is declared in the constructor, but the add method will populate this with values.
+
+The Add method also  populates an internal dictionary with value key pairs so that they can be referenced.
+
+Only Problem is, i don't see clearly where the add method is invoked.
+
+One other curious thing, EntityBehaviours has a BehaviorsNotFound Atrribute or property.
+
+BehaviorsNotFound is an event handler. 
+
 \subparagraph[Void functions can return change values of referenced variables using the out keyword]{How to make void functions "return" values}
 And it is here i found the out keyword, this is what actually makes it possible
 for a void method to modify a value outside itself.
@@ -917,10 +926,31 @@ for a void method to modify a value outside itself.
 \url{https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/out-parameter-modifier}
 
 
+\subparagraph{More on Behaviors and Events in C\#}
+
+So to understand this, i will likely have to understand events because they are 
+very prevalent in the Simulation.cs file.
+
+
+So anyhow since i don't see any add method for BehaviorContainerCollection being used.
+I assume the construction is called in the constructor.
+By this i mean the \_values is made in the constructor or when the TryGetValue method is invoked,
+
+The Class accesses the dictionary and adds it to the values.
+
+But i cannot really see how the logic flows. Looks like everything is really heavily dependent on events and their flow 
+in order to see what really happens and how the \_values list is generated
+for us to see how GetBehaviorList actually works.
+
+One way to move forward is to use tests, modify the DC simulation code,
+introduce print statements to see where the values are.
+And then try to debug like so.
+
+Probably better to pry things apart, see how they work step by step
+rather than try to figure it all out in theory and reading source code.
+
 \part{Matrix Solvers}
 Note we are solving for (in a 3x3 matrix case):
-
-
 
 $$ \begin{bmatrix}
 \frac{\partial f_1}{\partial x_1}  & \frac{\partial f_1}{\partial x_2}  & \frac{\partial f_1}{\partial x_3} \\
@@ -962,7 +992,7 @@ Now let's say we want to solve a matrix, where we have a Y matrix and a RHS vect
 
 How do we put them into a class?
 
-\section{Where the Y matrix is defined}
+nstructor\section{Where the Y matrix is defined}
 
 Each solver class, eg. SparseRealSolver
 
