@@ -1,8 +1,6 @@
 using Xunit;
 using SpiceSharp.Algebra;
 using SpiceSharp.Algebra.Solve;
-using SpiceSharp;
-using SpiceSharp.Components;
 using SpiceSharp.Simulations;
 using System;
 using System.IO;
@@ -11,39 +9,15 @@ using solverDiagnostics;
 
 namespace xunitSandboxAndTests;
 
-public class Sandbox
+public class matrixPrintSandboxTests
 {
-	public IprintMatrixAndVectors _printObj { get; set; }
-	public Sandbox()
-	{
-		this._printObj = new printMatrixAndVectors();
-	}
 
 	[Theory]
 	[InlineData()]
     public void Test1()
     {
+		Console.WriteLine("hi  \n");
     }
-
-	[Fact]
-	public void testCircuit(){
-		// Build the circuit
-		var ckt = new Circuit(
-				new VoltageSource("V1", "in", "0", 0.0),
-				new Resistor("R1", "in", "out", 1.0e3),
-				new Resistor("R2", "out", "0", 2.0e3)
-				);
-
-		// Create a DC sweep and register to the event for exporting simulation data
-		var dc = new DC("dc", "V1", 0.0, 5.0, 0.001);
-		dc.ExportSimulationData += (sender, exportDataEventArgs) =>
-		{
-			//Console.WriteLine(exportDataEventArgs.GetVoltage("out"));
-		};
-
-		// Run the simulation
-		dc.Run(ckt);
-	}
 
 
 	[Theory]

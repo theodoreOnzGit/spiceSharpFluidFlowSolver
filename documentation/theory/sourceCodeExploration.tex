@@ -949,6 +949,17 @@ And then try to debug like so.
 Probably better to pry things apart, see how they work step by step
 rather than try to figure it all out in theory and reading source code.
 
+\subparagraph{So i attempted to try prying apart the simulation code..}
+
+So i tried out the idea of attempting to make my own version of the Simulation class.
+As well as the biasing Simulation class, so as to put in print statements.
+
+However, the moment i started creating my own classes in a new namespace, 
+there were a lot of contexts missing, as well as the Properties object being missing.
+
+Looking into the code for hours, I find that it's not worth it for now.
+Just make a pipe and pump as if it were a nonlinear resistor.
+
 \part{Matrix Solvers}
 Note we are solving for (in a 3x3 matrix case):
 
@@ -1080,6 +1091,7 @@ see line 174-234 of
 \end{itemize}
 
 
+
 \part{Simulation Algorithm}
 
 This is taken care of by ISimulation
@@ -1087,6 +1099,53 @@ This is taken care of by ISimulation
 \url{https://spicesharp.github.io/SpiceSharp/articles/structure/flow.html}
 \url{https://github.com/SpiceSharp/SpiceSharp/tree/master/SpiceSharp/Simulations}
 
+
+\part{Nonlinear Resistors}
+Now I tried prying apart the algorithm to no avail.
+
+It seems like the most efficient course of action is to just use the nonlinear
+resistor code and just modify it to fit a pipe. 
+
+We take the conversion here to be I (A)= flowrate in $m^3/s$ 
+and ; Voltage (V) = Pressure in $Pa$
+
+\section[]{nonlinear resistor source code under spicesharpTests}
+The source code for nonlinear resistors is in 
+
+\url{https://github.com/SpiceSharp/SpiceSharp/tree/master/SpiceSharpTest/Examples/CustomResistor}
+
+And we pretty much add a new component in the namespace called a nonlinear resistor.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/master/SpiceSharpTest/Examples/CustomResistor/NonlinearResistor.cs}
+
+\section{New Biasing Behaviors}
+Once the component is created, it will look for biasing behaviours by deafult.
+
+This is done using the automatic Dependency injection mechanism.
+
+\url{https://spicesharp.github.io/SpiceSharp/articles/structure/di.html}
+
+For the nonlinear resistor, the biasingBehavior should be in the namespace:
+
+\begin{verbatim}
+SpiceSharp.Components.NonlinearResistorBehaviors	
+\end{verbatim}
+
+So in essence, use the name of the component, and add the word behaviors and 
+that will be the name of the namespace.
+
+\url{https://github.com/SpiceSharp/SpiceSharp/blob/master/SpiceSharpTest/Examples/CustomResistor/BiasingBehavior.cs}
+
+And for this, we just need to alter the equations in the matrices and perform partial derivates accordingly.
+
+Everything else can be copied wholesale.
+
+\section[]{Adding Properties}
+
+The last part is the BaseParameters file, where we define some parameters which 
+will define how our pipe behaves. Eg pipe length, elevation, etc.
+
+For the nonlinear resistor, we just have A and B.
 
 \part{Matrices}
 
