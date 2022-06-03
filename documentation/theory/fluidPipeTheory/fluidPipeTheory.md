@@ -1,3 +1,4 @@
+
 # Fluid Pipe Theory
 
 ## Intro
@@ -140,6 +141,7 @@ For a laminar flow regime for example, f is conveniently $\frac{16}{Re}$
 
 $$f = \frac{\Delta P}{ (\frac{4L}{D}) \  \frac{1}{2} \rho u^2 }$$
 
+#### Laminar Regimes: Ohm's law is obeyed
 Now let's substitute this value and use kinematic pressure (lowercase $p$) instead of dynamic pressure
 $$\frac{16}{Re} = \frac{\Delta p}{ (\frac{4L}{D}) \  \frac{1}{2} u^2 }$$
 
@@ -163,14 +165,159 @@ an explicit relationship.
 
 For transitional and turbulent flow regimes, this law isn't obeyed.
 ![Moody Diagram](https://nuclear-power.com/wp-content/uploads/2016/05/Moody-chart-min.jpg)
-[^Moody Diagram]
+[Moody Diagram [1]](#MoodyChart)
+
+Here, the Darcy friction factor is used instead of fanning friction factor.
+
+#### Fully Turbulent Regimes, Non Ohmic Resistor, but mass flowrate explicit
+
+For rough pipes however, the friction factor becomes almost constant after 
+a regime known as complete turbulence.
+
+The friction factor becomes almost constant at this point. 
+This regime is also commonly found in valves bends since the 
+frictional losses are modelled by a constant loss coefficient.
+
+
+For such a regime, 
+
+$$K = \frac{\Delta p}{   \frac{1}{2} u^2 }$$
+
+
+The kinematic pressure drop is nonlinear with respect to flow, but the 
+expression of $\Delta p$ is still explicit with respect to flow.
+
+Hence, finding flowrates as a function of pressure drops in this regime
+is relatively trivial since we can just make mass flowrate $\dot{m}$
+the subject of the equation.
+
+$$\frac{1}{2}u^2 = \frac{\Delta p}{K}$$
+$$u^2 = \frac{2\Delta p}{K}$$
+$$u = \sqrt{\frac{2\Delta p}{K}}$$
+$$\frac{\dot{m}}{\rho A_{xs}} = \sqrt{\frac{2\Delta p}{K}}$$
+$$\dot{m} = \rho A_{xs}\sqrt{\frac{2\Delta p}{K}}$$
+
+With this, explicit mass balances can still be formed and the jacobian
+relatively easy to find, in the sense that explicit differentiation
+can be done.
+
+#### Non Explicit Non Linear Regimes
+
+The last regime becomes the most challenging of all to tackle.
+
+For one, we cannot quite obtain a value of mass flowrate explicitly from
+the kinematic pressure drop. Thus, setting up our current balance 
+equations can prove to be quite challenging.
+
+However, from our [Moody Diagram [1]](#MoodyChart), we can obtain a kinematic
+pressure drop explicitly from mass flowrate.
+
+Because while the same friction factor can apply to two different 
+Reynold's numbers, it is much harder for a pressure drop to 
+apply to two different mass flowrates.
+
+We can adopt the steps taken in the nonlinear resistor [example](https://github.com/SpiceSharp/SpiceSharp/blob/master/SpiceSharpTest/Examples/CustomResistor/BiasingBehavior.cs)
+
+```csharp
+void IBiasingBehavior.Load()
+    {
+        // First get the current iteration voltage
+        var v = _nodeA.Value - _nodeB.Value;
+
+        // Calculate the derivative w.r.t. one of the voltages
+        var isNegative = v < 0;
+        var c = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B);
+        double g;
+
+        // If v=0 the derivative is either 0 or infinity (avoid 0^(negative number) = not a number)
+        if (v.Equals(0.0))
+            g = _bp.B < 1.0 / _bp.A ? double.PositiveInfinity : 0.0;
+        else
+            g = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B - 1.0) / _bp.A;
+
+        // In order to avoid having a singular matrix, we want to have at least a very small value here.
+        g = Math.Max(g, _baseConfig.Gmin);
+
+        // If the voltage was reversed, reverse the current back
+        if (isNegative)
+            c = -c;
+
+        // Load the RHS vector
+        c -= g * v;
+        _elements.Add(
+            // Y-matrix
+            g, -g, -g, g,
+            // RHS-vector
+            c, -c);
+    }
+
+```
+
+The steps are as follows: 
+1. we are using the current iteration voltage (kinematic pressure drop) to
+determine the current iteration's current (mass flowrate)
+2. We then calculate the Jacobian
+3. we use the jacobian to modify the current
+4. load the Y matrix and RHS vector
+
+Now the challenge here then is to calculate the Jacobian.
+
+##### Calculating the Jacobian Numerically
+
+Differentiating the Churchill formula here is not quite an option to obtain our
+Jacobian.
+
+$$\frac{\partial f_A}{\partial v_A}$$
+$$\frac{\partial f_A}{\partial v_B}$$
+$$\frac{\partial f_B}{\partial v_A}$$
+$$\frac{\partial f_B}{\partial v_B}$$
+
+The contributions to mass flowrate at node A (inlet) of this resistor is:
+
+$$\dot{m}_{pipe}$$
+
+And the contributions to mass flowrate at node B (outlet) 
+of this resistor/pipe is:
+
+$$-\dot{m}_{pipe}$$
+
+
+Note that current outflow is positive by SpiceSharp [Conventions](https://spicesharp.github.io/SpiceSharp/articles/custom_components/example_resistor.html)
+
+so the contributions by this nonlinear resistor to the jacobian are:
+
+$$\frac{\partial i_R}{\partial v_A}$$
+$$\frac{\partial i_R}{\partial v_B}$$
+
+And likewise to node b,
+$$-\frac{\partial i_R}{\partial v_A}$$
+$$\frac{\partial i_R}{\partial v_B}$$
+
+Equivalently, for a pipe, this translates to:
+
+$$\frac{\partial \dot{m}_{pipe}}{\partial p_A}$$
+$$\frac{\partial \dot{m}_{pipe}}{\partial p_B}$$
+
+And likewise to node b,
+$$\frac{\partial \dot{m}_{pipe}}{\partial p_A}$$
+$$\frac{\partial \dot{m}_{pipe}}{\partial p_B}$$
+
+Problem here is we don't have an expression for current through the resistor
+explicitly in terms of voltage.
+
+However this we can exploit the fact that
+
+$$\frac{d y}{d x} = \frac{1}{\frac{d x}{d y}}$$
+
+This may help us. However, in terms of partial derivatives, this may or may not be
+true.
+
 
 ## Bibiliography
-[^Moody Diagram]:
-Fanning friction factor. Nuclear Power. (2021, October 25). Retrieved June 3, 2022, from https://www.nuclear-power.com/nuclear-engineering/fluid-dynamics/major-head-loss-friction-loss/fanning-friction-factor/ 
-
-
-
+<a id="MoodyChart">
+[1]
+ Fanning friction factor. Nuclear Power. (2021, October 25). Retrieved June 3, 2022, from https://www.nuclear-power.com/nuclear-engineering/fluid-dynamics/major-head-loss-friction-loss/fanning-friction-factor/ 
+</a>
 
 
 
