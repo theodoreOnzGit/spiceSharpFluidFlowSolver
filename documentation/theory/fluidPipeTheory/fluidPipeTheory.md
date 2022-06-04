@@ -291,7 +291,7 @@ $$\frac{\partial i_R}{\partial v_B}$$
 
 And likewise to node b,
 $$-\frac{\partial i_R}{\partial v_A}$$
-$$\frac{\partial i_R}{\partial v_B}$$
+$$-\frac{\partial i_R}{\partial v_B}$$
 
 Equivalently, for a pipe, this translates to:
 
@@ -299,8 +299,8 @@ $$\frac{\partial \dot{m}_{pipe}}{\partial p_A}$$
 $$\frac{\partial \dot{m}_{pipe}}{\partial p_B}$$
 
 And likewise to node b,
-$$\frac{\partial \dot{m}_{pipe}}{\partial p_A}$$
-$$\frac{\partial \dot{m}_{pipe}}{\partial p_B}$$
+$$-\frac{\partial \dot{m}_{pipe}}{\partial p_A}$$
+$$-\frac{\partial \dot{m}_{pipe}}{\partial p_B}$$
 
 Problem here is we don't have an expression for current through the resistor
 explicitly in terms of voltage.
@@ -311,6 +311,40 @@ $$\frac{d y}{d x} = \frac{1}{\frac{d x}{d y}}$$
 
 This may help us. However, in terms of partial derivatives, this may or may not be
 true.
+
+Thankfully, for us, the only variables that we need concern 
+ourselves with are the Reynolds number and the $\Delta p$ 
+kinematic pressure drop.
+
+It is relatively straightforward if one knows central difference
+approximation to approximate this derivative
+$$\frac{d \Delta p}{d Re}$$
+
+
+Assuming all else is constant of course, like density and etc.
+
+To obtain 
+
+$$\frac{\partial \dot{m}_{pipe}}{\partial p_A}$$
+
+we can make use of chain rule,
+
+$$\frac{d \Delta p}{d Re} = \frac{d \Delta p}{d p_A}* \frac{d p_A}{d Re}$$
+
+$$ = \frac{d \Delta p}{d p_A}* \frac{d p_A}{d \dot{m}_{pipe}} * \frac{d \dot{m}_{pipe}}{d Re} $$
+
+Thus we can make $\frac{d p_A}{d \dot{m}_{pipe}}$ the subject
+
+$$\frac{d p_A}{d \dot{m}_{pipe}} = \frac{\frac{d \Delta p}{d Re}}{\frac{d \Delta p}{d p_A} \frac{d \dot{m}_{pipe}}{d Re}}$$
+
+
+To obtain the total derivative, we just flip it on its head
+
+$$\frac{d \dot{m}_{pipe}}{d p_A} = \frac{\frac{d \Delta p}{d p_A} \frac{d \dot{m}_{pipe}}{d Re}}{\frac{d \Delta p}{d Re}}$$
+
+To obtain the partial derivative, we just set $p_B$ as constant, 
+and then work from there.
+
 
 
 ## Bibiliography
