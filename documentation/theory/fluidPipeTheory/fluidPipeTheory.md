@@ -638,14 +638,86 @@ $$\frac{d}{d(Re)}G2 =
 $$\frac{d}{d(Re)}G2 = 
  \frac{0.9}{7^{0.9}Re^{0.1{}}} $$
 
+
+ Now let's consider B also, lest we forget
+
+$$B = \left( \frac{37530}{Re} \\ 
+\right)^{16} $$
+
+$$B = 37530^{16} * Re^{-16} $$
+
+$$\frac{dB}{d(Re)} = 37530^{16}*(-16)*Re^{-17} $$
+
+$$\frac{dB}{d(Re)} = 37530^{16}*(\frac{-16}{Re})*Re^{-16} $$
+
+$$\frac{dB}{d(Re)} = -B*(\frac{16}{Re}) $$
+
+
 Now with these quantities found, we can start programming in the
 C# code which returns the following values
 
-To find dA_dRe
+Now this is a multistep process, and it WILL need testing.
+
+
+
+
+
+
 
 
 
 #### Testing of the derivative
+
+
+So what is best for now is to test it with a simple use case first.
+
+I want to check a mass flowrate given a pressure drop.
+
+Or at least a friction factor given a Reynold's number.
+
+What i probably want to do is this: 
+
+1. Test for friction factor using Re
+2. Supply a friction factor, and extract Re in return (actually this 
+ will be pretty 
+problematic), because the moody chart has two values of Re 
+factor for a single value of friction factor,
+ this would happen for Re<10,000. 
+3. To modify test 1 and 2, convert the moody chart to a Bejan number 
+vs Re chart. Test if this corresponds to an unconverted form
+and then use it as the reference
+
+The next trick is to obtain Re given a Bejan Number.
+
+But a simple 1D Newton Raphson method would suffice.
+
+For this, we just use the iterative equation
+
+$$\frac{d f(x)}{dx} (x_{i+1} - x_i) = -f(x)$$
+
+$$\frac{d f(x)}{dx} (x_{i+1} ) = -f(x) + \frac{d f(x)}{dx} x_i$$
+
+$$f (Re)* Re^2 = \frac{32 Be}{ (\frac{4L}{D})^3 
+}$$
+
+
+For the newton Raphson method here, we first need to supply a Bejan
+Number and a given 4L/D value.
+
+Once that is done
+
+
+$$f_{newtonRaphson}(Re) = f (Re)* Re^2 - 
+\frac{32 Be}{ (\frac{4L}{D})^3}$$
+
+This value is then set to zero. Reynold's numbers will be guessed
+iteratively until completion.
+
+
+
+
+
+
 
 For testing, it would be prudent to compare the analytical derivation
 to a numerical derivation of the actual function using some
