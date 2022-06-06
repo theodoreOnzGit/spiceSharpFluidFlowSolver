@@ -446,6 +446,239 @@ $$
 With this, we can start finding 
 $$\frac{d(Be)}{d(Re)}  = \frac{d}{d(Re)} (f(Re)*Re^2)$$ 
 
+$$f = 2 \left[\\
+\left( \frac{8}{Re} \right)^{12} + \\
+\left( \frac{1}{A+B}\right)^{3/2} \\
+\right]^{1/12} $$
+
+we could tackle this with product rule, or simply multiply
+the $Re^2$ term into Churchull's correlation
+
+$$(f(Re)*Re^2) = 2 \left[\\
+\left( \frac{8}{Re} \right)^{12} + \\
+\left( \frac{1}{A+B}\right)^{3/2} \\
+\right]^{1/12} Re^2 $$
+
+
+$$(f(Re)*Re^2) = 2 \left[\\
+\left( \frac{8}{Re} \right)^{12} + \\
+\left( \frac{1}{A+B}\right)^{3/2} \\
+\right]^{1/12} (Re^{24})^{1/12} $$
+
+
+$$(f(Re)*Re^2) = 2 \left[\\
+\left( \frac{8}{Re} \right)^{12} Re^{24} + \\
+\left( \frac{1}{A+B}\right)^{3/2} Re^{24}\\
+\right]^{1/12}  $$
+
+$$(f(Re)*Re^2) = 2 \left[\\
+\left( \frac{8}{Re} \right)^{12} (Re^{2})^{12} + \\
+\left( \frac{1}{A+B}\right)^{3/2} Re^{24}\\
+\right]^{1/12}  $$
+
+$$(f(Re)*Re^2) = 2 \left[\\
+\left( \frac{8}{Re}*Re^2 \right)^{12}  + \\
+\left( \frac{1}{A+B}\right)^{3/2} Re^{24}\\
+\right]^{1/12}  $$
+
+
+$$(f(Re)*Re^2) = 2 \left[\\
+\left( 8 Re \right)^{12}  + \\
+\left( \frac{1}{A+B}\right)^{3/2} Re^{24}\\
+\right]^{1/12}  $$
+
+
+$$(f(Re)*Re^2) = 2 \left[\\
+\left( 8 Re \right)^{12}  + \\
+\left( \frac{1}{A+B}\right)^{3/2} (Re^{16})^{3/2}\\
+\right]^{1/12}  $$
+
+$$(f(Re)*Re^2) = 2 \left[\\
+\left( 8 Re \right)^{12}  + \\
+\left( \frac{Re^{16}}{A+B}\right)^{3/2} \\
+\right]^{1/12}  $$
+
+Now Differentiating this analyticaly needs a few steps
+
+First i will want to substitute the term in the inner
+brackets with G1 
+
+
+
+$$ \frac{d}{d(Re)}(f(Re)*Re^2) = \frac{d}{d(Re)}2 (G1)^{1/12}  $$
+
+$$G1  = \left[\\
+\left( 8 Re \right)^{12}  + \\
+\left( \frac{Re^{16}}{A+B}\right)^{3/2} \\
+\right]$$
+
+
+$$ \frac{d}{d(Re)}(f(Re)*Re^2) = 2\frac{d}{d(Re)} (G1)^{1/12}  $$
+$$ \frac{d}{d(Re)}(f(Re)*Re^2) = 2 \frac{1}{12}
+\frac{d (G1)}{d(Re)} (G1)^{1/12} 
+* \frac{1}{G1}  $$
+
+
+$$ \frac{d}{d(Re)}(f(Re)*Re^2) =  \frac{1}{6}
+\frac{d (G1)}{d(Re)} (G1)^{1/12} 
+* \frac{1}{G1}  $$
+
+From here I want two functions, (1) a function returning the value of G1,
+(2) a function returning the value of dG1_dRe
+
+
+The next challenge will be to differentiate dG1_dRe
+
+
+$$\frac{d}{d(Re)}G1  =\frac{d}{d(Re)} \left[\\
+\left( 8 Re \right)^{12}  + \\
+\left( \frac{Re^{16}}{A+B}\right)^{3/2} \\
+\right]$$
+
+The first term is quite straightforward
+
+$$\frac{d}{d(Re)}G1  = 8(12) Re^{11}  + \frac{d}{d(Re)} \left[\\
+\left( \frac{Re^{16}}{A+B}\right)^{3/2} \\
+\right]$$
+
+
+The second term shall be dealt with using substitution first.
+
+
+
+$$\frac{d}{d(Re)}G1  = 8(12) Re^{11}  + \frac{3}{2}
+\left( \frac{Re^{16}}{A+B}\right)^{1/2}  \frac{d}{d(Re)}
+\left( \frac{Re^{16}}{A+B}\right) \\
+$$
+
+Then now we can start using the quotient rule
+
+$$\frac{d}{d(Re)}G1  = 8(12) Re^{11}  + \frac{3}{2}
+\left( \frac{Re^{16}}{A+B}\right)^{1/2}  \frac{d}{d(Re)}
+\left( \frac{Re^{16}}{A+B}\right) \\
+$$
+
+$$\frac{d}{d(Re)}G1  = 8(12) Re^{11}  + \frac{3}{2}
+\left( \frac{Re^{16}}{A+B}\right)^{1/2}  
+\left( \frac{Re^{16}\frac{d}{d(Re)} (A+B)+ (A+B) 16 Re^{15}}{(A+B)^2}\right) \\
+$$
+
+We note the term $A+B$ appears repeatedly, so a 
+dedicated function should be there to return
+APlusB
+
+Also, dAPlusB will also be returned via another function
+
+Now let's calculate dAPlusB
+
+$$\frac{d}{d(Re)}(A+B)$$
+
+$$A = \left[ 2.457 \ln \frac{1}{\left( \frac{1}{(7/Re)^{0.9}} + \\
+0.27 \frac{\varepsilon}{D} \right)} \\
+\right]\ \ ; \ \ \\
+B = \left( \frac{37530}{Re} \\ 
+\right)^{16} $$
+
+
+Now first, we shall reduce them to more palatable forms:
+
+Using the power law of lograithms,
+
+$$A = -2.457 * ln \left( \frac{Re^{0.9}}{7^{0.9}} 
++ 0.27 \frac{\varepsilon}{D} \right)$$
+
+For this, we would like to define G2 as follows:
+
+$$G2 = \left( \frac{Re^{0.9}}{7^{0.9}} 
++ 0.27 \frac{\varepsilon}{D} \right)$$
+
+So that
+$$\frac{dA}{d(Re{})} = \frac{-2.457}{G2} \frac{dG2}{d(Re)} $$
+
+So now we will have two functions, G2 and dG2_dRe to return their
+appropriate values
+
+For the derivative dG2_dRe, we shall assume the diameter D
+does not change during the course of channel flow.
+
+Thus during the iterations, D can be assumed to be constant.
+This is an important assumption. 
+
+However, we can also take it from this standpoint:
+
+
+$$\frac{d}{d(Re)}G2 = \frac{d}{d(Re)}\left( \frac{Re^{0.9}}{7^{0.9}} 
++ 0.27 \frac{\varepsilon}{D} \right)$$
+
+
+The change in relative roughness can be assumed to be small or
+negligible when Re changes. Even when the pipe expands and 
+contracts during flow, it is small.
+
+I will not go in depth trying the prove this, though it can
+be proven so. that the surface roughness ratio does not change
+significantly compared to change in Re during flow conditions.
+
+
+
+$$\frac{d}{d(Re)}G2 = \frac{d}{d(Re)}\left( \frac{Re^{0.9}}{7^{0.9}} 
+\right)$$
+
+
+$$\frac{d}{d(Re)}G2 = 
+0.9* \frac{1}{Re} \left( \frac{Re^{0.9}}{7^{0.9}} 
+\right)$$
+
+
+$$\frac{d}{d(Re)}G2 = 
+ \frac{0.9}{Re} \left( \frac{Re^{0.9}}{7^{0.9}} 
+\right)$$
+
+
+$$\frac{d}{d(Re)}G2 = 
+ \frac{0.9}{7^{0.9}Re^{0.1{}}} $$
+
+Now with these quantities found, we can start programming in the
+C# code which returns the following values
+
+To find dA_dRe
+
+
+
+#### Testing of the derivative
+
+For testing, it would be prudent to compare the analytical derivation
+to a numerical derivation of the actual function using some
+predefined libraries for a range of reynold's numbers
+over a range of roughness ratios, this can be done using xUnit
+Using Theory tests
+
+From a testing standpoint, it's sometimes better to analytically 
+differentiate it so that instead of relying solely on numerical
+differentiation, there are now two methods with which i can
+check the friction factor.
+
+Also of course, i'l like to test against the moody chart. That's
+the best test.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Bibiliography 
 <a id="MoodyChart">
 [1]
