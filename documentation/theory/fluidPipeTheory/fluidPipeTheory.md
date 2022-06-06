@@ -79,11 +79,13 @@ Therefore, we will be doing mass balance equations over each node in place of cu
 In Perry's chemical engineering handbook, the formula used for 
 fanning's friction factor by Churchill is:
 
-$$f = \frac{\Delta P}{ (\frac{4L}{D}) \  \frac{1}{2} \rho u^2 }$$
-
-$$\Delta P = f  (\frac{4L}{D})  \frac{1}{2} \rho u^2 $$
-
 $$f = 2 \left[\\
+\left( \frac{8}{Re} \right)^{12} + \\
+\left( \frac{1}{A+B}\right)^{3/2} \\
+\right]^{1/12} $$
+ 
+$$f = \frac{\Delta P}{ (\frac{4L}{D}) \  \frac{1}{2} \rho u^2 }$$
+$$\Delta P = f  (\frac{4L}{D})  \frac{1}{2} \rho u^2 $$
 \left( \frac{8}{Re} \right)^{12} + \\
 \left( \frac{1}{A+B}\right)^{3/2} \\
 \right]^{1/12} $$
@@ -345,14 +347,114 @@ $$\frac{d \dot{m}_{pipe}}{d p_A} = \frac{\frac{d \Delta p}{d p_A} \frac{d \dot{m
 To obtain the partial derivative, we just set $p_B$ as constant, 
 and then work from there.
 
+There's still one more step however, because the entire
+equation is not properly set up in Re just yet.
 
 
-## Bibiliography
+$$f = \frac{\Delta P}{ (\frac{4L}{D}) \  \frac{1}{2} \rho u^2 }$$
+
+There is in essence, a $\frac{1}{2}\rho u^2$ term that is not in terms of Re.
+
+So we have to make the substitution
+
+$$Re = \frac{\rho u D}{\mu}$$
+$$u = \frac{Re \mu}{\rho D}$$
+
+substituting this in results in:
+
+$$f = \frac{\Delta P}{ (\frac{4L}{D}) \  
+\frac{1}{2} \rho (\frac{Re \mu}{\rho D})^2 }$$
+
+$$f * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \  
+\frac{1}{2} \rho (\frac{ \mu}{\rho D})^2 }$$
+
+
+$$f * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \  
+\frac{1}{2} \rho (\frac{ \mu}{\rho D})^2 }$$
+
+
+$$f * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \  
+\frac{1}{2} \rho (\frac{ \mu^2}{\rho^2 D^2}) }$$
+
+Now if we were to substitute in kinematic pressure,
+And i'll also explicitly note here that
+f is a function of Re.
+
+$$f (Re)* Re^2 = \frac{\Delta p}{ (\frac{4L}{D}) \  
+\frac{1}{2}  (\frac{ \mu^2}{\rho^2 D^2}) }$$
+
+
+$$f (Re)* Re^2 = \frac{\Delta p}{ (\frac{4L}{D}) \  
+\frac{1}{2}  (\frac{ \nu^2}{ D^2}) }$$
+
+
+Here we sort of have a collection of non-dimensionalised variables:
+
+$$\frac{\Delta p}{\frac{\nu^2}{2D^2}}$$
+
+$$\frac{4L}{D}$$
+
+
+It appears that the initial dimensionless variable resembles the 
+Bejan number closely.
+
+The [Bejan Number](https://www.sciencedirect.com/science/article/abs/pii/S0735193321000075)
+[[1]](#BejanNumber)
+is a number that represents a sort of dimensionless pressure drop.
+
+It was originally derived for heat transfer, but can just 
+as easily apply for fluid mechanics.
+
+It is defined for channel flow as
+
+$$Be = \frac{\Delta p L^2}{\nu^2}
+$$
+
+where L is some channel length. We can see that this represents some
+form of nondimensional pressure drop
+
+so we can modify the following equation to include the Bejan number
+
+$$f (Re)* Re^2 = \frac{\Delta p}{ (\frac{4L}{D}) \  
+\frac{1}{2}  (\frac{ \nu^2}{ D^2}) }$$
+
+
+$$f (Re)* Re^2 = \frac{\Delta p}{ (\frac{4L}{D}) \  
+\frac{1}{2}  (\frac{ \nu^2}{L^2})\frac{L^2}{D^2} }$$
+
+$$f (Re)* Re^2 = \frac{\Delta p L^2 /\nu^2}{ (\frac{4L}{D}) \  
+\frac{1}{2}  \frac{L^2}{D^2} }$$
+
+
+$$f (Re)* Re^2 = \frac{Be}{ (\frac{4L}{D}) \  
+\frac{1}{2}  \frac{L^2}{D^2} }$$
+
+$$f (Re)* Re^2 = \frac{Be}{ (\frac{4L}{D}) \  
+\frac{16}{32}  \frac{L^2}{D^2} }$$
+
+$$f (Re)* Re^2 = \frac{Be}{ (\frac{4L}{D})^3 \  
+\frac{1}{32}   }$$
+
+$$f (Re)* Re^2 = \frac{32 Be}{ (\frac{4L}{D})^3 
+}$$
+
+From this we can find the differential 
+
+$$\frac{d(Be)}{d(Re)}  = \frac{d(Be)}{d \Delta p} * \frac{d \Delta p}{d (Re)}
+$$
+
+With this, we can start finding 
+$$\frac{d(Be)}{d(Re)}  = \frac{d}{d(Re)} (f(Re)*Re^2)$$ 
+
+## Bibiliography 
 <a id="MoodyChart">
 [1]
  Fanning friction factor. Nuclear Power. (2021, October 25). Retrieved June 3, 2022, from https://www.nuclear-power.com/nuclear-engineering/fluid-dynamics/major-head-loss-friction-loss/fanning-friction-factor/ 
 </a>
 
+<a id="BejanNumber">
+[2]
+Zimparov, V. D., Angelov, M. S., & Hristov, J. Y. (2021). Critical review of the definitions of the Bejan number-first law of thermodynamics. International Communications in Heat and Mass Transfer, 124, 105113.</a>
 
 
 
