@@ -713,11 +713,41 @@ $$f_{newtonRaphson}(Re) = f (Re)* Re^2 -
 This value is then set to zero. Reynold's numbers will be guessed
 iteratively until completion.
 
+The derivative of such is then computed using the above discussion.
+We of course assume Bejan number is constant since we are in fact specifying
+a Bejan number and expecting Reynold's number to be calculated iteratively. 
 
 
+##### Test series 1
+
+For every test, we have a reference and a testResult with which we compare.
+
+The reference should be quite easy or intuitive to see that it's correct.
+
+The fanning friction factor from Churchill's relation is quite easily 
+calculated as it is explicitly in terms of Reynolds number and roughness
+ratios.
+
+Thus a set of reference friction factor can be generated from Reynold's numbers
+and roughness ratio curves.
 
 
+To test this reference, equation, it is good to take a series of
+friction factor readings directly from the moody chart at various Reynold's
+numbers and roughness ratios. We can use theory tests here.
+Preferrably this should be done at easy to read points.
 
+This would confirm that using Re and roughness ratios, we can get appropriate 
+friction factor values.
+
+The same friction factor reference values from the moody chart can be used 
+to validate the friction factor values from Reynold's numbers.
+
+This would validate the analytical methods used across various values of Re 
+and surface roughness.
+
+
+##### Test series 2
 
 For testing, it would be prudent to compare the analytical derivation
 to a numerical derivation of the actual function using some
@@ -725,13 +755,18 @@ predefined libraries for a range of reynold's numbers
 over a range of roughness ratios, this can be done using xUnit
 Using Theory tests
 
+Thus i can also use an external central difference approximation library
+to perform numerical differentiation so that i can get my jacobian 
+values as well as get my Reynold's numbers using the Bejan numbers.
+
 From a testing standpoint, it's sometimes better to analytically 
 differentiate it so that instead of relying solely on numerical
 differentiation, there are now two methods with which i can
 check the friction factor.
 
-Also of course, i'l like to test against the moody chart. That's
-the best test.
+
+Other details should be done inside the documentation of the Reynold's
+number friction factor code.
 
 
 
