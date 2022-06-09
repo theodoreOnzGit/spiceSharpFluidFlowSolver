@@ -1,5 +1,5 @@
 ﻿namespace spiceSharpFluidFlowSolverLibraries;
-public class pipesAndValves
+public class TemplateClass
 {
 
 }
