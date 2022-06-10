@@ -19,6 +19,7 @@ public abstract class BasePipeFactory
 		
 		// now we start adding components
 		this.AddMockPipeCustomResistor();
+		this.AddBasePipe();
 
 	}
 
@@ -29,6 +30,7 @@ public abstract class BasePipeFactory
 
 		// now we start adding components
 		this.AddMockPipeCustomResistor(inletName,outletName);
+		this.AddBasePipe(inletName,outletName);
 
 	}
 
@@ -117,4 +119,21 @@ public abstract class BasePipeFactory
 		pipeDictionary.Add("MockPipeCustomResistor",mockPipe);
 		return;
 	}
+
+	// Here i start adding two overloads of basePipe
+	private void AddBasePipe(){
+		BasePipe basePipe;
+		basePipe = new BasePipe(this._pipeName);
+		pipeDictionary.Add("BasePipe",basePipe);
+		return;
+	}
+
+	private void AddBasePipe(String inletName, String outletName){
+		BasePipe basePipe;
+		basePipe = new BasePipe(this._pipeName, inletName, outletName);
+		pipeDictionary.Add("BasePipe",basePipe);
+		return;
+	}
 }
+
+
