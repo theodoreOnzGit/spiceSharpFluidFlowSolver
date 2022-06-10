@@ -32,7 +32,49 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	public void Test_churchillFrictionFactorShouldBeAccurate_Turbulent(double Re,double roughnessRatio, double referenceFrictionFactor){
 		// i'm making the variable explicit so the user can see
 		// it's darcy friction factor, no ambiguity here
+
+		// Setup
 		double referenceDarcyFactor = referenceFrictionFactor;
+
+		// also the above values are visually inspected with respect to the graph
+		IFrictionFactor frictionFactorObj;
+		frictionFactorObj = new ChurchHillFrictionFactor();
+
+		// Act
+
+		double resultDarcyFactor =  frictionFactorObj.darcy(Re,roughnessRatio);
+		
+		// Assert
+		// Now by default, i can assert to a fixed number of decimal places
+		// so comparing 99.98 and 99.99 are about the same to two decimal places
+		// However, repeat this tactic with smaller numbers,eg
+		// 0.00998 and 0.00999
+		// this tactic will fail
+		// to normalise everything I will use a normalise decimal place
+		// I can take the logarithm base 10 of this number, round up
+		// because the log10 of a number will give about the number of decimal 
+		// places i need to correct for
+
+
+		int normaliseDecimalPlace(double reference){
+
+			double normaliseDouble = Math.Log10(reference);
+			normaliseDouble = Math.Ceiling(normaliseDouble);
+			int normaliseInteger;
+
+			normaliseInteger = (int)normaliseDouble;
+			// at this stage, i will get the number of decimal places i need to subtract
+			// i want to add the correct number of decimal places,
+			// so i will just use a negative sign
+			normaliseInteger = -normaliseInteger;
+
+			return normaliseInteger;
+		}
+
+		int decimalPlaceTest = 2 + normaliseDecimalPlace(referenceDarcyFactor);
+
+
+		Assert.Equal(referenceDarcyFactor,resultDarcyFactor,decimalPlaceTest);
 	}
 
 
@@ -45,7 +87,6 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	[InlineData(400, 0.05)]
 	[InlineData(400, 0.0)]
 	[InlineData(500, 0.05)]
-	[InlineData(600, 0.05)]
 	[InlineData(600, 0.05)]
 	[InlineData(800, 0.05)]
 	[InlineData(1000, 0.05)]

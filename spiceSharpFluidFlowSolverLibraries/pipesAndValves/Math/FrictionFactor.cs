@@ -40,7 +40,7 @@ public class ChurchHillFrictionFactor : IFrictionFactor
 		double Aterm = this.A(Re,roughnessRatio);
 		double Bterm = this.B(Re);
 
-		turbulentTerm = Math.Pow( 1/(Aterm + Bterm), 3.0/2);
+		turbulentTerm = Math.Pow( 1.0/(Aterm + Bterm), 3.0/2);
 
 		return laminarTerm + turbulentTerm;
 
@@ -50,10 +50,10 @@ public class ChurchHillFrictionFactor : IFrictionFactor
 	private double A(double Re, double roughnessRatio){
 		// first i need the logarithm of a number
 
-		double reynoldsTerm =  Math.Pow( 1.0/(7.0/Re), 0.9);
+		double reynoldsTerm =  Math.Pow( (7.0/Re), 0.9);
 		double roughnessTerm = 0.27*roughnessRatio;
 
-		double logFraction = 1/(reynoldsTerm+roughnessTerm);
+		double logFraction = 1.0/(reynoldsTerm+roughnessTerm);
 		double innerBracketTerm = 2.457*Math.Log(logFraction);
 		double A = Math.Pow(innerBracketTerm,16);
 		
