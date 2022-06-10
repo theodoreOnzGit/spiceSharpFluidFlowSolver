@@ -2,6 +2,8 @@ using SpiceSharp;
 using SpiceSharp.Components;
 using SpiceSharp.Simulations;
 
+using spiceSharpFluidFlowSolverLibraries;
+
 namespace tests;
 
 public class pipesAndValvesUnitTest : testOutputHelper
@@ -19,9 +21,129 @@ public class pipesAndValvesUnitTest : testOutputHelper
     {
 		this.cout("hello there");
     }
-	
-	// this is a test to see if a vanilla nonlinear resistor can work
+
+    [Fact]
+    public void When_wrongPipeType_ExpectException()
+    {
+		// setup
+		PipeFactory pipeFactory = new PipeFactory("hello123");
+
+		string pipeType = "";
+
+		// now i'm going
+		string listOfComponents;
+		listOfComponents = pipeFactory.generateList();
+		string refErrorMsg;
+		refErrorMsg = "";
+		refErrorMsg += "\n";
+		refErrorMsg += "Your pipeType :" + pipeType + " doesn't exist \n";
+		refErrorMsg += "Please consider using pipeTypes \n from the following list";
+		refErrorMsg += listOfComponents;
+
+		try{
+		pipeFactory.returnPipe(pipeType);
+		}
+		catch (Exception exception)
+		{
+			string exceptionMsg;
+			exceptionMsg = exception.Message;
+			//Console.WriteLine(exceptionMsg);
+			//
+			Assert.Equal(refErrorMsg,exceptionMsg);
+			return;
+
+		}
+		Assert.True(1 == 0);
+    }
+	// this test here is to help us print useful data
 	[Fact]
+	public void SandBoxPrintResult()
+	{
+		// <example_customcomponent_nonlinearresistor_test>
+		//
+	 MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1");
+	 mockPipe.Connect("out","0");
+	 mockPipe.Parameters.A = 2.0e3;
+	 mockPipe.Parameters.B = 0.5; 
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", 0.0),
+				mockPipe
+				);
+
+		// Setup the simulation and export our current
+		var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
+		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		dc.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			System.Console.Write("{0}, ".FormatString(current));
+		};
+		dc.Run(ckt);
+		double current = -currentExport.Value;
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+	}
+	
+	// this test is to see if operating point experiments can be done 
+	[Fact]
+	public void When_OperatingPoint_Expect_NoException()
+	{
+		// <example_customcomponent_nonlinearresistor_test>
+		//
+	 MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1", "out", "0");
+	 mockPipe.Parameters.A = 2.0e3;
+	 mockPipe.Parameters.B = 0.5; 
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", 1.5),
+				mockPipe
+				);
+
+		// Setup the simulation and export our current
+		var op = new OP("OP");
+		op.Run(ckt);
+
+	}
+	
+	// this is a test to see if the connect method can be separated from
+	// the constructor
+	//[Fact]
+	public void When_MockPipeCustomResistorConstructorOverLoad_Expect_NoException()
+	{
+		// <example_customcomponent_nonlinearresistor_test>
+		//
+	 MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1");
+	 mockPipe.Connect("out","0");
+	 mockPipe.Parameters.A = 2.0e3;
+	 mockPipe.Parameters.B = 0.5; 
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", 0.0),
+				mockPipe
+				);
+
+		// Setup the simulation and export our current
+		var dc = new DC("DC", "V1", -2.0, 2.0, 1e-2);
+		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		dc.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			System.Console.Write("{0}, ".FormatString(current));
+		};
+		dc.Run(ckt);
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+	}
+
+	// this is a test to see if a vanilla nonlinear resistor can work
+	// this is a test to see if a vanilla nonlinear resistor can work
+	//[Fact]
 	public void When_MockPipeCustomResistor_Expect_NoException()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
@@ -51,7 +173,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	}
 	// this is a test to see if a vanilla nonlinear resistor can work
 
-	[Fact]
+	//[Fact]
 	public void When_RunNonlinearResistor_Expect_NoException()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
