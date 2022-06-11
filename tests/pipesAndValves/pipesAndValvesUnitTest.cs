@@ -124,6 +124,57 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 	}
 
+	[Theory]
+	[InlineData(100, 0.05)]
+	[InlineData(200, 0.05)]
+	[InlineData(300, 0.05)]
+	[InlineData(400, 0.05)]
+	[InlineData(400, 0.0)]
+	[InlineData(500, 0.05)]
+	[InlineData(600, 0.05)]
+	[InlineData(800, 0.05)]
+	[InlineData(1000, 0.05)]
+	[InlineData(1200, 0.05)]
+	[InlineData(1400, 0.05)]
+	[InlineData(1600, 0.05)]
+	[InlineData(1800, 0.05)]
+	[InlineData(2000, 0.05)]
+	public void Test_churchillFrictionFactorErrorNotMoreThan2Percent_Laminar(double Re,double roughnessRatio){
+		// this tests the churchill relation against the 
+		// laminar flow friction factor
+		// fanning is 16/Re
+		// and no matter the roughness ratio, I should get the same result
+		// however, roughness ratio should not exceed 0.1
+		// as maximum roughness ratio in charts is about 0.05
+		//
+		// Setup
+
+		// this test asserts that the error should not be more than 2%
+
+		double referenceFanning = 16/Re;
+
+		IFrictionFactor frictionFactorObj;
+		frictionFactorObj = new ChurchHillFrictionFactor();
+
+		double errorMax = 0.02;
+
+		// Act
+
+		double resultFanning = frictionFactorObj.fanning(Re,roughnessRatio);
+
+		// Assert
+		//
+		// I want to use a 10 percent difference rather than absolute value
+		// Assert.Equal(referenceFanning,resultFanning,4);
+
+		double error;
+		error = Math.Abs(resultFanning - referenceFanning)/referenceFanning;
+		
+		Assert.True(error < errorMax);
+		// I have asserted that the churchill friction factor correlation is accurate to 
+		// 10% up to Re=2200 with the laminar flow correlation,
+		// this is good
+	}
 
 	[Theory]
 	[InlineData(100, 0.05)]
