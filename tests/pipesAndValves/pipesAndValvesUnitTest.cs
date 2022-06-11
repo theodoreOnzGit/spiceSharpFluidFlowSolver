@@ -29,6 +29,11 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	[InlineData(4e7, 0.05,  0.071551250389636)]
 	[InlineData(4e8, 0.05, 0.071550730940769)]
 	[InlineData(4e9, 0.05, 0.071550678995539)]
+	[InlineData(4e3, 0.0, 0.039907014055631)]
+	[InlineData(4e7, 0.00005, 0.010627694187016)]
+	[InlineData(4e6, 0.001, 0.019714092419925)]
+	[InlineData(4e5, 0.01, 0.038055838413508)]
+	[InlineData(4e4, 0.03,  0.057933060738478)]
 	public void Test_churchillFrictionFactorShouldBeAccurate_Turbulent(double Re,double roughnessRatio, double referenceFrictionFactor){
 		// i'm making the variable explicit so the user can see
 		// it's darcy friction factor, no ambiguity here
@@ -71,13 +76,107 @@ public class pipesAndValvesUnitTest : testOutputHelper
 			return normaliseInteger;
 		}
 
-		int decimalPlaceTest = 2 + normaliseDecimalPlace(referenceDarcyFactor);
+		int decimalPlaceTest = 1 + normaliseDecimalPlace(referenceDarcyFactor);
 
 
 		Assert.Equal(referenceDarcyFactor,resultDarcyFactor,decimalPlaceTest);
 	}
 
+	[Theory]
+	[InlineData(4000, 0.05, 0.076986834889224)]
+	[InlineData(40000, 0.05, 0.072124054027755)]
+	[InlineData(4e5, 0.05, 0.071608351787938)]
+	[InlineData(4e6, 0.05,  0.071556444535705)]
+	[InlineData(4e7, 0.05,  0.071551250389636)]
+	[InlineData(4e8, 0.05, 0.071550730940769)]
+	[InlineData(4e9, 0.05, 0.071550678995539)]
+	[InlineData(4e3, 0.0, 0.039907014055631)]
+	[InlineData(4e7, 0.00005, 0.010627694187016)]
+	[InlineData(4e6, 0.001, 0.019714092419925)]
+	[InlineData(4e5, 0.01, 0.038055838413508)]
+	[InlineData(4e4, 0.03,  0.057933060738478)]
+	public void Test_churchillFrictionFactorErrorNotMoreThan2Percent_Turbulent(double Re,double roughnessRatio, double referenceFrictionFactor){
+		// i'm making the variable explicit so the user can see
+		// it's darcy friction factor, no ambiguity here
 
+		// Setup
+		double referenceDarcyFactor = referenceFrictionFactor;
+
+		// also the above values are visually inspected with respect to the graph
+		IFrictionFactor frictionFactorObj;
+		frictionFactorObj = new ChurchHillFrictionFactor();
+
+		double errorMax = 0.02;
+		// Act
+
+		double resultDarcyFactor =  frictionFactorObj.darcy(Re,roughnessRatio);
+		
+
+		double error = Math.Abs(referenceDarcyFactor - resultDarcyFactor)/referenceDarcyFactor;
+
+		// Assert
+		//
+
+		Assert.True(error < errorMax);
+
+
+
+
+	}
+
+
+	[Theory]
+	[InlineData(100, 0.05)]
+	[InlineData(200, 0.05)]
+	[InlineData(300, 0.05)]
+	[InlineData(400, 0.05)]
+	[InlineData(400, 0.0)]
+	[InlineData(500, 0.05)]
+	[InlineData(600, 0.05)]
+	[InlineData(800, 0.05)]
+	[InlineData(1000, 0.05)]
+	[InlineData(1200, 0.05)]
+	[InlineData(1400, 0.05)]
+	[InlineData(1600, 0.05)]
+	[InlineData(1800, 0.05)]
+	[InlineData(2000, 0.05)]
+	[InlineData(2200, 0.05)]
+	public void Test_churchillFrictionFactorErrorNotMoreThan4Percent_Laminar(double Re,double roughnessRatio){
+		// this tests the churchill relation against the 
+		// laminar flow friction factor
+		// fanning is 16/Re
+		// and no matter the roughness ratio, I should get the same result
+		// however, roughness ratio should not exceed 0.1
+		// as maximum roughness ratio in charts is about 0.05
+		//
+		// Setup
+
+		// this test asserts that the error should not be more than 2%
+
+		double referenceFanning = 16/Re;
+
+		IFrictionFactor frictionFactorObj;
+		frictionFactorObj = new ChurchHillFrictionFactor();
+
+		double errorMax = 0.04;
+
+		// Act
+
+		double resultFanning = frictionFactorObj.fanning(Re,roughnessRatio);
+
+		// Assert
+		//
+		// I want to use a 10 percent difference rather than absolute value
+		// Assert.Equal(referenceFanning,resultFanning,4);
+
+		double error;
+		error = Math.Abs(resultFanning - referenceFanning)/referenceFanning;
+		
+		Assert.True(error < errorMax);
+		// I have asserted that the churchill friction factor correlation is accurate to 
+		// 10% up to Re=2200 with the laminar flow correlation,
+		// this is good
+	}
 
 
 	[Theory]
