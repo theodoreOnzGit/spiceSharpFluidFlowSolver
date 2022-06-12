@@ -3,6 +3,13 @@
 
 using System;
 
+public interface IFrictionFactor
+{
+	double fanning(double ReynoldsNumber, double roughnessRatio);
+	double moody(double ReynoldsNumber, double roughnessRatio);
+	double darcy(double ReynoldsNumber, double roughnessRatio);
+}
+
 public class ChurchHillFrictionFactor : IFrictionFactor
 {
 	// this particular implementation uses the churchill correlation
@@ -69,9 +76,3 @@ public class ChurchHillFrictionFactor : IFrictionFactor
 
 }
 
-public interface IFrictionFactor
-{
-	double fanning(double ReynoldsNumber, double roughnessRatio);
-	double moody(double ReynoldsNumber, double roughnessRatio);
-	double darcy(double ReynoldsNumber, double roughnessRatio);
-}
