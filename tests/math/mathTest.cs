@@ -24,9 +24,18 @@ public class mathTest : testOutputHelper
 
 	public double a;
 
+	public double logarithm_e(double x){
+		return Math.Log(x);
+	}
+
 
 	public double cubic(double x){
 		return x*x*x*this.a;
+	}
+
+	[Fact]
+	public void Test_LogUndefined(){
+		this.cout(Math.Log(0).ToString());
 	}
 
 
