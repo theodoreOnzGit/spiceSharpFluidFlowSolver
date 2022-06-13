@@ -402,7 +402,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	
 	// this is a test to see if the connect method can be separated from
 	// the constructor
-	//[Fact]
+	[Fact(Skip = "already tested")]
 	public void When_MockPipeCustomResistorConstructorOverLoad_Expect_NoException()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
@@ -434,7 +434,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 	// this is a test to see if a vanilla nonlinear resistor can work
 	// this is a test to see if a vanilla nonlinear resistor can work
-	//[Fact]
+	[Fact(Skip = "already tested")]
 	public void When_MockPipeCustomResistor_Expect_NoException()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
@@ -464,7 +464,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	}
 	// this is a test to see if a vanilla nonlinear resistor can work
 
-	//[Fact]
+	[Fact(Skip = "already tested")]
 	public void When_RunNonlinearResistor_Expect_NoException()
 	{
 		// <example_customcomponent_nonlinearresistor_test>

@@ -15,6 +15,11 @@ public class mathTest : testOutputHelper
 		// which is just an object which helps me print code
 		// when i run
 		//' dotnet watch test --logger "console;verbosity=detailed"
+
+		// now i'll also create dependencies in the constructor
+		// 
+		IDerivative derivativeObj = new CentralDifference();
+		this._derivativeObj = derivativeObj;
 	}
 
 	// this tests for derivatives
@@ -23,6 +28,8 @@ public class mathTest : testOutputHelper
 	
 
 	public double a;
+
+	private IDerivative _derivativeObj;
 
 	public double logarithm_e(double x){
 		return Math.Log(x);
@@ -64,15 +71,13 @@ public class mathTest : testOutputHelper
 		// the purposes of my project
 
 		// Setup
-		IDerivative derivativeObj;
-		derivativeObj = new CentralDifference();
 
 		Func<double, double> Fx = this.logarithm_e;
 
 		double dydxExpected = 1.0/x;
 		// Act
 		//
-		double dydxActual = derivativeObj.calc(Fx,x);
+		double dydxActual = this._derivativeObj.calc(Fx,x);
 
 
 		double relativeError;
@@ -97,21 +102,19 @@ public class mathTest : testOutputHelper
 	public void Test_centralDifferenceShouldThrowBadlyBehavedError(
 			double x){
 		// Setup
-		IDerivative derivativeObj;
-		derivativeObj = new CentralDifference();
 
 		Func<double, double> Fx = this.logarithm_e;
 		// Act
 		//
 		try
 		{
-			double dydxActual = derivativeObj.calc(Fx,x);
+			double dydxActual = this._derivativeObj.calc(Fx,x);
 		}
 		catch (Exception e)
 		{
 			this.cout(e.Message);
 			// this type is useful for void returns
-			Assert.Throws<DerivativeBadlyBehavedException>(() => derivativeObj.calc(Fx,x));
+			Assert.Throws<DerivativeBadlyBehavedException>(() => this._derivativeObj.calc(Fx,x));
 		}
 
 	}
@@ -119,8 +122,6 @@ public class mathTest : testOutputHelper
 	[Fact]
 	public void Test_centralDifferenceShouldThrowUndefinedError(){
 		// Setup
-		IDerivative derivativeObj;
-		derivativeObj = new CentralDifference();
 
 		double x = 0.0;
 		Func<double, double> Fx = this.logarithm_e;
@@ -128,13 +129,13 @@ public class mathTest : testOutputHelper
 		//
 		try
 		{
-			double dydxActual = derivativeObj.calc(Fx,x);
+			double dydxActual = this._derivativeObj.calc(Fx,x);
 		}
 		catch (Exception e)
 		{
 			this.cout(e.Message);
 			// this type is useful for void returns
-			Assert.Throws<DivideByZeroException>(() => derivativeObj.calc(Fx,x));
+			Assert.Throws<DivideByZeroException>(() => this._derivativeObj.calc(Fx,x));
 		}
 
 	}
@@ -148,8 +149,6 @@ public class mathTest : testOutputHelper
 			double a){
 
 		// Setup
-		IDerivative derivativeObj;
-		derivativeObj = new CentralDifference();
 		this.a = a;
 		// differentiating a*x^3
 		// should yield
@@ -158,7 +157,7 @@ public class mathTest : testOutputHelper
 
 		Func<double, double> Fx = this.cubic;
 		// Act
-		double dydxActual = derivativeObj.calc(Fx,x);
+		double dydxActual = this._derivativeObj.calc(Fx,x);
 
 		double relativeError;
 		double relativeErrorTolerance = 1e-8;
@@ -186,21 +185,19 @@ public class mathTest : testOutputHelper
 	[InlineData(5,5)]
 	[InlineData(5,1)]
 	[InlineData(5,10)]
-	[InlineData(5,5)]
+	[InlineData(15,5)]
 	[InlineData(20.2,2)]
 	[InlineData(5,20.2)]
 	public void Test_centralDifferenceShouldApproximateLinear(double x,
 			double a){
 
 		// Setup
-		IDerivative derivativeObj;
-		derivativeObj = new CentralDifference();
 		this.a = a;
 		double dydxExpected = a;
 
 		Func<double, double> Fx = this.linear;
 		// Act
-		double dydxActual = derivativeObj.calc(Fx,x);
+		double dydxActual = this._derivativeObj.calc(Fx,x);
 
 		double relativeError;
 		double relativeErrorTolerance = 1e-8;
