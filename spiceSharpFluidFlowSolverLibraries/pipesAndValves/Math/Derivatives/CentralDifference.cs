@@ -45,7 +45,7 @@ public class CentralDifference : IDerivative
 		// it throws an exception if that's the case
 
 		// first let's define a stepsize, 0.5 for example
-		this.stepsize = 0.5;
+		this.stepsize = 1e-4;
 		this.stepsizeNew = this.stepsize/2;
 
 		double dydx = this.centralDifferenceApproximation(Fn, this.stepsize, x);
