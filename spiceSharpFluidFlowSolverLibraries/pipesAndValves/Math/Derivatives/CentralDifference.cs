@@ -4,10 +4,6 @@
 
 using System;
 
-public interface IDerivative
-{
-	double calc(Func<double,double> Fn, double x);
-}
 
 public class CentralDifference : IDerivative
 {
@@ -20,6 +16,9 @@ public class CentralDifference : IDerivative
 	
 	// your job is to pass in the function
 	// that calculates a double and returns a double
+	
+	private double stepsize;
+	private double stepsizeNew;
 
 	public double calc(Func<double,double> Fn, double x){
 		
@@ -28,16 +27,28 @@ public class CentralDifference : IDerivative
 		// we want an error to be thrown
 
 		double valueOfFx = Fn(x);
-		this.checkNumberValidity(valueOfFx);
+		try
+		{
+			this.checkNumberValidity(valueOfFx);
+		}
+		catch (Exception e)
+		{
+			string exceptionMsg = e.Message;
+			exceptionMsg += "\n";
+			exceptionMsg += "Function and derivative undefined at:\n";
+			exceptionMsg += "x = " + x.ToString() + "\n";
+			throw new DivideByZeroException(exceptionMsg);
+		}
 
 		// the checkNumberValidity function checks if the number
 		// is NaN, positive or negative infinity
 		// it throws an exception if that's the case
 
 		// first let's define a stepsize, 0.5 for example
-		double stepsize = 0.5;
+		this.stepsize = 0.5;
+		this.stepsizeNew = this.stepsize/2;
 
-		double dydx = this.centralDifferenceApproximation(Fn, stepsize, x);
+		double dydx = this.centralDifferenceApproximation(Fn, this.stepsize, x);
 
 		// now let's initiate a while loop
 
@@ -45,8 +56,7 @@ public class CentralDifference : IDerivative
 		// to snap us out of that loop
 		// if something goes wrong
 
-		double stepsizeNew = stepsize/10;
-		double dydxNew = this.centralDifferenceApproximation(Fn, stepsizeNew, x);
+		double dydxNew = this.centralDifferenceApproximation(Fn, this.stepsizeNew, x);
 
 		int maxIter = 1000;
 		int loopCount = 0;
@@ -66,10 +76,10 @@ public class CentralDifference : IDerivative
 		while (error > tolerance)
 		{
 
-			stepsize = stepsizeNew;
-			stepsizeNew = stepsize/2;
-			dydx = this.centralDifferenceApproximation(Fn, stepsize, x);
-			dydxNew = this.centralDifferenceApproximation(Fn, stepsizeNew, x);
+			this.stepsize = this.stepsize/2;
+			this.stepsizeNew = this.stepsizeNew/2;
+			dydx = this.centralDifferenceApproximation(Fn, this.stepsize, x);
+			dydxNew = this.centralDifferenceApproximation(Fn, this.stepsizeNew, x);
 
 			// now let's calculate the new error
 
@@ -111,7 +121,61 @@ public class CentralDifference : IDerivative
 		// it will also check to see if the numbers are valid
 		// ie are numbers undefined etc.
 		// and if so, stepsize should decrease
-		return this.centralDifferenceApproximationBase(Fn,stepsize,x);
+
+		// the basic idea is that if the supplied stepsize causes
+		// a bad number, then reduce the step size
+		// do for about 500 times, then throw a timeout error
+
+		int maxIter = 500;
+		int loopNumber = 0;
+
+		// now i'm going to define my yPlus and yMinus
+		// and perform a validity check
+		double yPlus = Fn(x+stepsize/2);
+		double yMinus = Fn(x-stepsize/2);
+
+		// now i will perform the validity check and
+		// if either of the checks fail, reduce the stepsize
+		//
+		// now if the loop number is less than max iterations
+		// i will try the number validity
+		// loop, 
+
+		while (loopNumber < maxIter)
+		{
+			
+			try
+			{
+				this.checkNumberValidity(yPlus);
+				this.checkNumberValidity(yMinus);
+				// if both check out, return the right value
+				return this.centralDifferenceApproximationBase(Fn,stepsize,x);
+			}
+			catch (DivideByZeroException e)
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine("Reducing Stepsize to Avoid undefined error...");
+				// i will then reduce both old and new stepsize by 2
+				this.stepsize = this.stepsize/2;
+				this.stepsizeNew = this.stepsizeNew/2;
+				// after this evaluate yPlus and yMinus again
+				yPlus = Fn(x+stepsize/2);
+				yMinus = Fn(x-stepsize/2);
+				// increase loop counter by 1
+				loopNumber += 1;
+				// then pass control out to the while loop
+				Console.WriteLine("Iteration " + loopNumber.ToString());
+
+			}
+		}
+
+		string errorMsg = "";
+		errorMsg += "You are trying to perform differentiation in an \n";
+		errorMsg += "region where the function is either undefined \n";
+		errorMsg += "or not well behaved \n";
+		throw new TimeoutException(errorMsg);
+
+
 	}
 
 	private double centralDifferenceApproximationBase(Func<double,double> Fn,

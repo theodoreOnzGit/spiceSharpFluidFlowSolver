@@ -34,8 +34,26 @@ public class mathTest : testOutputHelper
 	}
 
 	[Fact]
-	public void Test_LogUndefined(){
-		this.cout(Math.Log(0).ToString());
+	public void Test_centralDifferenceShouldThrowUndefinedError(){
+		// Setup
+		IDerivative derivativeObj;
+		derivativeObj = new CentralDifference();
+
+		double x = 0.0;
+		Func<double, double> Fx = this.logarithm_e;
+		// Act
+		//
+		try
+		{
+			double dydxActual = derivativeObj.calc(Fx,x);
+		}
+		catch (Exception e)
+		{
+			this.cout(e.Message);
+			// this type is useful for void returns
+			Assert.Throws<DivideByZeroException>(() => derivativeObj.calc(Fx,x));
+		}
+
 	}
 
 
