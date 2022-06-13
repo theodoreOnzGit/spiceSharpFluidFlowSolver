@@ -34,6 +34,47 @@ public class mathTest : testOutputHelper
 	}
 
 	[Fact]
+	public void Test_centralDifferenceShouldReduceStepSizeIfOnePointIsUndefined(){
+		// this test is here to try evaluating Log(x) at x=0.25
+		// everything seems okay
+		// till you  realise that the central difference
+		// approximation has an initial stepsize of 0.5
+		// which means an error is bound to occur.
+		// i want to make the system smart enough to reduce the stepsize
+		// if something like that occurs
+		// until a proper answer is reached
+
+		// Setup
+		IDerivative derivativeObj;
+		derivativeObj = new CentralDifference();
+
+		double x = 0.5;
+		Func<double, double> Fx = this.logarithm_e;
+
+		double dydxExpected = 1.0/x;
+		// Act
+		//
+		double dydxActual = derivativeObj.calc(Fx,x);
+
+
+		double relativeError;
+		double relativeErrorTolerance = 1e-8;
+
+		relativeError = Math.Abs(dydxActual-dydxExpected)/Math.Abs(dydxExpected);
+
+		// Assert
+		//
+
+		this.cout("\n");
+		this.cout("dydx expected: " + dydxExpected.ToString() +"\n");
+		this.cout("dydx actual: " + dydxActual.ToString() +"\n");
+
+		Assert.True(relativeError < relativeErrorTolerance);
+
+
+	}
+
+	[Fact]
 	public void Test_centralDifferenceShouldThrowUndefinedError(){
 		// Setup
 		IDerivative derivativeObj;
