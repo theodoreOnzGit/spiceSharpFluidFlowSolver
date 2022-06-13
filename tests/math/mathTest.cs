@@ -37,6 +37,7 @@ public class mathTest : testOutputHelper
 	[InlineData(0.5)]
 	[InlineData(0.01)]
 	[InlineData(0.1)]
+	[InlineData(1e-4/2)]
 	public void Test_centralDifferenceShouldReduceStepSizeIfOnePointIsUndefined(
 			double x){
 		// this test is here to try evaluating Log(x) at x=0.25
@@ -47,6 +48,20 @@ public class mathTest : testOutputHelper
 		// i want to make the system smart enough to reduce the stepsize
 		// if something like that occurs
 		// until a proper answer is reached
+		//
+		//
+		// it appears that for one iteration of reducing stepsize
+		// things are okay
+		// but after that, the loop doesn't quite work
+		// the simple fix is to reduce the initial stepsize to 1e-4
+		// if it doesn't get fixed by the time that the stepsize
+		// is reduced by half, don't even bother
+		// just throw the error
+		//
+		// so i supplied an initial stepsize at 1e-4
+		// and the differentiation was at a point 1e-4/2
+		// the thing succeeded. I think that's about sufficient for
+		// the purposes of my project
 
 		// Setup
 		IDerivative derivativeObj;
@@ -74,6 +89,30 @@ public class mathTest : testOutputHelper
 
 		Assert.True(relativeError < relativeErrorTolerance);
 
+
+	}
+	
+	[Theory]
+	[InlineData(1e-4/4)]
+	public void Test_centralDifferenceShouldThrowBadlyBehavedError(
+			double x){
+		// Setup
+		IDerivative derivativeObj;
+		derivativeObj = new CentralDifference();
+
+		Func<double, double> Fx = this.logarithm_e;
+		// Act
+		//
+		try
+		{
+			double dydxActual = derivativeObj.calc(Fx,x);
+		}
+		catch (Exception e)
+		{
+			this.cout(e.Message);
+			// this type is useful for void returns
+			Assert.Throws<DerivativeBadlyBehavedException>(() => derivativeObj.calc(Fx,x));
+		}
 
 	}
 

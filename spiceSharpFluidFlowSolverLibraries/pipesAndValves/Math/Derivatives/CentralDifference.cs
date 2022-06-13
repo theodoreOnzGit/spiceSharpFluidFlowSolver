@@ -10,7 +10,11 @@ public class CentralDifference : IDerivative
 	// this particular implementation uses central difference approximation
 	// normally this requires an explicit step size
 	// but I intend to determine the step size in an adaptive manner
-	// so i'll probably start with a small stepsize, eg. 0.5
+	// so i'll probably start with a small stepsize, eg. initially 0.5
+	// but i find that trying to find derivatives near zero
+	// eg log(x) at 0.001
+	// is quite troublesome
+	// i'd rather reduce the stepsize to 1e-4 from the get go
 	// and then decrease it 2x, until convergence is reached
 	//
 	
@@ -44,7 +48,7 @@ public class CentralDifference : IDerivative
 		// is NaN, positive or negative infinity
 		// it throws an exception if that's the case
 
-		// first let's define a stepsize, 0.5 for example
+		// first let's define a stepsize, 1e-4
 		this.stepsize = 1e-4;
 		this.stepsizeNew = this.stepsize/2;
 
@@ -121,7 +125,7 @@ public class CentralDifference : IDerivative
 			errorMsg += "You are trying to perform differentiation in an \n";
 			errorMsg += "region where the function is either undefined \n";
 			errorMsg += "or not well behaved \n";
-			throw new DivideByZeroException(errorMsg);
+			throw new DerivativeBadlyBehavedException(errorMsg);
 		}
 	}
 
@@ -186,6 +190,7 @@ public class CentralDifference : IDerivative
 		}
 
 		string errorMsg = "";
+		errorMsg += "autostepSize maxiumum iterations reached...\n";
 		errorMsg += "You are trying to perform differentiation in an \n";
 		errorMsg += "region where the function is either undefined \n";
 		errorMsg += "or not well behaved \n";
@@ -232,3 +237,15 @@ public class CentralDifference : IDerivative
 
 }
 
+[Serializable]
+public class DerivativeBadlyBehavedException : DivideByZeroException
+{
+    public DerivativeBadlyBehavedException() : base() { }
+    public DerivativeBadlyBehavedException(string message) : base(message) { }
+    public DerivativeBadlyBehavedException(string message, Exception inner) : base(message, inner) { }
+
+    // A constructor is needed for serialization when an
+    // exception propagates from a remoting server to the client.
+    protected DerivativeBadlyBehavedException(System.Runtime.Serialization.SerializationInfo info,
+        System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+}
