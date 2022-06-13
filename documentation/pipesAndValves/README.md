@@ -287,7 +287,9 @@ Operating Point mode. And then call it a day.
 
 I intend my pipe class to be iteratively designed. Going from simple
 pipe models to complex pipe models I intend to have many many
-implementations of the pipe class
+implementations of the pipe class.
+
+
 
 
 

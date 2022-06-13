@@ -85,10 +85,9 @@ $$f = 2 \left[\\
 \right]^{1/12} $$
  
 $$f = \frac{\Delta P}{ (\frac{4L}{D}) \  \frac{1}{2} \rho u^2 }$$
-$$\Delta P = f  (\frac{4L}{D})  \frac{1}{2} \rho u^2 $$
-\left( \frac{8}{Re} \right)^{12} + \\
-\left( \frac{1}{A+B}\right)^{3/2} \\
-\right]^{1/12} $$
+$$\Delta P = f  (\frac{4L}{D})  
+\frac{1}{2} \rho u^2 \left[ \left( \frac{8}{Re} \right)^{12} +
+\left( \frac{1}{A+B}\right)^{3/2} \right]^{1/12} $$
 
 
 The first term on the left represents the contribution by laminar flow regimes. 
@@ -102,7 +101,7 @@ Where:
 
 $$A = \left[ 2.457 \ln \frac{1}{\left( \frac{1}{(7/Re)^{0.9}} + \\
 0.27 \frac{\varepsilon}{D} \right)} \\
-\right]\ \ ; \ \ \\
+\right]^{16}\ \ ; \ \ \\
 B = \left( \frac{37530}{Re} \\ 
 \right)^{16} $$
 
