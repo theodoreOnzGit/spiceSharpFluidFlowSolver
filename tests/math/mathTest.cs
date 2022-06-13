@@ -33,8 +33,12 @@ public class mathTest : testOutputHelper
 		return x*x*x*this.a;
 	}
 
-	[Fact]
-	public void Test_centralDifferenceShouldReduceStepSizeIfOnePointIsUndefined(){
+	[Theory]
+	[InlineData(0.5)]
+	[InlineData(0.01)]
+	[InlineData(0.1)]
+	public void Test_centralDifferenceShouldReduceStepSizeIfOnePointIsUndefined(
+			double x){
 		// this test is here to try evaluating Log(x) at x=0.25
 		// everything seems okay
 		// till you  realise that the central difference
@@ -48,7 +52,6 @@ public class mathTest : testOutputHelper
 		IDerivative derivativeObj;
 		derivativeObj = new CentralDifference();
 
-		double x = 0.5;
 		Func<double, double> Fx = this.logarithm_e;
 
 		double dydxExpected = 1.0/x;

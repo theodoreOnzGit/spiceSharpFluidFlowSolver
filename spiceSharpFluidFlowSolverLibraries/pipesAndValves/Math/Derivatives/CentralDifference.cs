@@ -106,7 +106,23 @@ public class CentralDifference : IDerivative
 			
 
 		}
-		return dydx;
+
+		// this is the final number check
+		try
+		{
+			this.checkNumberValidity(dydx);
+			return dydx;
+		}
+		catch (Exception e)
+		{
+			string errorMsg = "";
+			errorMsg += e.Message;
+			errorMsg += "\n";
+			errorMsg += "You are trying to perform differentiation in an \n";
+			errorMsg += "region where the function is either undefined \n";
+			errorMsg += "or not well behaved \n";
+			throw new DivideByZeroException(errorMsg);
+		}
 	}
 
 	// under the hood, 
@@ -159,8 +175,8 @@ public class CentralDifference : IDerivative
 				this.stepsize = this.stepsize/2;
 				this.stepsizeNew = this.stepsizeNew/2;
 				// after this evaluate yPlus and yMinus again
-				yPlus = Fn(x+stepsize/2);
-				yMinus = Fn(x-stepsize/2);
+				yPlus = Fn(x+this.stepsize/2);
+				yMinus = Fn(x-this.stepsize/2);
 				// increase loop counter by 1
 				loopNumber += 1;
 				// then pass control out to the while loop
