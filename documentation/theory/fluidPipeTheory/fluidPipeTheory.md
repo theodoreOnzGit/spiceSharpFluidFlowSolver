@@ -426,8 +426,27 @@ is a number that represents a sort of dimensionless pressure drop.
 It was originally derived for heat transfer, but can just 
 as easily apply for fluid mechanics.
 
+For heat transfer, it is defined as:
+
+$$Be = \frac{\Delta P L^2 }{\mu \alpha }$$
+
+
+
+we can rewrite it in terms of kinematic pressure $p$:
+
+$$Be = \frac{\Delta P L^2 }{\nu \rho \alpha }$$
+
+$$Be = \frac{\Delta p L^2 }{\nu \alpha }$$
+
+$\alpha$ is thermal diffusivity, which has the same units
+as momentum diffusivity $\nu$ a.k.a kinematic viscosity.
 It is defined for channel flow as
 
+$$Be = \frac{\Delta p L^2}{\nu^2}
+$$
+
+
+We define Be as follows for pipe (L is pipe length):
 $$Be = \frac{\Delta p L^2}{\nu^2}
 $$
 
@@ -459,7 +478,14 @@ $$f (Re)* Re^2 = \frac{Be}{ (\frac{4L}{D})^3 \
 $$f (Re)* Re^2 = \frac{32 Be}{ (\frac{4L}{D})^3 
 }$$
 
-From this we can find the differential 
+Now we have our equation being fully nondimensional.
+From this we can find the differential.
+
+It is also very important to our computation algorithms
+that one pressure drop value corresponds to one Re value.
+
+So we don't have the problem of one friction factor value
+corresponding to two Re values.
 
 $$\frac{d(Be)}{d(Re)}  = \frac{d(Be)}{d \Delta p} * \frac{d \Delta p}{d (Re)}
 $$
@@ -579,11 +605,16 @@ $$\frac{d}{d(Re)}G1  = 8(12) Re^{11}  + \frac{3}{2}
 \left( \frac{Re^{16}}{A+B}\right) \\
 $$
 
-$$\frac{d}{d(Re)}G1  = 8(12) Re^{11}  + \frac{3}{2}
+$$\frac{d}{d(Re)}G1  = 8(12) Re^{11}  + \\
+\frac{3}{2}
 \left( \frac{Re^{16}}{A+B}\right)^{1/2}  
-\left( \frac{Re^{16}\frac{d}{d(Re)} (A+B)+ (A+B) 16 Re^{15}}{(A+B)^2}\right) \\
+\left( \frac{-Re^{16}\frac{d}{d(Re)} (A+B)+ (A+B) 16 Re^{15}}{(A+B)^2}\right) \\
 $$
 
+$$\frac{d}{d(Re)}G1  = 96 Re^{11}  + \frac{3}{2}
+\left( \frac{Re^{16}}{A+B}\right)^{1/2}  
+\left( \frac{-Re^{16}\frac{d}{d(Re)} (A+B)+ (A+B) 16 Re^{15}}{(A+B)^2}\right) \\
+$$
 We note the term $A+B$ appears repeatedly, so a 
 dedicated function should be there to return
 APlusB
@@ -594,9 +625,9 @@ Now let's calculate dAPlusB
 
 $$\frac{d}{d(Re)}(A+B)$$
 
-$$A = \left[ 2.457 \ln \frac{1}{\left( \frac{1}{(7/Re)^{0.9}} + \\
+$$A = \left[ 2.457 \ln \frac{1}{\left( (7/Re)^{0.9} + \\
 0.27 \frac{\varepsilon}{D} \right)} \\
-\right]\ \ ; \ \ \\
+\right]^{16}\ \ ; \ \ \\
 B = \left( \frac{37530}{Re} \\ 
 \right)^{16} $$
 
@@ -605,17 +636,39 @@ Now first, we shall reduce them to more palatable forms:
 
 Using the power law of lograithms,
 
-$$A = -2.457 * ln \left( \frac{Re^{0.9}}{7^{0.9}} 
-+ 0.27 \frac{\varepsilon}{D} \right)$$
+$$A = \left[-2.457 * \ln \left( \frac{7^{0.9}}{Re^{0.9}} 
++ 0.27 \frac{\varepsilon}{D} \right) \right]^{16}$$
 
 For this, we would like to define G2 as follows:
 
-$$G2 = \left( \frac{Re^{0.9}}{7^{0.9}} 
+$$G2 = \left( \frac{7^{0.9}}{Re^{0.9}} 
 + 0.27 \frac{\varepsilon}{D} \right)$$
 
 So that
-$$\frac{dA}{d(Re{})} = \frac{-2.457}{G2} \frac{dG2}{d(Re)} $$
+$$A = \left[-2.457 * \ln G2 \right]^{16}$$
+$$\frac{dA}{d(Re{})} = \frac{d}{d(Re{})}\left[-2.457 * \ln \left( \frac{7^{0.9}}{Re^{0.9}}
 
++ 0.27 \frac{\varepsilon}{D} \right) \right]^{16}$$
+
+$$\frac{dA}{d(Re{})} = \frac{d}{d(Re{})}\left[-2.457 * 
+\ln G2 \right]^{16}$$
+
+$$\frac{dA}{d(Re{})} = 16 \frac{A}{-2.457 \ln G2} 
+\frac{d}{d(Re{})}\left[-2.457 * \ln G2 \right]$$
+
+
+$$\frac{dA}{d(Re{})} = 16 \frac{A}{-2.457 \ln G2} 
+\frac{d}{d(Re{})}\left[-2.457 * \ln G2 \right]$$
+
+
+$$\frac{dA}{d(Re{})} = 16 \frac{(-2.457)A}{-2.457 \ln G2} 
+\frac{d}{d(Re{})}\left[ \ln G2 \right]$$
+
+$$\frac{dA}{d(Re{})} = 16 \frac{A}{ \ln G2} 
+\frac{d}{d(Re{})}\left[ \ln G2 \right]$$
+
+$$\frac{dA}{d(Re{})} =  \frac{16 A}{G2 \ln G2} 
+\frac{d G2}{d(Re{})}$$
 So now we will have two functions, G2 and dG2_dRe to return their
 appropriate values
 
@@ -642,24 +695,20 @@ significantly compared to change in Re during flow conditions.
 
 
 
-$$\frac{d}{d(Re)}G2 = \frac{d}{d(Re)}\left( \frac{Re^{0.9}}{7^{0.9}} 
-\right)$$
+$$\frac{d}{d(Re)}G2 = \frac{d}{d(Re)}\left( 
+    \frac{7^{0.9}}{Re^{0.9}} + 0.27* \frac{\varepsilon}{D}\right)$$
+
+The constant with roughness ratio disappears.
 
 
-$$\frac{d}{d(Re)}G2 = 
-0.9* \frac{1}{Re} \left( \frac{Re^{0.9}}{7^{0.9}} 
-\right)$$
+$$\frac{d}{d(Re)}G2 = \frac{d}{d(Re)}\left( 
+    \frac{7^{0.9}}{Re^{0.9}} \right)$$
 
+$$\frac{d}{d(Re)}G2 = 7^{0.9}\frac{d}{d(Re)} Re^{-0.9}$$
 
-$$\frac{d}{d(Re)}G2 = 
- \frac{0.9}{Re} \left( \frac{Re^{0.9}}{7^{0.9}} 
-\right)$$
+$$\frac{d}{d(Re)}G2 = 7^{0.9} (-0.9) Re^{-1.9}$$
 
-
-$$\frac{d}{d(Re)}G2 = 
- \frac{0.9}{7^{0.9}Re^{0.1{}}} $$
-
-
+$$\frac{dG2}{d(Re)} = -5.1859789 Re^{-1.9}$$
  Now let's consider B also, lest we forget
 
 $$B = \left( \frac{37530}{Re} \\ 
