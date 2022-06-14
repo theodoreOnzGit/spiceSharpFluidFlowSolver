@@ -79,14 +79,32 @@ Therefore, we will be doing mass balance equations over each node in place of cu
 In Perry's chemical engineering handbook, the formula used for 
 fanning's friction factor by Churchill is:
 
-$$f = 2 \left[\\
+$$f_{fanning} = 2 \left[\\
 \left( \frac{8}{Re} \right)^{12} + \\
 \left( \frac{1}{A+B}\right)^{3/2} \\
 \right]^{1/12} $$
+
+For short, everyting i use f, 
+it refers to fanning, unless
+otherwise stated.
+May update documetation later to always use subscripts.
+
+[source for darcy friction factor eqn](https://neutrium.net/fluid-flow/pressure-loss-in-pipe/)
+
+$$f_{Darcy} = 4f_{fanning}$$
+
+$$\Delta P = f_{Darcy} * \frac{L}{D} \frac{1}{2}\rho u^2$$
+
+substitute in:
+
+$$\Delta P = 4f_{fanning} * \frac{L}{D} \frac{1}{2}\rho u^2$$
+$$\Delta P = f_{fanning} * \frac{4L}{D} \frac{1}{2}\rho u^2$$
  
-$$f = \frac{\Delta P}{ (\frac{4L}{D}) \  \frac{1}{2} \rho u^2 }$$
-$$\Delta P = f  (\frac{4L}{D})  
-\frac{1}{2} \rho u^2 \left[ \left( \frac{8}{Re} \right)^{12} +
+$$f_{fanning} = \frac{\Delta P}{ (\frac{4L}{D}) \  
+\frac{1}{2} \rho u^2 }$$
+
+$$\Delta P =   (\frac{4L}{D})  
+\frac{1}{2} \rho u^2 2 \left[ \left( \frac{8}{Re} \right)^{12} +
 \left( \frac{1}{A+B}\right)^{3/2} \right]^{1/12} $$
 
 
@@ -99,7 +117,7 @@ The fanning friction factor reduces to $\frac{16}{Re}$ for Low reynolds numbers.
  
 Where:
 
-$$A = \left[ 2.457 \ln \frac{1}{\left( \frac{1}{(7/Re)^{0.9}} + \\
+$$A = \left[ 2.457 \ln \frac{1}{\left( (\frac{7}{Re})^{0.9} + \\
 0.27 \frac{\varepsilon}{D} \right)} \\
 \right]^{16}\ \ ; \ \ \\
 B = \left( \frac{37530}{Re} \\ 
@@ -168,7 +186,8 @@ For transitional and turbulent flow regimes, this law isn't obeyed.
 ![Moody Diagram](https://nuclear-power.com/wp-content/uploads/2016/05/Moody-chart-min.jpg)
 [Moody Diagram [1]](#MoodyChart)
 
-Here, the Darcy friction factor is used instead of fanning friction factor.
+Here, the Darcy friction factor is used 
+instead of fanning friction factor.
 
 #### Fully Turbulent Regimes, Non Ohmic Resistor, but mass flowrate explicit
 
@@ -296,7 +315,7 @@ $$-\frac{\partial i_R}{\partial v_B}$$
 
 Equivalently, for a pipe, this translates to:
 
-$$\frac{\partial \dot{m}_{pipe}}{\partial p_A}$$
+$$\frac{\partial \dot{m}_{pipe} (kg/s)}{\partial p_A (m^2/s^2)}$$
 $$\frac{\partial \dot{m}_{pipe}}{\partial p_B}$$
 
 And likewise to node b,
@@ -346,6 +365,10 @@ $$\frac{d \dot{m}_{pipe}}{d p_A} = \frac{\frac{d \Delta p}{d p_A} \frac{d \dot{m
 To obtain the partial derivative, we just set $p_B$ as constant, 
 and then work from there.
 
+$$\Delta p = p_A - p_B$$
+Note here: $\Delta p$ refers to kinematic pressure DROP, not
+pressure change. Pressure change is $final - initial$
+
 There's still one more step however, because the entire
 equation is not properly set up in Re just yet.
 
@@ -364,12 +387,11 @@ substituting this in results in:
 $$f = \frac{\Delta P}{ (\frac{4L}{D}) \  
 \frac{1}{2} \rho (\frac{Re \mu}{\rho D})^2 }$$
 
-$$f * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \  
+$$f_{fanning} (Re) * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \  
 \frac{1}{2} \rho (\frac{ \mu}{\rho D})^2 }$$
 
 
-$$f * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \  
-\frac{1}{2} \rho (\frac{ \mu}{\rho D})^2 }$$
+
 
 
 $$f * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \  
@@ -790,6 +812,8 @@ number friction factor code.
 [1]
  Fanning friction factor. Nuclear Power. (2021, October 25). Retrieved June 3, 2022, from https://www.nuclear-power.com/nuclear-engineering/fluid-dynamics/major-head-loss-friction-loss/fanning-friction-factor/ 
 </a>
+
+
 
 <a id="BejanNumber">
 [2]
