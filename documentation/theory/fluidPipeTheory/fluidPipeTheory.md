@@ -491,7 +491,7 @@ $$\frac{d(Be)}{d(Re)}  = \frac{d(Be)}{d \Delta p} * \frac{d \Delta p}{d (Re)}
 $$
 
 With this, we can start finding 
-$$\frac{d(Be)}{d(Re)}  = \frac{d}{d(Re)} (f(Re)*Re^2)$$ 
+$$\frac{32}{(\frac{4L}{D})^3}\frac{d(Be)}{d(Re)}  = \frac{d}{d(Re)} (f(Re)*Re^2)$$ 
 
 $$f = 2 \left[\\
 \left( \frac{8}{Re} \right)^{12} + \\
