@@ -433,7 +433,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	}
 
 	// this is a test to  see results for nonlinear resistor
-	[Fact(Skip = "piperesult = 8.1E-07")]
+	[Fact]
 	public void NonlinearResistor_ReferenceResult()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
@@ -463,7 +463,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 	}
 
-	[Fact(Skip = "piperesult = 8.1E-07")]
+	[Fact]
 	public void mockPipeResult()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
