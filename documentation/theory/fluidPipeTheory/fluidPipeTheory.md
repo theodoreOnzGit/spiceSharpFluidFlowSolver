@@ -188,7 +188,6 @@ For transitional and turbulent flow regimes, this law isn't obeyed.
 
 Here, the Darcy friction factor is used 
 instead of fanning friction factor.
-
 #### Fully Turbulent Regimes, Non Ohmic Resistor, but mass flowrate explicit
 
 For rough pipes however, the friction factor becomes almost constant after 
@@ -393,7 +392,6 @@ $$f_{fanning} (Re) * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \
 
 
 
-
 $$f * Re^2 = \frac{\Delta P}{ (\frac{4L}{D}) \  
 \frac{1}{2} \rho (\frac{ \mu^2}{\rho^2 D^2}) }$$
 
@@ -486,7 +484,6 @@ that one pressure drop value corresponds to one Re value.
 
 So we don't have the problem of one friction factor value
 corresponding to two Re values.
-
 $$\frac{d(Be)}{d(Re)}  = \frac{d(Be)}{d \Delta p} * \frac{d \Delta p}{d (Re)}
 $$
 
