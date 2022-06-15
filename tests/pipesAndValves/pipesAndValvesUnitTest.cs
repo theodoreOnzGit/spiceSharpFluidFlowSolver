@@ -432,16 +432,82 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		// </example_customcomponent_nonlinearresistor_test>
 	}
 
-	// this is a test to see if a vanilla nonlinear resistor can work
+	// this is a test to  see results for nonlinear resistor
+	[Fact(Skip = "piperesult = 8.1E-07")]
+	public void NonlinearResistor_ReferenceResult()
+	{
+		// <example_customcomponent_nonlinearresistor_test>
+		//
+		this.cout("NonlinearResistor_ReferenceResult");
+		NonlinearResistor NLR = new NonlinearResistor("RNL1", "out", "0");
+		NLR.Parameters.A = 2.0e3;
+		NLR.Parameters.B = 0.5; 
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", 0.0),
+				NLR
+				);
+
+		// Setup the simulation and export our current
+		var dc = new DC("DC", "V1", 1.8, 2.0, 0.2);
+		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		dc.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			System.Console.Write("{0}, ".FormatString(current));
+		};
+		dc.Run(ckt);
+
+		currentExport.Destroy();
+
+	}
+
+	[Fact(Skip = "piperesult = 8.1E-07")]
+	public void mockPipeResult()
+	{
+		// <example_customcomponent_nonlinearresistor_test>
+		//
+		this.cout("MockPipeResult");
+
+		// test for mockpipe
+		MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1", "out", "0");
+		mockPipe.Connect("out","0");
+		mockPipe.Parameters.A = 2.0e3;
+		mockPipe.Parameters.B = 0.5; 
+
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", 0.0),
+				mockPipe
+				);
+
+		// Setup the simulation and export our current
+		var dc = new DC("DC", "V1", 1.8, 2.0, 0.2);
+		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		dc.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			System.Console.Write("{0}, ".FormatString(current));
+		};
+		dc.Run(ckt);
+
+		currentExport.Destroy();
+
+
+	}
+
+
 	// this is a test to see if a vanilla nonlinear resistor can work
 	[Fact(Skip = "already tested")]
 	public void When_MockPipeCustomResistor_Expect_NoException()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
 		//
-	 MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1", "out", "0");
-	 mockPipe.Parameters.A = 2.0e3;
-	 mockPipe.Parameters.B = 0.5; 
+		MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1", "out", "0");
+		mockPipe.Parameters.A = 2.0e3;
+		mockPipe.Parameters.B = 0.5; 
 
 		// Build the circuit
 		var ckt = new Circuit(
@@ -469,9 +535,9 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	{
 		// <example_customcomponent_nonlinearresistor_test>
 		//
-	 NonlinearResistor NLR = new NonlinearResistor("RNL1", "out", "0");
-	 NLR.Parameters.A = 2.0e3;
-	 NLR.Parameters.B = 0.5; 
+		NonlinearResistor NLR = new NonlinearResistor("RNL1", "out", "0");
+		NLR.Parameters.A = 2.0e3;
+		NLR.Parameters.B = 0.5; 
 
 		// Build the circuit
 		var ckt = new Circuit(
