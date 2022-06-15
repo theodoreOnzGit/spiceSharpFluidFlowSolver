@@ -731,14 +731,7 @@ Now this is a multistep process, and it WILL need testing.
 
 
 
-
-
-
-
-
-#### Testing of the derivative
-
-
+#### Testing the Churchill Correlation, How to make sure it's accurate
 So what is best for now is to test it with a simple use case first.
 
 I want to check a mass flowrate given a pressure drop.
@@ -753,9 +746,10 @@ What i probably want to do is this:
 problematic), because the moody chart has two values of Re 
 factor for a single value of friction factor,
  this would happen for Re<10,000. 
-3. To modify test 1 and 2, convert the moody chart to a Bejan number 
-vs Re chart. Test if this corresponds to an unconverted form
-and then use it as the reference
+3. To modify test 2, convert the churchill equation 
+    to a Be vs Re equation. Have f*Re^2 on the LHS. Then find
+    Re for a given Be
+
 
 The next trick is to obtain Re given a Bejan Number.
 
@@ -788,7 +782,7 @@ We of course assume Bejan number is constant since we are in fact specifying
 a Bejan number and expecting Reynold's number to be calculated iteratively. 
 
 
-##### Test series 1
+##### Test series 1: Caluclating $f_{fanning}$ from Re
 
 For every test, we have a reference and a testResult with which we compare.
 
@@ -801,6 +795,15 @@ ratios.
 Thus a set of reference friction factor can be generated from Reynold's numbers
 and roughness ratio curves.
 
+Actually i used [engineering toolbox](https://www.engineeringtoolbox.com/colebrook-equation-d_1031.html) to help me calculate the 
+reference values.
+
+And I looked at the Moody chart as a sanity check.
+
+
+For laminar flow regime, testing is easier:
+The reference value is 
+$$f_{fanning,laminar\ reference} = \frac{16}{Re}$$
 
 To test this reference, equation, it is good to take a series of
 friction factor readings directly from the moody chart at various Reynold's
@@ -817,26 +820,54 @@ This would validate the analytical methods used across various values of Re
 and surface roughness.
 
 
-##### Test series 2
+##### Test series 2: Calculate Re from Be (not $f_{fanning}$)
 
-For testing, it would be prudent to compare the analytical derivation
-to a numerical derivation of the actual function using some
-predefined libraries for a range of reynold's numbers
-over a range of roughness ratios, this can be done using xUnit
-Using Theory tests
-
-Thus i can also use an external central difference approximation library
-to perform numerical differentiation so that i can get my jacobian 
-values as well as get my Reynold's numbers using the Bejan numbers.
-
-From a testing standpoint, it's sometimes better to analytically 
-differentiate it so that instead of relying solely on numerical
-differentiation, there are now two methods with which i can
-check the friction factor.
+I will probably need a root finder algorithm, so either use my own
+newton raphson root finding algorithm,
 
 
-Other details should be done inside the documentation of the Reynold's
-number friction factor code.
+$$f_{newtonRaphson}(Re) = f (Re)* Re^2 - 
+\frac{32 Be}{ (\frac{4L}{D})^3}$$
+$$ (x_{i+1} ) = -\frac{f(x)}{\frac{d f(x)}{dx}} +  x_i$$
+
+keep iterating till it's done
+
+
+Or use an external library. Eg. Math.Numerics from nuget.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Testing of the derivative
+
+##### unit test of derivatives
+So let's say we have a function that returns the value of
+
+$$\frac{d}{d(Re)}(f_{fanning} * Re^2)$$
+
+We can verify this by using:
+
+$$\frac{d}{d(Re)}(f_{fanning} * Re^2) 
+= Re^2 * \frac{df_{fanning}}{d(Re)} + 
+2Re f_{fanning}$$
+
+$\frac{df_{fanning}}{d(Re)}$ can be calculated numerically. Whereas
+$\frac{d}{d(Re)}(f_{fanning} * Re^2)$ is calculated analytically.
+
+
+For the numerical derivatives, we can use an external library or
+an internal library for our derivatives.
+
 
 
 
