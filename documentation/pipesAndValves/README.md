@@ -22,11 +22,20 @@ for code that does not need to change. In fact
 overdoing it can 
 [obfuscate](https://youtu.be/QM1iUe6IofM) the code.
 
-Therefore it's necessary to assess the strengths
+
+Functional and Procedural programming are sometimes simpler,
+and for some users, preferred in comparison to OOP.
+
+Therefore, it's necessary to assess the strengths
 and weaknesses of each programming style to suit
 them for the task at hand.
 
-#### Strengths and Weaknesses of Each Programming Style
+### Strengths and Weaknesses of Each Programming Style
+Given these differing schools of thought,
+it's necessary to assess the strengths
+and weaknesses of each programming style to suit
+them for the task at hand.
+
 I paraphrase a lot from this site:
 
 [https://scoutapm.com/blog/
