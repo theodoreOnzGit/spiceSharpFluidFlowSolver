@@ -301,6 +301,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		// Setup the simulation and export our current
 		var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
 		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		this.cout("\n mockPipeClass with pipeFactory \n");
 		dc.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
@@ -312,6 +313,73 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		currentExport.Destroy();
 		// </example_customcomponent_nonlinearresistor_test>
     }
+
+
+	// mockpipe class built without factory, reference for
+	// factory class
+	[Fact]
+	public void mockPipeReference_NoFactoryBuild()
+	{
+		// <example_customcomponent_nonlinearresistor_test>
+		//
+	 MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1");
+	 mockPipe.Connect("out","0");
+	 mockPipe.Parameters.A = 2.0e3;
+	 mockPipe.Parameters.B = 0.5; 
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", 0.0),
+				mockPipe
+				);
+
+		// Setup the simulation and export our current
+		var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
+		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		this.cout("\n mockPipeReference_NoFactoryBuild \n");
+		dc.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			System.Console.Write("{0}, ".FormatString(current));
+		};
+		dc.Run(ckt);
+		double current = -currentExport.Value;
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+	}
+
+	// nonlinear resistor reference
+	[Fact]
+	public void nonlinearResistorReference_NoFactoryBuild()
+	{
+		// <example_customcomponent_nonlinearresistor_test>
+		//
+		NonlinearResistor NLR = new NonlinearResistor("RNL1", "out", "0");
+		NLR.Parameters.A = 2.0e3;
+		NLR.Parameters.B = 0.5; 
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", 0.0),
+				NLR
+				);
+
+		// Setup the simulation and export our current
+		var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
+		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		this.cout("\n nonlinearResistorReference_NoFactoryBuild \n");
+		dc.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			System.Console.Write("{0}, ".FormatString(current));
+		};
+		dc.Run(ckt);
+		double current = -currentExport.Value;
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+	}
 
     [Fact]
     public void When_wrongPipeType_ExpectException()
@@ -346,6 +414,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		}
 		Assert.True(1 == 0);
     }
+
+
 	// this test here is to help us print useful data
 	[Fact]
 	public void SandBoxPrintResult()
@@ -366,6 +436,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		// Setup the simulation and export our current
 		var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
 		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		this.cout("mockPipe without using pipeFactory");
 		dc.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;

@@ -117,6 +117,7 @@ This is notably a manual way of testing things.
 
 With this basic foundation I could now create my own custom
 components and know what to do.
+
 ### Tests for pipeFactory
 
 The next step was to test for pipeFactory.
@@ -153,6 +154,7 @@ public void When_PipeFactoryBuildsMockPipe_expectNoException()
 	// Setup the simulation and export our current
 	var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
 	var currentExport = new RealPropertyExport(dc, "V1", "i");
+	this.cout("\n mockPipeClass with pipeFactory \n");
 	dc.ExportSimulationData += (sender, args) =>
 	{
 		var current = -currentExport.Value;
@@ -172,7 +174,106 @@ file.
 Here this shows that the factory works. Not that it necessarily produces
 the right results.
 
+Here are results produced:
 
+```zsh
+mockPipeReference_NoFactoryBuild
+5.256249999999999E-07, 5.625E-07,
+```
+
+For reference, here is code that builds mockpipe without the factory.
+
+```csharp
+[Fact]
+public void mockPipeReference_NoFactoryBuild()
+{
+	// <example_customcomponent_nonlinearresistor_test>
+	//
+ MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1");
+ mockPipe.Connect("out","0");
+ mockPipe.Parameters.A = 2.0e3;
+ mockPipe.Parameters.B = 0.5; 
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", 0.0),
+			mockPipe
+			);
+
+	// Setup the simulation and export our current
+	var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
+	var currentExport = new RealPropertyExport(dc, "V1", "i");
+	this.cout("\n mockPipeReference_NoFactoryBuild \n");
+	dc.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("{0}, ".FormatString(current));
+	};
+	dc.Run(ckt);
+	double current = -currentExport.Value;
+
+	currentExport.Destroy();
+	// </example_customcomponent_nonlinearresistor_test>
+}
+
+```
+
+Here are the results for the no factory build:
+```zsh
+mockPipeReference_NoFactoryBuild
+5.256249999999999E-07, 5.625E-07, 
+
+```
+
+To really hit the point home, i'm going to test it with a 
+nonlinear resistor (vanilla code).
+
+```csharp
+[Fact]
+public void nonlinearResistorReference_NoFactoryBuild()
+{
+	// <example_customcomponent_nonlinearresistor_test>
+	//
+	NonlinearResistor NLR = new NonlinearResistor("RNL1", "out", "0");
+	NLR.Parameters.A = 2.0e3;
+	NLR.Parameters.B = 0.5; 
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", 0.0),
+			NLR
+			);
+
+	// Setup the simulation and export our current
+	var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
+	var currentExport = new RealPropertyExport(dc, "V1", "i");
+	this.cout("\n nonlinearResistorReference_NoFactoryBuild \n");
+	dc.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("{0}, ".FormatString(current));
+	};
+	dc.Run(ckt);
+	double current = -currentExport.Value;
+
+	currentExport.Destroy();
+	// </example_customcomponent_nonlinearresistor_test>
+}
+
+```
+
+And here are the results:
+
+```zsh
+nonlinearResistorReference_NoFactoryBuild 
+
+5.256249999999999E-07, 5.625E-07
+```
+
+Everything checks out!
+
+I used print at this time rather than assert, because
+I don't really know how to extract data from simulations yet..
 ### Tests for Churchill Correlation
 
 The next bit is to start making classes and functions for estimating
@@ -181,8 +282,9 @@ friction factor.
 I use the [churchill correlation](https://neutrium.net/fluid-flow/pressure-loss-in-pipe/)
 as the basis because it is not piecewise like the other correlations.
 
-However, i do use the laminar flow equation for friction factor
-16/Re to test for the validity in laminar flow region.
+To test for validity within the laminar flow regime
+, i do use the laminar flow equation for friction factor
+16/Re.
 ```csharp
 
 [Theory]
@@ -407,6 +509,11 @@ public void Test_churchillFrictionFactorErrorNotMoreThan2Percent_Turbulent(doubl
 }
 
 ```
+
+I used the calculator [here](https://www.ajdesigner.com/php_colebrook/colebrook_equation.php#ajscroll) to help
+me calculate the friction factor reference values.
+
+This is based off colebrook forumala.
 
 
 
