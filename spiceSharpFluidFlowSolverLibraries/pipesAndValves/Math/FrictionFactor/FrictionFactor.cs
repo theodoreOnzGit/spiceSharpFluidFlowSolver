@@ -2,6 +2,7 @@
 //
 
 using System;
+using MathNet.Numerics;
 
 public interface IFrictionFactor
 {
@@ -10,7 +11,12 @@ public interface IFrictionFactor
 	double darcy(double ReynoldsNumber, double roughnessRatio);
 }
 
-public class ChurchHillFrictionFactor : IFrictionFactor
+public interface IFrictionFactorGetRe
+{
+	double getRe(double Be, double roughnessRatio, double lengthToDiameter);
+}
+
+public class ChurchHillFrictionFactor : IFrictionFactor,IFrictionFactorGetRe
 {
 	// this particular implementation uses the churchill correlation
 	public double fanning(double ReynoldsNumber, double roughnessRatio){
@@ -72,6 +78,82 @@ public class ChurchHillFrictionFactor : IFrictionFactor
 		double denominator = Math.Pow(Re,16);
 		return numerator/denominator;
 	}
+/*
+************************************************************* 
+************************************************************* 
+************************************************************* 
+   this part will help implement code to find Re given a specific
+   Bejan number and roughnessRatio
+************************************************************* 
+************************************************************* 
+************************************************************* 
+************************************************************* 
+*/
+
+
+	 
+	public double getRe(double Be, 
+			double roughnessRatio,
+			double lengthToDiameter){
+
+		this.roughnessRatio = roughnessRatio;
+		this.lengthToDiameter = lengthToDiameter;
+		this.bejanNumber = Be;
+
+		// I'll define a pressureDrop function with which to find
+		// the Reynold's Number
+		double pressureDropRoot(double Re){
+
+			// fanning term
+			//
+			double fanningTerm;
+			fanningTerm = this.fanning(Re, this.roughnessRatio);
+			fanningTerm *= Math.Pow(Re,2.0);
+
+
+			//  BejanTerm
+			//
+			double bejanTerm;
+			bejanTerm = 32.0 * this.bejanNumber;
+			bejanTerm *= Math.Pow(4.0*this.lengthToDiameter,-3);
+
+			// to set this to zero, we need:
+			//
+			return fanningTerm - bejanTerm;
+
+		}
+
+		double ReynoldsNumber;
+		ReynoldsNumber = FindRoots.OfFunction(pressureDropRoot, 1, 1e8);
+
+		// once I'm done, i want to clean up all terms
+		this.roughnessRatio = 0.0;
+		this.lengthToDiameter = 0.0;
+		this.bejanNumber = 0.0;
+
+
+		// then let's return Re
+
+		return ReynoldsNumber;
+	}
+
+
+
+	private double roughnessRatio;
+	private double lengthToDiameter;
+	private double bejanNumber;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

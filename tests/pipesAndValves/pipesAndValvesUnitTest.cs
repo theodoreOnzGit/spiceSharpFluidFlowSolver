@@ -16,6 +16,82 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
+	
+
+	[Theory]
+	[InlineData(4000, 0.05, 0.076986834889224, 4.0)]
+	[InlineData(40000, 0.05, 0.07212405402775,5.0)]
+	[InlineData(4e5, 0.05, 0.071608351787938, 10.0)]
+	[InlineData(4e6, 0.05,  0.071556444535705, 20.0)]
+	[InlineData(4e7, 0.05,  0.071551250389636, 100.0)]
+	[InlineData(4e8, 0.05, 0.071550730940769, 1000.0)]
+	[InlineData(4e9, 0.05, 0.071550678995539, 65.0)]
+	[InlineData(4e3, 0.0, 0.039907014055631, 20.0 )]
+	[InlineData(4e7, 0.00005, 0.010627694187016, 35.0)]
+	[InlineData(4e6, 0.001, 0.019714092419925, 8.9)]
+	[InlineData(4e5, 0.01, 0.038055838413508, 50.0)]
+	[InlineData(4e4, 0.03,  0.057933060738478, 1.0e5)]
+	public void Test_churchillFrictionFactorShouldGetAccurateReTurbulent(
+			double Re,
+			double roughnessRatio, 
+			double referenceDarcyFrictionFactor,
+			double lengthToDiameter){
+		// the objective of this test is to test the
+		// accuracy of getting Re using the getRe function
+		//
+		// we have a reference Reynold's number
+		//
+		// and we need to get a Re using
+		// fanning friction factor
+		// and roughness Ratio
+		//
+		// we already have roughness ratio
+		// but we need Bejan number and L/D
+		//
+		// Bejan number would be known in real life.
+		// however, in this case, we cannot arbitrarily
+		// specify it
+		// the only equation that works now
+		// is Be = f*Re^2*(4L/D)^3/32.0
+		// That means we just specify a L/D ratio
+		// and that would specify everything.
+		// So I'm going to randomly specify L/D ratios and hope that
+		// works
+		
+
+		// setup
+		//
+		double referenceRe = Re;
+
+		IFrictionFactorGetRe testObject;
+		testObject = new ChurchHillFrictionFactor();
+
+
+		double fanningFrictionFactor = 0.25*referenceDarcyFrictionFactor;
+		double Be = fanningFrictionFactor*Math.Pow(Re,2.0);
+		Be *= Math.Pow(4.0*lengthToDiameter,3);
+		Be *= 1.0/32.0;
+
+		// act
+
+		double resultRe;
+		resultRe = testObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+		// Assert (manual test)
+
+		// Assert.Equal(referenceRe, resultRe);
+
+		// Assert (auto test)
+		// test if error is within 1% of actual Re
+		double errorFraction = Math.Abs(resultRe - referenceRe)/Math.Abs(referenceRe);
+		double errorTolerance = 0.01;
+
+		Assert.True(errorFraction < errorTolerance);
+
+
+	}
+
+
 	// this test will test the churchill correlation over some
 	// values using an online colebrook calculator
 	// https://www.engineeringtoolbox.com/colebrook-equation-d_1031.html

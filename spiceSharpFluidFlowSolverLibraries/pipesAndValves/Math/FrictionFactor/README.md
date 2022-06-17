@@ -165,3 +165,207 @@ public double moody(double ReynoldsNumber, double roughnessRatio){
 Just instantiate the object and use the fanning friction factor term
 straightaway.
 
+
+# finding Re from pressure drop (nondimensional pressure drop Be)
+
+
+For pressure drop, we have the explicit correlation
+$$f_{fanning}(Re,\frac{\varepsilon}{D})* Re^2 = \frac{32 Be}{ (\frac{4L}{D})^3 
+}$$
+
+We want to use the Mathnet Numerics library
+
+so in our csproj file we have:
+
+```xml
+<PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+```
+
+I'm using the findRoots.cs [file](https://github.com/mathnet/mathnet-numerics/blob/master/src/Numerics/FindRoots.cs):
+
+```csharp
+
+namespace MathNet.Numerics
+{
+    public static class FindRoots
+    {
+        /// <summary>Find a solution of the equation f(x)=0.</summary>
+        /// <param name="f">The function to find roots from.</param>
+        /// <param name="lowerBound">The low value of the range where the root is supposed to be.</param>
+        /// <param name="upperBound">The high value of the range where the root is supposed to be.</param>
+        /// <param name="accuracy">Desired accuracy. The root will be refined until the accuracy or the maximum number of iterations is reached. Example: 1e-14.</param>
+        /// <param name="maxIterations">Maximum number of iterations. Example: 100.</param>
+        public static double OfFunction(Func<double, double> f, double lowerBound, double upperBound, double accuracy = 1e-8, int maxIterations = 100)
+        {
+            if (!ZeroCrossingBracketing.ExpandReduce(f, ref lowerBound, ref upperBound, 1.6, maxIterations, maxIterations*10))
+            {
+                throw new NonConvergenceException("The algorithm has failed, exceeded the number of iterations allowed or there is no root within the provided bounds.");
+            }
+
+            if (Brent.TryFindRoot(f, lowerBound, upperBound, accuracy, maxIterations, out var root))
+            {
+                return root;
+            }
+
+            if (Bisection.TryFindRoot(f, lowerBound, upperBound, accuracy, maxIterations, out root))
+            {
+                return root;
+            }
+
+            throw new NonConvergenceException("The algorithm has failed, exceeded the number of iterations allowed or there is no root within the provided bounds.");
+        }
+
+```
+
+So I'll be using the namespace MathNet.Numerics and use the static class
+FindRoots.
+
+The way to call it inline is:
+
+```csharp
+
+FindRoots.OfFunction(func<double,double> f, lowerBound, upperBound);
+```
+
+
+Unfortunately, we don't quite have one input and one output. So we'll
+have to change types.
+
+So we'll have to resort to some object oriented trickery in order to do this.
+
+Meaning to say that all else constant, the function is such that
+Reynold's number is the input and the LHS-RHS is the output.
+
+Which doesn't quite give us pure functions so to speak, since we 
+are using properties. But I'll try as far as i can.
+
+Setting the equation to zero is
+
+
+$$f_{fanning}(Re,\frac{\varepsilon}{D})* Re^2 - \frac{32 Be}{ (\frac{4L}{D})^3 
+} = 0$$
+
+So I'll need to create a function that takes Reynold's number as an input,
+takes the Bejan number, roughness ratio and lengthToDiameter ratio
+as constants. Then return the LHS-RHS as the output.
+
+
+Here's the result:
+
+```csharp
+
+double pressureDropRoot(double Re){
+
+	// fanning term
+	//
+	double fanningTerm;
+	fanningTerm = this.fanning(Re, this.roughnessRatio);
+	fanningTerm *= Math.Pow(Re,2.0);
+
+
+	//  BejanTerm
+	//
+	double bejanTerm;
+	bejanTerm = 32.0 * this.bejanNumber;
+	bejanTerm *= Math.Pow(4.0*this.lengthToDiameter,-3);
+
+	// to set this to zero, we need:
+	//
+	return fanningTerm - bejanTerm;
+
+}
+```
+
+The LHS is the fanningTerm. Which is
+
+$$f_{fanning}(Re,\frac{\varepsilon}{D})* Re^2 $$
+
+To calculate this i use the fanning friction factor function
+within the churchill correlation class. (I'm adding methods to 
+the same class)
+
+Then I'm multiplying $Re^2$ to the fanning friction factor.
+
+The RHS is the bejan term
+
+
+$$ \frac{32 Be}{ (\frac{4L}{D})^3 $$
+
+So I set the bejan term to 32.0*Be, the user's given Bejan number.
+Then i multiplied that by four times the L/D ratio to the power
+of -3 to obtain the 4L/D term in the denominator.
+
+After that i use the FindRoots.OfFunction method
+I set the minimum Re to be 1 (otherwise we'll get infinity in the
+laminar region)
+
+And then 1e8 as the maximum. That's the upper limit of the moody
+chart.
+
+```csharp
+double ReynoldsNumber;
+ReynoldsNumber = FindRoots.OfFunction(pressureDropRoot, 1, 1e8);
+```
+
+Unfortunately this means i have to use class parameters to share
+variables within the function as constants.
+
+```csharp
+
+private double roughnessRatio;
+private double lengthToDiameter;
+private double bejanNumber;
+
+```
+
+I first use the function's variables to instantiate the values:
+
+```csharp
+
+this.roughnessRatio = roughnessRatio;
+this.lengthToDiameter = lengthToDiameter;
+this.bejanNumber = Be;
+```
+
+Then I perform calculations.
+After I'm done, i set them all to zero.
+
+```csharp
+
+// once I'm done, i want to clean up all terms
+this.roughnessRatio = 0.0;
+this.lengthToDiameter = 0.0;
+this.bejanNumber = 0.0;
+
+
+// then let's return Re
+
+return ReynoldsNumber;
+```
+
+This is to ensure that the object state doesn't really affect
+the calculation, so it functions like a pure method or function.
+
+And I also make sure to clean up every number after i'm done,
+so that the memory is cleared.
+
+
+The only thing that remains is to test it!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
