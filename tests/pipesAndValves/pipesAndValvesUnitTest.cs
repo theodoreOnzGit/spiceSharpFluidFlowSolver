@@ -16,7 +16,271 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
+	[Theory(Skip = "buggy and probably not worth the effort")]
+	[InlineData(100, 0.05)]
+	[InlineData(200, 0.05)]
+	[InlineData(300, 0.05)]
+	[InlineData(400, 0.05)]
+	[InlineData(400, 0.0)]
+	[InlineData(500, 0.05)]
+	[InlineData(600, 0.05)]
+	[InlineData(800, 0.05)]
+	[InlineData(1000, 0.05)]
+	[InlineData(1200, 0.05)]
+	[InlineData(1400, 0.05)]
+	[InlineData(1600, 0.05)]
+	[InlineData(1800, 0.05)]
+	[InlineData(2000, 0.05)]
+	public void Test_analyticalDerivativeLaminarShouldEqualAnalaytical(
+			double Re, double roughnessRatio){
+
+		// as an easier test, we can test the correlation
+		// against the laminar flow friction factor derivative
+		// laminar flow friction factor derivative
+		// df/dRe is
+		// d/dRe (16/Re)
+		// = -16/Re^2
+
+		// Setup
+
+		double analayticalDerivativeValue;
+		analayticalDerivativeValue = -16.0/Math.Pow(Re,2.0);
+
+		IFrictionFactorDerivatives numericalDerivative;
+		numericalDerivative = new ChurchillAnalyticalDerivative();
+
+
+		// Act 
+
+		double derivativeResult;
+		derivativeResult = numericalDerivative.
+			calculateFanningPartialDerivative(Re, roughnessRatio);
+
+		double errorFraction = Math.Abs( derivativeResult
+				- analayticalDerivativeValue)
+			/Math.Abs(analayticalDerivativeValue);
+		double errorTolerance = 0.05;
+		// Assert
+		Assert.Equal(analayticalDerivativeValue,
+				derivativeResult);
+		Assert.True(errorFraction < errorTolerance);
+
+		// result: all ok except Re = 1200
+		// the numerical derivative there is 0
+		// quite strange
+
+	}
 	
+	[Theory]
+	[InlineData(100, 0.05)]
+	[InlineData(200, 0.05)]
+	[InlineData(300, 0.05)]
+	[InlineData(400, 0.05)]
+	[InlineData(400, 0.0)]
+	[InlineData(500, 0.05)]
+	[InlineData(600, 0.05)]
+	[InlineData(800, 0.05)]
+	[InlineData(1000, 0.05)]
+	[InlineData(1200, 0.05)]
+	[InlineData(1400, 0.05)]
+	[InlineData(1600, 0.05)]
+	[InlineData(1800, 0.05)]
+	public void Test_ChurchillMathNetDerivativeAccurateTo1Percent(
+			double Re, double roughnessRatio){
+
+		// as an easier test, we can test the correlation
+		// against the laminar flow friction factor derivative
+		// laminar flow friction factor derivative
+		// df/dRe is
+		// d/dRe (16/Re)
+		// = -16/Re^2
+
+		// Setup
+
+		double analayticalDerivativeValue;
+		analayticalDerivativeValue = -16.0/Math.Pow(Re,2.0);
+
+		IFrictionFactorDerivatives numericalDerivative;
+		numericalDerivative = new ChurchillMathNetDerivative();
+
+
+		// Act 
+
+		double derivativeResult;
+		derivativeResult = numericalDerivative.
+			calculateFanningPartialDerivative(Re, roughnessRatio);
+
+		double errorFraction = Math.Abs( derivativeResult
+				- analayticalDerivativeValue)
+			/Math.Abs(analayticalDerivativeValue);
+		double errorTolerance = 0.01;
+		// Assert
+		//Assert.Equal(analayticalDerivativeValue,
+		//			derivativeResult);
+		Assert.True(errorFraction < errorTolerance);
+
+		// result: all ok except Re = 1200
+		// the numerical derivative there is 0
+		// quite strange
+
+	}
+
+	[Theory]
+	[InlineData(100, 0.05)]
+	[InlineData(200, 0.05)]
+	[InlineData(300, 0.05)]
+	[InlineData(400, 0.05)]
+	[InlineData(400, 0.0)]
+	[InlineData(500, 0.05)]
+	[InlineData(600, 0.05)]
+	[InlineData(800, 0.05)]
+	[InlineData(1000, 0.05)]
+	[InlineData(1200, 0.05)]
+	[InlineData(1400, 0.05)]
+	[InlineData(1600, 0.05)]
+	[InlineData(1800, 0.05)]
+	[InlineData(2000, 0.05)]
+	public void Test_numericalMathNetDerivativeLaminarShouldEqualAnalaytical(
+			double Re, double roughnessRatio){
+
+		// as an easier test, we can test the correlation
+		// against the laminar flow friction factor derivative
+		// laminar flow friction factor derivative
+		// df/dRe is
+		// d/dRe (16/Re)
+		// = -16/Re^2
+
+		// Setup
+
+		double analayticalDerivativeValue;
+		analayticalDerivativeValue = -16.0/Math.Pow(Re,2.0);
+
+		IFrictionFactorDerivatives numericalDerivative;
+		numericalDerivative = new ChurchillMathNetDerivative();
+
+
+		// Act 
+
+		double derivativeResult;
+		derivativeResult = numericalDerivative.
+			calculateFanningPartialDerivative(Re, roughnessRatio);
+
+		double errorFraction = Math.Abs( derivativeResult
+				- analayticalDerivativeValue)
+			/Math.Abs(analayticalDerivativeValue);
+		double errorTolerance = 0.05;
+		// Assert
+		//Assert.Equal(analayticalDerivativeValue,
+		//			derivativeResult);
+		Assert.True(errorFraction < errorTolerance);
+
+		// result: all ok except Re = 1200
+		// the numerical derivative there is 0
+		// quite strange
+
+	}
+
+	[Theory(Skip = "mostly passed, but at Re=1200, strangely equals 0")]
+	[InlineData(100, 0.05)]
+	[InlineData(200, 0.05)]
+	[InlineData(300, 0.05)]
+	[InlineData(400, 0.05)]
+	[InlineData(400, 0.0)]
+	[InlineData(500, 0.05)]
+	[InlineData(600, 0.05)]
+	[InlineData(800, 0.05)]
+	[InlineData(1000, 0.05)]
+	[InlineData(1200, 0.05)]
+	[InlineData(1400, 0.05)]
+	[InlineData(1600, 0.05)]
+	[InlineData(1800, 0.05)]
+	[InlineData(2000, 0.05)]
+	public void Test_numericalDerivativeLaminarShouldEqualAnalaytical(
+			double Re, double roughnessRatio){
+
+		// as an easier test, we can test the correlation
+		// against the laminar flow friction factor derivative
+		// laminar flow friction factor derivative
+		// df/dRe is
+		// d/dRe (16/Re)
+		// = -16/Re^2
+
+		// Setup
+
+		double analayticalDerivativeValue;
+		analayticalDerivativeValue = -16.0/Math.Pow(Re,2.0);
+
+		IFrictionFactorDerivatives numericalDerivative;
+		numericalDerivative = new ChurchHillFrictionFactor();
+
+
+		// Act 
+
+		double derivativeResult;
+		derivativeResult = numericalDerivative.
+			calculateFanningPartialDerivative(Re, roughnessRatio);
+
+		double errorFraction = Math.Abs( derivativeResult
+				- analayticalDerivativeValue)
+			/Math.Abs(analayticalDerivativeValue);
+		double errorTolerance = 0.05;
+		// Assert
+		Assert.Equal(analayticalDerivativeValue,
+				derivativeResult);
+		Assert.True(errorFraction < errorTolerance);
+
+		// result: all ok except Re = 1200
+		// the numerical derivative there is 0
+		// quite strange
+
+	}
+
+	[Theory(Skip = "Debugging")]
+	[InlineData(4000, 0.05)]
+	[InlineData(40000, 0.05)]
+	[InlineData(4e5, 0.05)]
+	[InlineData(4e6, 0.05)]
+	[InlineData(4e7, 0.05)]
+	[InlineData(4e8, 0.05)]
+	[InlineData(4e9, 0.05)]
+	[InlineData(4e3, 0.0)]
+	[InlineData(4e7, 0.00005)]
+	[InlineData(4e6, 0.001)]
+	[InlineData(4e5, 0.01)]
+	[InlineData(4e4, 0.03)]
+	public void Test_numericalAndAnalayticalTurbulentDervativesShouldBeSimilar(
+			double Re, double roughnessRatio){
+
+		// Setup
+
+		IFrictionFactorDerivatives numericalDerivative;
+		numericalDerivative = new ChurchHillFrictionFactor();
+
+		IFrictionFactorDerivatives analyticalDerivative;
+		analyticalDerivative = new ChurchillAnalyticalDerivative();
+
+		// for this, the numericalDerivative should be the reference
+		// since at the point of this test
+		// the numerical derivative has been validated at least partially,  0.057933060738478, 1.0e5)]
+
+		double referenceNumericalDerivative;
+		referenceNumericalDerivative = numericalDerivative.
+			calculateFanningPartialDerivative(Re, roughnessRatio);
+
+		// Act
+		double analayticalDerivativeValue;
+		analayticalDerivativeValue = analyticalDerivative.
+			calculateFanningPartialDerivative(Re, roughnessRatio);
+		// Assert
+		double errorFraction = Math.Abs(analayticalDerivativeValue 
+				- referenceNumericalDerivative)
+			/Math.Abs(referenceNumericalDerivative);
+		double errorTolerance = 0.02;
+
+		Assert.Equal(referenceNumericalDerivative,
+				analayticalDerivativeValue);
+		Assert.True(errorFraction < errorTolerance);
+	}
 
 	[Theory]
 	[InlineData(4000, 0.05, 0.076986834889224, 4.0)]

@@ -289,7 +289,7 @@ Then I'm multiplying $Re^2$ to the fanning friction factor.
 The RHS is the bejan term
 
 
-$$ \frac{32 Be}{ (\frac{4L}{D})^3 $$
+$$ \frac{32 Be}{ (\frac{4L}{D})^3} $$
 
 So I set the bejan term to 32.0*Be, the user's given Bejan number.
 Then i multiplied that by four times the L/D ratio to the power
@@ -354,18 +354,286 @@ The only thing that remains is to test it!
 
 
 
+# IFrictionFactorDerivatives
+
+Now we will need to calculate jacobians a lot!
+
+So we will need to calculate a lot of derivatives.
+
+For the KISS principle's sake, I am going to stuff things in the same
+class. However, to organise the Churchill Friction factor to be
+distinct from its derivatives, I will use partial classes.
+
+Meaning to say, the partial derivative functions will be part
+of a separate file, but in the same class.
+
+I also have a separate interface which fulfils the SOLID principle
+interface segregation since there are at least two ways of
+performing derivatives.
+
+One is to use numerical derivatives, ie, my own central difference
+code. (Or the MathNet implementation)
+
+The other is to use analytical derivatives as shown in the readme.
+
+## ChurchHill Friction factor Partial Derivative class
+
+```csharp
+
+public double calculateFanningPartialDerivative(double Re, 
+		double roughnessRatio){
+	//
+	// firstly i need to use the derivative object
+
+	IDerivative derivativeObj;
+	derivativeObj = new CentralDifference();
+
+	// secondly i need a function with a double
+	// in and out
+	// this is the function that returns the Reynold's number
+	// however, the roughness ratio is kept constant
+
+	this.roughnessRatio = roughnessRatio;
+
+	double constantRoughnessFanning(double Re){
+
+		double fanning = this.fanning(Re, this.roughnessRatio);
+
+		return fanning;
+	}
+
+	// now let's calculate the derivative at a specific Re
+
+	double derivativeResult;
+	derivativeResult = derivativeObj.calc(
+			constantRoughnessFanning, Re);
+
+	// after i'm done, clean up the roughness ratio
+	// variable within the class
+
+	this.roughnessRatio = 0.0;
 
 
+	return derivativeResult;
+
+}
+
+```
+
+The idea here is to take partial derivatives of the fanning 
+friction factor if constant roughness ratio is assumed.
+
+I again use the class variable roughnessRatio to help in this
+area. In that the local function constantRoughnessFanning uses
+this class variable roughnessRatio assumed to be constant during
+the time of this calculation.
 
 
+Note that this only works if the object instance is being 
+synchronously. It is not good for async since roughnessRatio
+can be changed.
+
+However, since we don't really care about speed at this point
+in time, I'm not going to bother yet.
+
+### testing
+The partial derivatives should be benchmarked against something.
+
+Unfortunately, there are no straightforward ways of getting
+reference values other than the analytical solution.
+
+And yet, the analytical solution itself is an untested class
+at this point.
+
+We can only assume that there is not a common systematic error
+between them, such that if the test passes, it's not because
+both analytical and numerical solution are equally wrong.
+
+But we have some confidence in the numerical result, since 
+the fanning friction factor and the derivative term have been
+tested extensively in unit testing.
 
 
+## Analytical Derivative
+
+The analytical derivative of f with respect to Re was calculated
+in the README.md of fluid pipe theory.
+
+What has been done is that the analytical derivative for $f(Re)Re^2$
+has already been calculated. For constant roughness ratio.
+
+$$\frac{d}{d(Re)} [f(Re) Re^2] = Re^2 \frac{d}{d(Re)} [f(Re)]
++ f(Re) * 2Re$$
 
 
+Since this is the case, i can back calculate the derivative.
+
+$$Re^2 \frac{d}{d(Re} [f(Re)] =  \frac{d}{d(Re)} [f(Re) Re^2]
+-f(Re) * 2Re$$
+
+Divide both sides by $Re^2$ and we should get the differential value.
+All without using numerical methods, but rather analytical.
+
+I can implement this function and just return this value.
+
+```csharp
+
+public override double calculateFanningPartialDerivative(
+		double Re, double roughnessRatio){
+
+	double derivativeResult;
+	derivativeResult = this.partialDerivativeFanningReSquared(Re,
+			roughnessRatio);
+
+	derivativeResult -= 2.0 * Re * this.fanning(Re,roughnessRatio);
+
+	derivativeResult /= Math.Pow(Re,2.0);
+
+	return derivativeResult;
+}
+```
+
+### terms and functions
+
+To calculate the fanningDerivativeReSquared I used:
+
+```csharp
+
+public double partialDerivativeFanningReSquared(
+		double Re, double roughnessRatio){
+
+	double finalValue;
+	finalValue = 1.0/6.0;
+	finalValue *= this.dG1_dRe(Re, roughnessRatio);
+	finalValue /= this.G1(Re,roughnessRatio);
+	finalValue *= Math.Pow(this.G1(Re,roughnessRatio),1.0/12.0);
+	return finalValue;
+}
+```
+
+The first function used is dG1_dRe, and G1.
+
+G1 is:
+```csharp
+
+public double G1(double Re, double roughnessRatio){
+
+	double g1value;
+	g1value = Math.Pow(8.0*Re,12.0);
+	double g1RHSvalue = Math.Pow(Re,16.0*3.0/2.0);
+	g1RHSvalue *= Math.Pow(
+			this.A(Re,roughnessRatio)
+			+this.B(Re),
+			-3.0/2.0);
+
+	g1value += g1RHSvalue;
+
+	return g1value;
+}
+```
+
+whereas dG1_dRe is:
+```csharp
+
+public double dG1_dRe(double Re, double roughnessRatio){
+
+	double finalValue;
+	finalValue = -Math.Pow(Re,16.0) *
+		(this.dA_dRe(Re, roughnessRatio) + this.dB_dRe(Re));
+	
+	finalValue += 16.0 * Math.Pow(Re,15.0) *
+		(this.A(Re,roughnessRatio) + this.B(Re));
+
+	finalValue /= Math.Pow(this.A(Re,roughnessRatio)+
+			this.B(Re),2.0);
+
+	finalValue *= 3.0/2.0 * Math.Pow(Re,16.0/2.0);
+
+	finalValue /= Math.Pow(this.A(Re,roughnessRatio) + 
+			this.B(roughnessRatio),1.0/2.0);
+
+	finalValue += 96.0 * Math.Pow(Re,11.0);
 
 
+	return finalValue;
+
+}
+```
+
+The A and B will be inherited from the Churchill Friction Factor class.
+
+```csharp
+
+public class ChurchillAnalyticalDerivative : 
+	ChurchHillFrictionFactor,IFrictionFactorDerivatives
+
+```
+
+Whereas the derivatives are as follows:
 
 
+I will need dB_dRe.
+
+As derived before, it is 
+
+$$\frac{dB}{dRe} = -B \frac{16}{Re}$$
+
+So we would want to have B on standby.
+
+I will hence make A and B public so that I can inherit them.
+
+And I will also make the calculate fanning Partial Derivative
+classes overwriteable
+
+```csharp
+public double dB_dRe(double Re){
+	return -this.B(Re) * 16.0 / Re;
+}
+```
 
 
+Then I would need dA_dRe also:
+
+```csharp
+public double dA_dRe(double Re, double roughnessRatio){
+	double dAdReValue;
+	dAdReValue = 16*this.A(Re,roughnessRatio);
+	dAdReValue *= this.dG2_dRe(Re);
+	dAdReValue /= this.G2(Re,roughnessRatio);
+	dAdReValue /= Math.Log(this.G2(Re,roughnessRatio));
+
+	return dAdReValue;
+}
+```
+
+G2 is:
+
+```csharp
+public double G2(double Re, double roughnessRatio){
+
+	double g2value;
+	g2value = Math.Pow(7.0/Re, 0.9);
+	g2value += 0.27*roughnessRatio;
+
+	return g2value;
+
+}
+```
+
+and dG2_dRe is:
+
+This is of course assuming roughness ratio does not change with Re.
+Should make physical sense.
+
+
+```csharp
+
+
+public double dG2_dRe(double Re){
+
+	return -5.1859789 * Math.Pow(Re,-1.9);
+}
+```
+
+Next thing is to just test this thing and see if any debugging is needed.
 

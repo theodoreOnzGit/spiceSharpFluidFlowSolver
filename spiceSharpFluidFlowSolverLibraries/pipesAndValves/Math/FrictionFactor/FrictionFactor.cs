@@ -16,7 +16,7 @@ public interface IFrictionFactorGetRe
 	double getRe(double Be, double roughnessRatio, double lengthToDiameter);
 }
 
-public class ChurchHillFrictionFactor : IFrictionFactor,IFrictionFactorGetRe
+public partial class ChurchHillFrictionFactor : IFrictionFactor,IFrictionFactorGetRe
 {
 	// this particular implementation uses the churchill correlation
 	public double fanning(double ReynoldsNumber, double roughnessRatio){
@@ -60,7 +60,7 @@ public class ChurchHillFrictionFactor : IFrictionFactor,IFrictionFactorGetRe
 
 	}
 
-	private double A(double Re, double roughnessRatio){
+	public double A(double Re, double roughnessRatio){
 		// first i need the logarithm of a number
 
 		double reynoldsTerm =  Math.Pow( (7.0/Re), 0.9);
@@ -73,22 +73,22 @@ public class ChurchHillFrictionFactor : IFrictionFactor,IFrictionFactorGetRe
 		return A;
 	}
 
-	private double B(double Re){
+	public double B(double Re){
 		double numerator = Math.Pow(37530,16);
 		double denominator = Math.Pow(Re,16);
 		return numerator/denominator;
 	}
-/*
-************************************************************* 
-************************************************************* 
-************************************************************* 
-   this part will help implement code to find Re given a specific
-   Bejan number and roughnessRatio
-************************************************************* 
-************************************************************* 
-************************************************************* 
-************************************************************* 
-*/
+	/*
+	 ************************************************************* 
+	 ************************************************************* 
+	 ************************************************************* 
+	 this part will help implement code to find Re given a specific
+	 Bejan number and roughnessRatio
+	 ************************************************************* 
+	 ************************************************************* 
+	 ************************************************************* 
+	 ************************************************************* 
+	 */
 
 
 	 
@@ -139,11 +139,9 @@ public class ChurchHillFrictionFactor : IFrictionFactor,IFrictionFactorGetRe
 
 
 
-	private double roughnessRatio;
-	private double lengthToDiameter;
-	private double bejanNumber;
-
-
+	public double roughnessRatio;
+	public double lengthToDiameter;
+	public double bejanNumber;
 
 
 
