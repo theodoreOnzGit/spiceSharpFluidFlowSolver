@@ -248,6 +248,54 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	[InlineData(4e6, 0.001)]
 	[InlineData(4e5, 0.01)]
 	[InlineData(4e4, 0.03)]
+	public void Test_numericalAndAnalayticalTurbulentDervativesShouldBeSimilar(
+			double Re, double roughnessRatio){
+
+		// Setup
+
+		IFrictionFactorDerivatives numericalDerivative;
+		numericalDerivative = new ChurchHillFrictionFactor();
+
+		IFrictionFactorDerivatives analyticalDerivative;
+		analyticalDerivative = new FilonenkoAnalyticalDerivative();
+
+		// for this, the numericalDerivative should be the reference
+		// since at the point of this test
+		// the numerical derivative has been validated at least partially,  0.057933060738478, 1.0e5)]
+
+		double referenceNumericalDerivative;
+		referenceNumericalDerivative = numericalDerivative.
+			calculateFanningPartialDerivative(Re, roughnessRatio);
+
+		// Act
+		double analayticalDerivativeValue;
+		analayticalDerivativeValue = analyticalDerivative.
+			calculateFanningPartialDerivative(Re, roughnessRatio);
+		// Assert
+		//double errorFraction = Math.Abs(analayticalDerivativeValue 
+	    //			- referenceNumericalDerivative)
+		//	Math.Abs(referenceNumericalDerivative);
+		//double errorTolerance = 0.2;
+
+		Assert.Equal(referenceNumericalDerivative,
+				analayticalDerivativeValue,5);
+		//Assert.True(errorFraction < errorTolerance);
+
+	}
+
+	[Theory]
+	[InlineData(4000, 0.05)]
+	[InlineData(40000, 0.05)]
+	[InlineData(4e5, 0.05)]
+	[InlineData(4e6, 0.05)]
+	[InlineData(4e7, 0.05)]
+	[InlineData(4e8, 0.05)]
+	[InlineData(4e9, 0.05)]
+	[InlineData(4e3, 0.0)]
+	[InlineData(4e7, 0.00005)]
+	[InlineData(4e6, 0.001)]
+	[InlineData(4e5, 0.01)]
+	[InlineData(4e4, 0.03)]
 	public void Test_numericalAndAnalayticalTurbulentDervativesShouldBeSimilarFilonenko(
 			double Re, double roughnessRatio){
 
@@ -296,7 +344,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	[InlineData(4e6, 0.001)]
 	[InlineData(4e5, 0.01)]
 	[InlineData(4e4, 0.03)]
-	public void Test_numericalAndAnalayticalTurbulentDervativesShouldBeSimilar(
+	public void Test_numericalAndAnalayticalTurbulentDervativesShouldBeSimilarChurchill(
 			double Re, double roughnessRatio){
 
 		// Setup
