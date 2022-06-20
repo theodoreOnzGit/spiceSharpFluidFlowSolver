@@ -454,6 +454,68 @@ the fanning friction factor and the derivative term have been
 tested extensively in unit testing.
 
 
+#### Testing: Laminar Region
+
+In the laminar region, the numerical derivative was benchmarked
+against the derivative of 16/Re which became $-16/Re^2$. With that
+in mind, the only challenge was in the turbulent region
+
+#### Testing: Turbulent Region
+
+For testing in the turbulent region, we want an expression easily
+differentiable but reasonably accurate compared to colebrook.
+
+The correlation by Tsal is indeed easy to differentiate.
+
+It is shown as [[1]](#frictionFactorApproximations):
+
+$$C = 0.11 (\frac{68}{Re} + \frac{\varepsilon}{D})^{0.25}$$
+$$if\ C \geq 0.018, f_{darcy} = C$$
+$$if\ C < 0.018, f_{darcy} = 0.0028 + 0.85*C$$
+
+While easy to differentiate, it has relatively high errors. 
+I tested it in the test suite and it seems to only work well
+in the smooth regions and regions of relatively low
+surface roughness.
+
+I again searched the [same paper](https://iwaponline.com/ws/article/20/4/1321/73330/Approximations-of-the-Darcy-Weisbach-friction)
+trying to find another relatively accurate correlation that is
+farily easy to differentiate:
+
+
+I found the Filonenko correlation which was, according to the paper
+found to have a relative error at most 0.5% and below. this is 
+comparable to churchill correlation, but is much easier to 
+differentiate. However, laminar region is not predicted by this
+equation.
+
+The Filonenko equation when adapted for rough pipes is as follows [[1]](#frictionFactorApproximations):
+
+$$\frac{1}{\sqrt{f_{Darcy}}}=-2 \log_{10} (\frac{6.6069}{Re^{0.91}}
++ \frac{\varepsilon/D}{3.71})$$
+
+To obtain the derviative $\frac{d f_{Darcy}}{dRe}$, we can use:
+
+$$\frac{d}{dRe}\frac{1}{\sqrt{f_{Darcy}}}= 
+- \frac{1}{2}\frac{1}{f_{Darcy}^{3/2}} 
+\frac{d f_{Darcy}}{dRe} $$
+
+$$\frac{d f_{Darcy}}{dRe} = -2 f_{Darcy}^{1.5}
+\frac{d}{dRe}\frac{1}{\sqrt{f_{Darcy}}}$$
+
+
+To obtain the derivative, 
+we first transform the base of the logarithm:
+$$\frac{1}{\sqrt{f_{Darcy}}}=-2 \frac{1}{\ln_{10}}\ln 
+(\frac{6.6069}{Re^{0.91}}
++ \frac{\varepsilon/D}{3.71})$$
+
+The derivative can be obtained analytically as:
+$$\frac{d}{dRe}\frac{1}{\sqrt{f_{Darcy}}}= -2 \frac{1}{\ln 10}
+\frac{6.6069*(-0.91)*Re^{-1.91}}{\frac{6.6069}{Re^{0.91}}
++\frac{\varepsilon/D}{3.71}}$$
+
+
 ## Analytical Derivative
 
 The analytical derivative of f with respect to Re was calculated
@@ -637,3 +699,30 @@ public double dG2_dRe(double Re){
 
 Next thing is to just test this thing and see if any debugging is needed.
 
+### Analytical expression: depracated till further notice
+
+It turns out that after testing, i cannot pinpoint the 
+source of the bug easily.
+
+The churchill friction factor correlation is twice that
+of the laminar correlation. And I have no easy way to tell
+where I made a mistake in the derivation.
+
+My solution forward is to use the numerical method.
+However, I will use friction factor representations that
+are both accurate (<1%  error compared to $f_{D\ colebrook}$
+) and easy to differentiate.
+
+This will become my benchmark for the numerical method in
+the turbulent region.
+
+The numerical solution was tested against the benchmark
+in the laminar region already and results were satisfactory.
+
+
+# Bibliography
+
+<a id="frictionFactorApproximations">
+[1]
+Zeyu, Z., Junrui, C., Zhanbin, L., Zengguang, X., & Peng, L. (2020). Approximations of the Darcy–Weisbach friction factor in a vertical pipe with full flow regime. Water Supply, 20(4), 1321-1333.
+</a>

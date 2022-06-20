@@ -282,6 +282,46 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		Assert.True(errorFraction < errorTolerance);
 	}
 
+
+	[Theory]
+	[InlineData(4e3, 0.0, 0.039907014055631)]
+	[InlineData(4e7, 0.00005, 0.010627694187016)]
+	[InlineData(4e6, 0.001, 0.019714092419925)]
+	public void Test_TsalFrictionFactorErrorNotMoreThan2Percent_Turbulent(double Re,double roughnessRatio, double referenceFrictionFactor){
+		// i'm making the variable explicit so the user can see
+		// it's darcy friction factor, no ambiguity here
+
+		// Setup
+		double referenceDarcyFactor = referenceFrictionFactor;
+
+		// also the above values are visually inspected with respect to the graph
+		IFrictionFactor frictionFactorObj;
+		frictionFactorObj = new TsalFrictionFactor();
+
+		double errorMax = 0.02;
+		// Act
+
+		double resultDarcyFactor =  frictionFactorObj.darcy(Re,roughnessRatio);
+		
+
+		double error = Math.Abs(referenceDarcyFactor - resultDarcyFactor)/referenceDarcyFactor;
+
+		// Assert
+		//
+
+		// Assert.Equal(referenceDarcyFactor,resultDarcyFactor);
+		Assert.True(error < errorMax);
+
+		// It appears that Tsal friction factor only works well for
+		// smooth or relatively smooth pipe regimes
+
+
+
+	}
+
+
+
+
 	[Theory]
 	[InlineData(4000, 0.05, 0.076986834889224, 4.0)]
 	[InlineData(40000, 0.05, 0.07212405402775,5.0)]
