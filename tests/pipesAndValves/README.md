@@ -515,12 +515,56 @@ me calculate the friction factor reference values.
 
 This is based off colebrook forumala.
 
+## Test for Filonenko Friction Factor
+
+Now that the churchill correlation is tested,
+the next thing to test is the derivative of the friction factor.
+
+Unfortunately, attempting to test the analytical derivative of
+the churchill friction factor against the numerical one proved to
+be troublesome in debugging. 
+
+I thus needed an expression that was reasonably accurate yet
+almost trivial to differentiate analytically.
+[The Filinenko friction factor was found from this paper
+.](https://iwaponline.com/ws/article/20/4/1321/73330/Approximations-of-the-Darcy-Weisbach-friction)
+
+I could then use this as a benchmark to test against the
+numerical solution.
+
+The steps to test are as follows:
+
+1. Test the filonenko friction factor against colebrook data
+2. Test the numerical derivative of the filonenko friction factor
+   against the analytical deriviative
+3. use the analytical derivative of the filonenko friction factor
+   to test the churchill numerical derivative.
 
 
+$$\frac{1}{\sqrt{f_{Darcy}}}=-2 \log_{10} (\frac{6.6069}{Re^{0.91}}
++ \frac{\varepsilon/D}{3.71})$$
+
+This provides more of a sanity check than anything else.
 
 
+$$\frac{d}{dRe}\frac{1}{\sqrt{f_{Darcy}}}= -2 \frac{1}{\ln 10}
+\frac{6.6069*(-0.91)*Re^{-1.91}}{\frac{6.6069}{Re^{0.91}}
++\frac{\varepsilon/D}{3.71}}$$
+
+$$\frac{d f_{Darcy}}{dRe} = -2 f_{Darcy}^{1.5}
+\frac{d}{dRe}\frac{1}{\sqrt{f_{Darcy}}}$$
 
 
+Now i tested this analytical derivative against the numerical
+derivative calculated by Mathnet. They are pretty much equal
+to within 0.01%.
+
+This means to say two things:
+1. Filonenko Friction factor can now be used as a sanity check
+2. The analytical derivative is internally consistent with
+   the numerical derivative
+
+So this means that the MathNet thing is working quite well.
 
 
 

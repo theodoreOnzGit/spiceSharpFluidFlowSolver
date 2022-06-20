@@ -7,10 +7,12 @@ using MathNet.Numerics;
 
 public interface IFrictionFactorGetRe
 {
-	double getRe(double Be, double roughnessRatio, double lengthToDiameter);
+	double getRe(double Be, double roughnessRatio, 
+			double lengthToDiameter);
 }
 
-public partial class ChurchHillFrictionFactor : IFrictionFactor,IFrictionFactorGetRe
+public partial class ChurchHillFrictionFactor : IFrictionFactor
+												,IFrictionFactorGetRe
 {
 	// this particular implementation uses the churchill correlation
 	public double fanning(double ReynoldsNumber, double roughnessRatio){
