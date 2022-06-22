@@ -272,14 +272,48 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		analayticalDerivativeValue = analyticalDerivative.
 			calculateFanningPartialDerivative(Re, roughnessRatio);
 		// Assert
-		//double errorFraction = Math.Abs(analayticalDerivativeValue 
-	    //			- referenceNumericalDerivative)
-		//	Math.Abs(referenceNumericalDerivative);
-		//double errorTolerance = 0.2;
+
+		// first we check if the reference numerical derivative is more
+		// than 0, if so then we can check the relativ error
+		//
+		// otherwise assert equal to 10 dp. (useful for constant
+		// friction factor region)
+		//
+		// The following code asserts the following
+		// if the reference derivative is non zero, 
+		// check that the error tolerance is below 5%
+		// otherwise check that 
+		// 
+		// it's equal to within 5dp
+		// this is useful for derivatives near zero
+		// or near transition regions, where the 
+		// derivatives may not be right anyhow.
+		//
+		// not too strict here, because I just need correct jacobian 
+		// to be calculated
+		//
+		if (Math.Abs(referenceNumericalDerivative) > 0){
+			double errorFraction = Math.Abs(analayticalDerivativeValue 
+					- referenceNumericalDerivative)
+				/Math.Abs(referenceNumericalDerivative);
+			double errorTolerance = 0.05;
+			if(errorFraction < errorTolerance){
+				Assert.True(errorFraction < errorTolerance);
+				return;
+			}
+			if(errorFraction > errorTolerance){
+				Assert.Equal(referenceNumericalDerivative,
+						analayticalDerivativeValue,5);
+				return;
+			}
+			return;
+		}
+
+
 
 		Assert.Equal(referenceNumericalDerivative,
-				analayticalDerivativeValue,5);
-		//Assert.True(errorFraction < errorTolerance);
+				analayticalDerivativeValue,10);
+		//
 
 	}
 
