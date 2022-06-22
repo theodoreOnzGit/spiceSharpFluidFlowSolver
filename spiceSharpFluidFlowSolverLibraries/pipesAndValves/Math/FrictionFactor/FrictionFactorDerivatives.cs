@@ -15,7 +15,7 @@ public interface IFrictionFactorDerivatives
 			double roughnessRatio);
 }
 
-public partial class ChurchHillFrictionFactor : IFrictionFactorDerivatives
+public partial class ChurchillFrictionFactor : IFrictionFactorDerivatives
 {
 
 
@@ -103,7 +103,7 @@ public partial class ChurchHillFrictionFactor : IFrictionFactorDerivatives
 }
 
 public class ChurchillAnalyticalDerivative : 
-	ChurchHillFrictionFactor,IFrictionFactorDerivatives
+	ChurchillFrictionFactor,IFrictionFactorDerivatives
 {
 	public override double calculateFanningPartialDerivative(
 			double Re, double roughnessRatio){
@@ -205,7 +205,7 @@ public class ChurchillAnalyticalDerivative :
 
 }
 
-public class ChurchillMathNetDerivative : ChurchHillFrictionFactor,
+public class ChurchillMathNetDerivative : ChurchillFrictionFactor,
 	IFrictionFactorDerivatives
 {
 

@@ -11,7 +11,7 @@ public interface IFrictionFactorGetRe
 			double lengthToDiameter);
 }
 
-public partial class ChurchHillFrictionFactor : IFrictionFactor
+public partial class ChurchillFrictionFactor : IFrictionFactor
 												,IFrictionFactorGetRe
 {
 	// this particular implementation uses the churchill correlation

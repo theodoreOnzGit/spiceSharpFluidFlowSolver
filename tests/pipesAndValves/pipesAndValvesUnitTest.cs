@@ -211,7 +211,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		analayticalDerivativeValue = -16.0/Math.Pow(Re,2.0);
 
 		IFrictionFactorDerivatives numericalDerivative;
-		numericalDerivative = new ChurchHillFrictionFactor();
+		numericalDerivative = new ChurchillFrictionFactor();
 
 
 		// Act 
@@ -254,7 +254,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		// Setup
 
 		IFrictionFactorDerivatives numericalDerivative;
-		numericalDerivative = new ChurchHillFrictionFactor();
+		numericalDerivative = new ChurchillFrictionFactor();
 
 		IFrictionFactorDerivatives analyticalDerivative;
 		analyticalDerivative = new FilonenkoAnalyticalDerivative();
@@ -384,7 +384,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		// Setup
 
 		IFrictionFactorDerivatives numericalDerivative;
-		numericalDerivative = new ChurchHillFrictionFactor();
+		numericalDerivative = new ChurchillFrictionFactor();
 
 		IFrictionFactorDerivatives analyticalDerivative;
 		analyticalDerivative = new ChurchillAnalyticalDerivative();
@@ -498,7 +498,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		double referenceRe = Re;
 
 		IFrictionFactorGetRe testObject;
-		testObject = new ChurchHillFrictionFactor();
+		testObject = new ChurchillFrictionFactor();
 
 
 		double fanningFrictionFactor = 0.25*referenceDarcyFrictionFactor;
@@ -553,7 +553,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 		// also the above values are visually inspected with respect to the graph
 		IFrictionFactor frictionFactorObj;
-		frictionFactorObj = new ChurchHillFrictionFactor();
+		frictionFactorObj = new ChurchillFrictionFactor();
 
 		// Act
 
@@ -657,7 +657,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 		// also the above values are visually inspected with respect to the graph
 		IFrictionFactor frictionFactorObj;
-		frictionFactorObj = new ChurchHillFrictionFactor();
+		frictionFactorObj = new ChurchillFrictionFactor();
 
 		double errorMax = 0.02;
 		// Act
@@ -707,7 +707,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		double referenceFanning = 16/Re;
 
 		IFrictionFactor frictionFactorObj;
-		frictionFactorObj = new ChurchHillFrictionFactor();
+		frictionFactorObj = new ChurchillFrictionFactor();
 
 		double errorMax = 0.02;
 
@@ -760,7 +760,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		double referenceFanning = 16/Re;
 
 		IFrictionFactor frictionFactorObj;
-		frictionFactorObj = new ChurchHillFrictionFactor();
+		frictionFactorObj = new ChurchillFrictionFactor();
 
 		double errorMax = 0.04;
 
@@ -812,7 +812,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		double referenceFrictionFactor = 16/Re;
 
 		IFrictionFactor frictionFactorObj;
-		frictionFactorObj = new ChurchHillFrictionFactor();
+		frictionFactorObj = new ChurchillFrictionFactor();
 
 		// Act
 
