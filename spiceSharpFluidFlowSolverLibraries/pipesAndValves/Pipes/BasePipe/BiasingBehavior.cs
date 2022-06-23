@@ -2,6 +2,8 @@
 using SpiceSharp.Behaviors;
 using SpiceSharp.Simulations;
 using System;
+using EngineeringUnits;
+using EngineeringUnits.Units;
 
 namespace SpiceSharp.Components.BasePipeBehaviors
 {
@@ -14,6 +16,7 @@ namespace SpiceSharp.Components.BasePipeBehaviors
         private readonly ElementSet<double> _elements;
         private readonly BaseParameters _bp;
         private readonly BiasingParameters _baseConfig;
+		private IFrictionFactorJacobian _jacobianObject;
 
         /// <summary>
         /// Creates a new instance of the <see cref="BiasingBehavior"/> class.
@@ -29,6 +32,9 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 
             // Get the simulation parameters (we want to use Gmin)
             _baseConfig = context.GetSimulationParameterSet<BiasingParameters>();
+
+			// Construct the IFrictionFactorJacobian object
+			_jacobianObject = new ChurchillFrictionFactorJacobian();
 
             // Request the node variables
             var state = context.GetState<IBiasingSimulationState>();
@@ -51,8 +57,10 @@ namespace SpiceSharp.Components.BasePipeBehaviors
         /// </summary>
         void IBiasingBehavior.Load()
         {
-            // First get the current iteration voltage
+            // First get the current iteration voltage, but for basepipe, this is actually pressuredrop
             var v = _nodeA.Value - _nodeB.Value;
+			SpecificEnergy pressureDrop;
+			pressureDrop = new SpecificEnergy(v, SpecificEnergyUnit.SI);
 
             // Calculate the derivative w.r.t. one of the voltages
             var isNegative = v < 0;
@@ -64,6 +72,34 @@ namespace SpiceSharp.Components.BasePipeBehaviors
                 g = _bp.B < 1.0 / _bp.A ? double.PositiveInfinity : 0.0;
             else
                 g = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B - 1.0) / _bp.A;
+
+			// For basepipe, we just calculate the jacobian straightaway
+
+			Area crossSectionalArea;
+			crossSectionalArea = _bp.crossSectionalArea();
+
+			Length pipeLength;
+			pipeLength = _bp.pipeLength;
+
+			Length absoluteRoughness;
+			absoluteRoughness = _bp.absoluteRoughness;
+
+			Length hydraulicDiameter;
+			hydraulicDiameter = _bp.hydraulicDiameter;
+
+			KinematicViscosity fluidKinViscosity;
+			fluidKinViscosity = _bp.fluidKinViscosity;
+
+			DynamicViscosity fluidViscosity;
+			fluidViscosity = _bp.fluidViscosity;
+
+			double dm_dPA = _jacobianObject.dm_dPA(crossSectionalArea,
+					fluidViscosity,
+					hydraulicDiameter,
+					pressureDrop,
+					absoluteRoughness,
+					pipeLength,
+					fluidKinViscosity);
 
             // In order to avoid having a singular matrix, we want to have at least a very small value here.
             g = Math.Max(g, _baseConfig.Gmin);
