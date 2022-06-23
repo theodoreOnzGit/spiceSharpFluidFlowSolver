@@ -64,6 +64,35 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 
             // Calculate the derivative w.r.t. one of the voltages
             var isNegative = v < 0;
+			// c here is current, but 
+			// we don't really use it
+			// the equivalent is to calculate mass flowrate
+			// so first let's calculate a Bejan number
+			//
+
+			Length pipeLength;
+			pipeLength = _bp.pipeLength;
+
+			KinematicViscosity fluidKinViscosity;
+			fluidKinViscosity = _bp.fluidKinViscosity;
+
+			double bejanNumber;
+			bejanNumber = _jacobianObject.getBejanNumber(
+					pressureDrop,
+					fluidKinViscosity,
+					pipeLength);
+
+			double roughnessRatio;
+			roughnessRatio = _bp.roughnessRatio();
+
+			double lengthToDiameter;
+			lengthToDiameter = _bp.lengthToDiameter();
+
+			double Re = _jacobianObject.getRe(bejanNumber, 
+					roughnessRatio, 
+					lengthToDiameter);
+
+
             var c = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B);
             double g;
 
@@ -74,21 +103,16 @@ namespace SpiceSharp.Components.BasePipeBehaviors
                 g = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B - 1.0) / _bp.A;
 
 			// For basepipe, we just calculate the jacobian straightaway
+			// so we first load everything else from the base parameters
 
 			Area crossSectionalArea;
 			crossSectionalArea = _bp.crossSectionalArea();
-
-			Length pipeLength;
-			pipeLength = _bp.pipeLength;
 
 			Length absoluteRoughness;
 			absoluteRoughness = _bp.absoluteRoughness;
 
 			Length hydraulicDiameter;
 			hydraulicDiameter = _bp.hydraulicDiameter;
-
-			KinematicViscosity fluidKinViscosity;
-			fluidKinViscosity = _bp.fluidKinViscosity;
 
 			DynamicViscosity fluidViscosity;
 			fluidViscosity = _bp.fluidViscosity;
@@ -140,7 +164,7 @@ namespace SpiceSharp.Components.BasePipeBehaviors
             c -= g * v;
             _elements.Add(
                 // Y-matrix
-                g, -g, -g, g,
+                dm_dPA, dm_dPB, minus_dm_dPA, minus_dm_dPB,
                 // RHS-vector
                 c, -c);
         }

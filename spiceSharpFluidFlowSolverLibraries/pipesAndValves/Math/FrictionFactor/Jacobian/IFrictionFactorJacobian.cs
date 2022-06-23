@@ -6,10 +6,14 @@ using MathNet.Numerics;
 using EngineeringUnits;
 using EngineeringUnits.Units;
 
-public interface IFrictionFactorJacobian
+public interface IFrictionFactorJacobian : IFrictionFactorGetRe
 {
 	double dB_dRe(double Re, double roughnessRatio,
 			double lengthToDiameter);
+
+	double getBejanNumber(SpecificEnergy pressureDrop,
+			KinematicViscosity fluidKinViscosity,
+			Length pipeLength);
 
 	SpecificEnergy dDeltaP_dRe(double Re, double roughnessRatio,
 			double lengthToDiameter,

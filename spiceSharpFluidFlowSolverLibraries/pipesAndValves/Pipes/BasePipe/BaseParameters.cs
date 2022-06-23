@@ -11,10 +11,6 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 
         public double B { get; set; } = 1.0;
 
-		public double roughnessRatio { get; set; } = 0.0;
-
-		public double lengthToDiameterRatio { get; set; } = 4.0;
-
 		// now we have the dimensioned units for pipe
 		// this is assumed to be circular
 
@@ -28,12 +24,25 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 		public Length absoluteRoughness { get; set; } =
 			new Length (0.15, LengthUnit.Millimeter);
 
+		// derived quantites and ratios
+
 		public Area crossSectionalArea(){
 			Area finalResult;
 			finalResult = this.hydraulicDiameter.Pow(2)/4*Math.PI;
 			return finalResult;
 		}
+
+		public double roughnessRatio(){
+			return absoluteRoughness.As(LengthUnit.SI)/
+				hydraulicDiameter.As(LengthUnit.SI);
+		}
+
+		public double lengthToDiameter(){
+			return pipeLength.As(LengthUnit.SI)/
+				hydraulicDiameter.As(LengthUnit.SI);
+		}
 		
+
 
 		// and also fluid properties
 		// water at 18C used as default
