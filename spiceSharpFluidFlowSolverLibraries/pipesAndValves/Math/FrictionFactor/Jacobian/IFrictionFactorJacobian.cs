@@ -15,6 +15,10 @@ public interface IFrictionFactorJacobian : IFrictionFactorGetRe
 			KinematicViscosity fluidKinViscosity,
 			Length pipeLength);
 
+	MassFlow dmdRe(Area crossSectionalArea,
+			DynamicViscosity fluidViscosity,
+			Length hydraulicDiameter);
+
 	SpecificEnergy dDeltaP_dRe(double Re, double roughnessRatio,
 			double lengthToDiameter,
 			Length lengthScale,

@@ -92,8 +92,30 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 					roughnessRatio, 
 					lengthToDiameter);
 
+			Area crossSectionalArea;
+			crossSectionalArea = _bp.crossSectionalArea();
+
+			Length hydraulicDiameter;
+			hydraulicDiameter = _bp.hydraulicDiameter;
+
+			DynamicViscosity fluidViscosity;
+			fluidViscosity = _bp.fluidViscosity;
+
+			MassFlow massFlowRate;
+			// i noticed that dmdRe is the same
+			// as mass/Re due to its linear relationship
+			massFlowRate = _jacobianObject.dmdRe(
+					crossSectionalArea,
+					fluidViscosity,
+					hydraulicDiameter);
+			massFlowRate *= Re;
+
+			double massFlowRateValue;
+			massFlowRateValue = massFlowRate.As(MassFlowUnit.SI);
 
             var c = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B);
+			// that pretty much covers the current
+			// as mass flowrate
             double g;
 
             // If v=0 the derivative is either 0 or infinity (avoid 0^(negative number) = not a number)
@@ -105,17 +127,10 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 			// For basepipe, we just calculate the jacobian straightaway
 			// so we first load everything else from the base parameters
 
-			Area crossSectionalArea;
-			crossSectionalArea = _bp.crossSectionalArea();
 
 			Length absoluteRoughness;
 			absoluteRoughness = _bp.absoluteRoughness;
 
-			Length hydraulicDiameter;
-			hydraulicDiameter = _bp.hydraulicDiameter;
-
-			DynamicViscosity fluidViscosity;
-			fluidViscosity = _bp.fluidViscosity;
 
 			double dm_dPA = _jacobianObject.dm_dPA(crossSectionalArea,
 					fluidViscosity,
@@ -159,14 +174,37 @@ namespace SpiceSharp.Components.BasePipeBehaviors
             // If the voltage was reversed, reverse the current back
             if (isNegative)
                 c = -c;
+			// likewise if pressure difference is reversed
+			// mass flowrate is also reversed
+			if (isNegative)
+				massFlowRateValue = -massFlowRateValue;
 
             // Load the RHS vector
+			// traditionally we use c for current
+			// we add the jacobian term times voltage
+			// back into the current for the RHS term
             c -= g * v;
+
+			// so for the mass flowrate case we use:
+			// RHS term 1 is the
+			// mass flowrate out of node A
+			// minus the jacobian times kinematic pressure 
+			// difference
+			// at the resistor
+			double nodeARHSTerm;
+			nodeARHSTerm = massFlowRateValue - dm_dPA * 
+				pressureDrop.As(SpecificEnergyUnit.SI);
+
+			double nodeBRHSTerm;
+			nodeBRHSTerm = - massFlowRateValue + dm_dPB *
+				pressureDrop.As(SpecificEnergyUnit.SI);
+
+
             _elements.Add(
                 // Y-matrix
                 dm_dPA, dm_dPB, minus_dm_dPA, minus_dm_dPB,
                 // RHS-vector
-                c, -c);
+                nodeARHSTerm, nodeBRHSTerm);
         }
     }
 }
