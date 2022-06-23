@@ -108,6 +108,35 @@ public class ChurchillFrictionFactorJacobian : ChurchillMathNetDerivative,
 	public double dDeltaP_dPB(){
 		return -1.0;
 	}
+	public double getBejanNumber(
+			SpecificEnergy pressureDrop,
+			KinematicViscosity fluidKinViscosity,
+			Length pipeLength){
+
+		pressureDrop = pressureDrop.ToUnit(SpecificEnergyUnit.SI);
+		fluidKinViscosity = fluidKinViscosity.ToUnit(SpecificEnergyUnit.SI);
+		pipeLength = pipeLength.ToUnit(LengthUnit.SI);
+
+
+		double finalValue;
+
+		finalValue = pressureDrop.As(SpecificEnergyUnit.SI);
+		finalValue *= Math.Pow(
+				pipeLength.As(
+					LengthUnit.SI)
+				,2.0);
+
+		finalValue /= Math.Pow(
+				fluidKinViscosity.As(
+					KinematicViscosityUnit.SI)
+				,2.0);
+
+		return finalValue;
+
+	}
+
+	// the following section contains code which calculates
+	// the actual jacobians
 
 	public double dm_dPA(Area crossSectionalArea,
 			DynamicViscosity fluidViscosity,
@@ -170,6 +199,128 @@ public class ChurchillFrictionFactorJacobian : ChurchillMathNetDerivative,
 
 		return derivativeResult;
 	}
+
+	// the following overloads of dm_dPA
+	// help to find the derivative based on pressure drop
+	// rather than Reynold's number
+	// So it does the root finding process fist
+	// and then returns the value internally for you
+
+	public double dm_dPA(Area crossSectionalArea,
+			DynamicViscosity fluidViscosity,
+			Length hydraulicDiameter,
+			SpecificEnergy pressureDrop,
+			double roughnessRatio,
+			Length pipeLength,
+			KinematicViscosity fluidKinViscosity){
+
+		double Be;
+		Be = this.getBejanNumber(pressureDrop,
+				fluidKinViscosity,
+				pipeLength);
+
+		double lengthToDiameter;
+		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
+			hydraulicDiameter.As(LengthUnit.SI);
+
+		double Re = this.getRe(Be,roughnessRatio,
+				lengthToDiameter);
+
+		double derivativeResult;
+		derivativeResult = this.dm_dPA(crossSectionalArea,
+				fluidViscosity,
+				hydraulicDiameter,
+				Re,
+				roughnessRatio,
+				pipeLength,
+				fluidKinViscosity);
+		return derivativeResult;
+	}
+
+	public double dm_dPB(Area crossSectionalArea,
+			DynamicViscosity fluidViscosity,
+			Length hydraulicDiameter,
+			SpecificEnergy pressureDrop,
+			double roughnessRatio,
+			Length pipeLength,
+			KinematicViscosity fluidKinViscosity){
+
+		double Be;
+		Be = this.getBejanNumber(pressureDrop,
+				fluidKinViscosity,
+				pipeLength);
+
+		double lengthToDiameter;
+		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
+			hydraulicDiameter.As(LengthUnit.SI);
+
+		double Re = this.getRe(Be,roughnessRatio,
+				lengthToDiameter);
+
+		double derivativeResult;
+		derivativeResult = this.dm_dPB(crossSectionalArea,
+				fluidViscosity,
+				hydraulicDiameter,
+				Re,
+				roughnessRatio,
+				pipeLength,
+				fluidKinViscosity);
+		return derivativeResult;
+	}
+	// these overloads autocalculate and 
+	// convert units of absolute roughness for you
+	
+	public double dm_dPA(Area crossSectionalArea,
+			DynamicViscosity fluidViscosity,
+			Length hydraulicDiameter,
+			SpecificEnergy pressureDrop,
+			Length absoluteRoughness,
+			Length pipeLength,
+			KinematicViscosity fluidKinViscosity){
+
+		double roughnessRatio;
+
+		roughnessRatio = absoluteRoughness.As(LengthUnit.SI)/
+			hydraulicDiameter.As(LengthUnit.SI);
+
+		double derivativeResult;
+		derivativeResult = this.dm_dPA(crossSectionalArea,
+				fluidViscosity,
+				hydraulicDiameter,
+				pressureDrop,
+				roughnessRatio,
+				pipeLength,
+				fluidKinViscosity);
+		return derivativeResult;
+	}
+
+	public double dm_dPB(Area crossSectionalArea,
+			DynamicViscosity fluidViscosity,
+			Length hydraulicDiameter,
+			SpecificEnergy pressureDrop,
+			Length absoluteRoughness,
+			Length pipeLength,
+			KinematicViscosity fluidKinViscosity){
+
+		double roughnessRatio;
+
+		roughnessRatio = absoluteRoughness.As(LengthUnit.SI)/
+			hydraulicDiameter.As(LengthUnit.SI);
+
+		double derivativeResult;
+		derivativeResult = this.dm_dPB(crossSectionalArea,
+				fluidViscosity,
+				hydraulicDiameter,
+				pressureDrop,
+				roughnessRatio,
+				pipeLength,
+				fluidKinViscosity);
+		return derivativeResult;
+	}
+
+
+
+
 
 }
 

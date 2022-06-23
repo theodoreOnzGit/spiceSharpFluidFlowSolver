@@ -74,6 +74,12 @@ function.
 
 ```csharp
 ```
+
+The only test to do here is an internal consistency check.
+But given that it's so simple, i'd rather forgo it.
+
+Unless errors come forth later on.
+
 ### dpdRe dimensioned derivative
 Now we just need to calculate:
 $$\frac{d \Delta p}{d (Re)} = \frac{d(Be)}{d(Re)} 
@@ -91,6 +97,10 @@ corresponding to two Re values.
 $$\frac{d(Be)}{d(Re)}  = \frac{d(Be)}{d \Delta p} * \frac{d \Delta p}{d (Re)}
 $$
 
+I can't really test too much on this, except to copy/paste
+the inner working code and see if it works as intended.
+
+Also unit checks.
 
 ##  dmdRe dimensioned derivative
 $$\frac{d \dot{m}_{pipe}}{d p_A} = 
@@ -160,6 +170,15 @@ this is the type expected to go into load.
 I expect units to all be SI converted. So I'd like to convert them
 in my functions before anything else.
 
+So far, the jacobian can be calculated if the Reynold's number is 
+known.
+
+If the Reynold's number is not known, we have to guess it from 
+the pressure drop.
+
+For that, we need to convert the kinematic pressure drop to Bejan 
+number, then obtain the Reynold's number given the relative
+roughness and lengthToDiameter Ratio.
 
 
 
