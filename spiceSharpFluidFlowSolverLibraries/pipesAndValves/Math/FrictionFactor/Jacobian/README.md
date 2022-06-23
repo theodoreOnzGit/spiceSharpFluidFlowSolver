@@ -90,3 +90,88 @@ So we don't have the problem of one friction factor value
 corresponding to two Re values.
 $$\frac{d(Be)}{d(Re)}  = \frac{d(Be)}{d \Delta p} * \frac{d \Delta p}{d (Re)}
 $$
+
+
+##  dmdRe dimensioned derivative
+$$\frac{d \dot{m}_{pipe}}{d p_A} = 
+\frac{\frac{d \Delta p}{d p_A} 
+\frac{d \dot{m}_{pipe}}{d Re}}{\frac{d \Delta p}{d Re}}$$
+
+
+Now we have settled the denominator, we can look at the numerator
+
+dmdRe is in the numerator, and it has units of mass flowrate.
+
+
+$$Re_D = \frac{\dot{m}_{pipe}D_{pipe}}{A_{xs}\mu_{fluid}}$$
+
+$$\dot{m}_{pipe} = \frac{Re_{D} A_{xs} \mu_{fluid}}{D_{pipe}}$$
+
+so we have the derivative 
+
+$$\frac{d\dot{m}_{pipe}}{d(Re)} = \frac{A_{xs} 
+\mu_{fluid}}{D_{pipe}}$$
+
+Only three parameters are required: 
+
+
+1. pipe cross sectional area
+2. fluid viscosity
+3. pipe hydraulic diameter
+
+the return type will be dimensioned in mass flowrate
+
+
+```csharp
+```
+
+##  $\partial \Delta$p / $\partial p_A$ and  $\partial \Delta$p / $\partial p_B$ derivatives
+
+We note:
+
+$$\Delta p = p_A - p_B$$
+
+We go by the potential difference convention for circuits rather
+than pressure drop which has inital - final.
+
+From this we note:
+
+$$\frac{\partial \Delta p}{\partial p_A} = 1$$
+$$\frac{\partial \Delta p}{\partial p_B} = -1$$
+
+For the sake of having such functions explicitly declared
+in code, i'm making functions for these:
+
+```csharp
+```
+
+May be trivial, but at least it makes code somewhat easier to read.
+If one understands these derivations that is.
+
+## dm/dp jacobian
+
+Now this derivative here will be in some 
+weird unit: $(kg/s)/(m^2/s^2)$
+
+I know not of any existing unit being of this sort of unit.
+But no matter, the final return type is double, since
+this is the type expected to go into load.
+
+I expect units to all be SI converted. So I'd like to convert them
+in my functions before anything else.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

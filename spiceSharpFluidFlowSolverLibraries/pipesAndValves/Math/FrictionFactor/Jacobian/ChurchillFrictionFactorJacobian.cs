@@ -63,6 +63,9 @@ public class ChurchillFrictionFactorJacobian : ChurchillMathNetDerivative,
 			double lengthToDiameter,
 			Length lengthScale,
 			KinematicViscosity nu){
+
+		lengthScale = lengthScale.ToUnit(LengthUnit.SI);
+		nu = nu.ToUnit(KinematicViscosityUnit.SI);
 		// dDeltaP_dRe will be in specific energy
 		// SI unit is: m^2/s^2 
 		// this is the same unit as kinematic pressure
@@ -78,5 +81,95 @@ public class ChurchillFrictionFactorJacobian : ChurchillMathNetDerivative,
 
 		return derivativeResult;
 	}
+	
+	public MassFlow dmdRe(Area crossSectionalArea,
+			DynamicViscosity fluidViscosity,
+			Length hydraulicDiameter){
+
+		crossSectionalArea = crossSectionalArea.ToUnit(AreaUnit.SI);
+		fluidViscosity = fluidViscosity.ToUnit(DynamicViscosityUnit.SI);
+		hydraulicDiameter = hydraulicDiameter.ToUnit(LengthUnit.SI);
+
+		var intermediateUnitResult = crossSectionalArea
+			*fluidViscosity
+			/hydraulicDiameter;
+
+		MassFlow derivativeResult;
+		derivativeResult = (MassFlow)intermediateUnitResult;
+
+		return derivativeResult;
+
+	}
+
+	public double dDeltaP_dPA(){
+		return 1.0;
+	}
+
+	public double dDeltaP_dPB(){
+		return -1.0;
+	}
+
+	public double dm_dPA(Area crossSectionalArea,
+			DynamicViscosity fluidViscosity,
+			Length hydraulicDiameter,
+			double Re,
+			double roughnessRatio,
+			Length pipeLength,
+			KinematicViscosity fluidKinViscosity){
+
+		double derivativeResult;
+		derivativeResult = this.dDeltaP_dPA();
+
+		MassFlow dmdRe = this.dmdRe(crossSectionalArea,
+				fluidViscosity,
+				hydraulicDiameter);
+
+		double lengthToDiameter;
+		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
+			hydraulicDiameter.As(LengthUnit.SI);
+
+		SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
+				roughnessRatio,
+				lengthToDiameter,
+				pipeLength,
+				fluidKinViscosity);
+
+		derivativeResult *= dmdRe.As(MassFlowUnit.SI);
+		derivativeResult /= dDeltaP_dRe.As(MassFlowUnit.SI);
+
+		return derivativeResult;
+	}
+
+	public double dm_dPB(Area crossSectionalArea,
+			DynamicViscosity fluidViscosity,
+			Length hydraulicDiameter,
+			double Re,
+			double roughnessRatio,
+			Length pipeLength,
+			KinematicViscosity fluidKinViscosity){
+
+		double derivativeResult;
+		derivativeResult = this.dDeltaP_dPB();
+
+		MassFlow dmdRe = this.dmdRe(crossSectionalArea,
+				fluidViscosity,
+				hydraulicDiameter);
+
+		double lengthToDiameter;
+		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
+			hydraulicDiameter.As(LengthUnit.SI);
+
+		SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
+				roughnessRatio,
+				lengthToDiameter,
+				pipeLength,
+				fluidKinViscosity);
+
+		derivativeResult *= dmdRe.As(MassFlowUnit.SI);
+		derivativeResult /= dDeltaP_dRe.As(MassFlowUnit.SI);
+
+		return derivativeResult;
+	}
+
 }
 

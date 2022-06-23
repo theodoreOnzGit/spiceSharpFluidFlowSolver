@@ -55,7 +55,7 @@ public class FilonenkoFrictionFactor : IFrictionFactor,
 
 
 
-	public double calculateMoodyPartialDerivative(double Re, 
+	public virtual double calculateMoodyPartialDerivative(double Re, 
 			double roughnessRatio){
 		//
 		// firstly i need to use the derivative object
@@ -92,12 +92,12 @@ public class FilonenkoFrictionFactor : IFrictionFactor,
 		return derivativeResult;
 	}
 
-	public double calculateDarcyPartialDerivative(double Re, 
+	public virtual double calculateDarcyPartialDerivative(double Re, 
 			double roughnessRatio){
 		return this.calculateMoodyPartialDerivative(Re, roughnessRatio);
 	}
 
-	public double calculateFanningPartialDerivative(double Re, 
+	public virtual double calculateFanningPartialDerivative(double Re, 
 			double roughnessRatio){
 		//
 		// firstly i need to use the derivative object
@@ -142,7 +142,7 @@ public class FilonenkoAnalyticalDerivative :
 	FilonenkoFrictionFactor,
 	IFrictionFactorDerivatives
 {
-	double calculateFanningPartialDerivative(double Re, 
+	public override double calculateFanningPartialDerivative(double Re, 
 			double roughnessRatio){
 
 		return this.calculateDarcyPartialDerivative(
@@ -150,7 +150,7 @@ public class FilonenkoAnalyticalDerivative :
 	}
 
 
-	double calculateMoodyPartialDerivative(double Re, 
+	public override double calculateMoodyPartialDerivative(double Re, 
 			double roughnessRatio){
 
 		return this.calculateDarcyPartialDerivative(
@@ -158,7 +158,7 @@ public class FilonenkoAnalyticalDerivative :
 	}
 
 
-	double calculateDarcyPartialDerivative(double Re, 
+	public override double calculateDarcyPartialDerivative(double Re, 
 			double roughnessRatio){
 		double result;
 		result = -2.0 * Math.Pow(

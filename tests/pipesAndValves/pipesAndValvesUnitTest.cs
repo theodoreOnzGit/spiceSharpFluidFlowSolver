@@ -357,10 +357,10 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		double errorFraction = Math.Abs(analayticalDerivativeValue 
 				- referenceNumericalDerivative)
 			/Math.Abs(referenceNumericalDerivative);
-		double errorTolerance = 0.00000001;
+		double errorTolerance = 0.001;
 
 		Assert.Equal(referenceNumericalDerivative,
-				analayticalDerivativeValue);
+				analayticalDerivativeValue,10);
 		Assert.True(errorFraction < errorTolerance);
 
 	}
