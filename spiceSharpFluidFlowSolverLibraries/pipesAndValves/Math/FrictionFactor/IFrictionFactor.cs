@@ -10,3 +10,8 @@ public interface IFrictionFactor
 	double moody(double ReynoldsNumber, double roughnessRatio);
 	double darcy(double ReynoldsNumber, double roughnessRatio);
 }
+public interface IFrictionFactorGetRe
+{
+	double getRe(double Be, double roughnessRatio, 
+			double lengthToDiameter);
+}

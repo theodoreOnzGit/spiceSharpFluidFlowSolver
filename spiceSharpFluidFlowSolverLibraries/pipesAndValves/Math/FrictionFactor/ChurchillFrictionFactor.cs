@@ -5,11 +5,6 @@ using System;
 using MathNet.Numerics;
 
 
-public interface IFrictionFactorGetRe
-{
-	double getRe(double Be, double roughnessRatio, 
-			double lengthToDiameter);
-}
 
 public partial class ChurchillFrictionFactor : IFrictionFactor
 												,IFrictionFactorGetRe

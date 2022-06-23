@@ -101,8 +101,36 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 					pipeLength,
 					fluidKinViscosity);
 
+			double dm_dPB = _jacobianObject.dm_dPB(crossSectionalArea,
+					fluidViscosity,
+					hydraulicDiameter,
+					pressureDrop,
+					absoluteRoughness,
+					pipeLength,
+					fluidKinViscosity);
+
+			double minus_dm_dPA = -_jacobianObject.dm_dPA(crossSectionalArea,
+					fluidViscosity,
+					hydraulicDiameter,
+					pressureDrop,
+					absoluteRoughness,
+					pipeLength,
+					fluidKinViscosity);
+
+			double minus_dm_dPB = -_jacobianObject.dm_dPB(crossSectionalArea,
+					fluidViscosity,
+					hydraulicDiameter,
+					pressureDrop,
+					absoluteRoughness,
+					pipeLength,
+					fluidKinViscosity);
+
             // In order to avoid having a singular matrix, we want to have at least a very small value here.
-            g = Math.Max(g, _baseConfig.Gmin);
+            //g = Math.Max(g, _baseConfig.Gmin);
+            dm_dPA = Math.Max(dm_dPA, _baseConfig.Gmin);
+            dm_dPB = Math.Max(dm_dPB, _baseConfig.Gmin);
+            minus_dm_dPA = Math.Max(minus_dm_dPA, _baseConfig.Gmin);
+            minus_dm_dPB = Math.Max(minus_dm_dPB, _baseConfig.Gmin);
 
             // If the voltage was reversed, reverse the current back
             if (isNegative)
