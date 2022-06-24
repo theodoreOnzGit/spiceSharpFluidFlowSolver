@@ -36,7 +36,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 				);
 
 		// Setup the simulation and export our current
-		var dc = new DC("DC", "V1", 1.45e1, 1.5e1, 0.05e1);
+		var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
 		var currentExport = new RealPropertyExport(dc, "V1", "i");
 		this.cout("\n BasePipe without pipeFactory \n");
 		dc.ExportSimulationData += (sender, args) =>
