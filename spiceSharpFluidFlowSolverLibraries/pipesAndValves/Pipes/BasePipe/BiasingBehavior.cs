@@ -78,10 +78,21 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 			fluidKinViscosity = _bp.fluidKinViscosity;
 
 			double bejanNumber;
+			// now here's an issue found during debugging,
+			// if bejan number is zero, the simulation will crash
+			// this is because the derivatives at Re = 0 are not
+			// defined for the churchill correlation.
+			// i will arbitrarily add 1000 to the bejan number
+			// if it is zero so that we can continue simulation
+			if(pressureDrop.As(SpecificEnergyUnit.SI) == 0){
+				pressureDrop = new SpecificEnergy(100
+						,SpecificEnergyUnit.SI);
+			}
 			bejanNumber = _jacobianObject.getBejanNumber(
 					pressureDrop,
 					fluidKinViscosity,
 					pipeLength);
+
 
 			double roughnessRatio;
 			roughnessRatio = _bp.roughnessRatio();
@@ -89,9 +100,43 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 			double lengthToDiameter;
 			lengthToDiameter = _bp.lengthToDiameter();
 
-			double Re = _jacobianObject.getRe(bejanNumber, 
-					roughnessRatio, 
-					lengthToDiameter);
+			void checkNumbers(double bejanNumber,
+					double roughnessRatio,
+					double lengthToDiameter){
+
+				if(Double.IsNaN(bejanNumber))
+					throw new Exception("bejanNumber is NaN");
+
+				if(Double.IsNaN(roughnessRatio))
+					throw new Exception("roughnessRatio is NaN");
+
+				if(Double.IsNaN(lengthToDiameter))
+					throw new Exception("lengthToDiameter is NaN");
+
+				if(1 == 1){
+					string errorMsg ="";
+					errorMsg += "\n bejanNumber is " + bejanNumber.ToString();
+					errorMsg += "\n roughnessRatio is " + roughnessRatio.ToString();
+					errorMsg += "\n lengthToDiameter is " + lengthToDiameter.ToString();
+					throw new Exception(errorMsg);
+				}
+			}
+
+			// checkNumbers(bejanNumber, roughnessRatio, lengthToDiameter);
+
+			// if Bejan number is zero, then Re is 0
+			// However, for steady state, we don't want to have that 
+			// equals to zero,
+			// if not the simulation will crash
+			// we'll just get
+
+			double Re = 0;
+			if(bejanNumber > 0){
+				Re = _jacobianObject.getRe(bejanNumber, 
+						roughnessRatio, 
+						lengthToDiameter);
+			}
+
 
 			Area crossSectionalArea;
 			crossSectionalArea = _bp.crossSectionalArea();

@@ -19,7 +19,39 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	[Fact]
 	public void When_BasePipeGetDerivedQuantitesExpectNoError(){
 
-		throw new Exception();
+		PipeFactory pipeFactory = new PipeFactory("RNL1","out","0");
+		Component preCastPipe = pipeFactory.returnPipe("MockPipeCustomResistor");
+		// this step is needed to cast the mockPipe as the
+		// correct type
+		Component preCasePipe = new BasePipe("basepipe1","out","0");
+		BasePipe mockPipe = (BasePipe)preCasePipe;
+		mockPipe.Connect("out","0");
+		mockPipe.Parameters.A = 2.0e3;
+		mockPipe.Parameters.B = 0.5; 
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", 0.0),
+				mockPipe
+				);
+
+		// Setup the simulation and export our current
+		var dc = new DC("DC", "V1", 1.45e1, 1.5e1, 0.05e1);
+		var currentExport = new RealPropertyExport(dc, "V1", "i");
+		this.cout("\n BasePipe without pipeFactory \n");
+		dc.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			System.Console.Write("{0}, ".FormatString(current));
+		};
+		dc.Run(ckt);
+		double current = -currentExport.Value;
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+
+
+		//throw new Exception();
 	}
 
 

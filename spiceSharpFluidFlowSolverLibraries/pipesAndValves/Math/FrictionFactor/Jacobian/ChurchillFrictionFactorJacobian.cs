@@ -114,7 +114,7 @@ public class ChurchillFrictionFactorJacobian : ChurchillMathNetDerivative,
 			Length pipeLength){
 
 		pressureDrop = pressureDrop.ToUnit(SpecificEnergyUnit.SI);
-		fluidKinViscosity = fluidKinViscosity.ToUnit(SpecificEnergyUnit.SI);
+		fluidKinViscosity = fluidKinViscosity.ToUnit(KinematicViscosityUnit.SI);
 		pipeLength = pipeLength.ToUnit(LengthUnit.SI);
 
 

@@ -87,6 +87,14 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 			double roughnessRatio,
 			double lengthToDiameter){
 
+		// If there is no pressure drop
+		// Reynold's number is automatically 0
+
+		if(Be == 0)
+			return 0.0;
+
+
+
 		this.roughnessRatio = roughnessRatio;
 		this.lengthToDiameter = lengthToDiameter;
 		this.bejanNumber = Be;
