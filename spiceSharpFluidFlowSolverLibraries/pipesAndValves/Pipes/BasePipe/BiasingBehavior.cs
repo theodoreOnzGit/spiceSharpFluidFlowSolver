@@ -44,7 +44,7 @@ namespace SpiceSharp.Components.BasePipeBehaviors
             // We need 4 matrix elements and 2 RHS vector elements
             var indexA = state.Map[_nodeA];
             var indexB = state.Map[_nodeB];
-            _elements = new ElementSet<double>(state.Solver, new[] {
+            this._elements = new ElementSet<double>(state.Solver, new[] {
                     new MatrixLocation(indexA, indexA),
                     new MatrixLocation(indexA, indexB),
                     new MatrixLocation(indexB, indexA),
@@ -57,7 +57,8 @@ namespace SpiceSharp.Components.BasePipeBehaviors
         /// </summary>
         void IBiasingBehavior.Load()
         {
-            // First get the current iteration voltage, but for basepipe, this is actually pressuredrop
+            // First get the current iteration voltage, but for basepipe
+			// , this is actually pressuredrop
             var v = _nodeA.Value - _nodeB.Value;
 			SpecificEnergy pressureDrop;
 			pressureDrop = new SpecificEnergy(v, SpecificEnergyUnit.SI);
@@ -192,15 +193,15 @@ namespace SpiceSharp.Components.BasePipeBehaviors
 			// difference
 			// at the resistor
 			double nodeARHSTerm;
-			nodeARHSTerm = massFlowRateValue - dm_dPA * 
-				pressureDrop.As(SpecificEnergyUnit.SI);
+			nodeARHSTerm = -massFlowRateValue + dm_dPA * _nodeA.Value +
+				dm_dPB * _nodeB.Value;
 
 			double nodeBRHSTerm;
-			nodeBRHSTerm = - massFlowRateValue + dm_dPB *
-				pressureDrop.As(SpecificEnergyUnit.SI);
+			nodeBRHSTerm = massFlowRateValue + minus_dm_dPA * _nodeA.Value +
+				minus_dm_dPB * _nodeB.Value;
 
 
-            _elements.Add(
+            this._elements.Add(
                 // Y-matrix
                 dm_dPA, dm_dPB, minus_dm_dPA, minus_dm_dPB,
                 // RHS-vector

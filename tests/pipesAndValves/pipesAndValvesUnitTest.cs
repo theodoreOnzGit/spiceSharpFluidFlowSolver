@@ -16,6 +16,12 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
+	[Fact]
+	public void When_BasePipeGetDerivedQuantitesExpectNoError(){
+
+		throw new Exception();
+	}
+
 
 
     [Fact]
