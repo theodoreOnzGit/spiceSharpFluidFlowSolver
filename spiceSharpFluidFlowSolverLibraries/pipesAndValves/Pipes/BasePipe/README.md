@@ -151,7 +151,8 @@ minus_dm_dPB * _nodeB.Value;
 ```
 
 In future iterations, i might just name the variables PA and PB
-to avoid even more confusion.
+to avoid even more confusion. Since nodeB.Value is essentially
+the kinematic pressure of nodeB.
 
 
 Also, i didn't do unit checks as thoughly here. But all units
@@ -159,6 +160,151 @@ must be taken as SI. Or it won't work. However, UnitConversions
 in baseparameters should work okay.
 
 I still need to test that though.
+
+## inner workings and bugs
+
+Most work happens in the BiasingBehavior class.
+
+```csharp
+private readonly IVariable<double> _nodeA, _nodeB;
+private readonly ElementSet<double> _elements;
+private readonly BaseParameters _bp;
+private readonly BiasingParameters _baseConfig;
+private IFrictionFactorJacobian _jacobianObject;
+```
+
+In that class, a list of variables is instantiated.
+
+Of these, we pay attention to BaseParameters class which
+contains the properties of the pipe and fluid within.
+
+Also of importance here are elementSet classes, which
+contain the elements of the matrices we want to add
+to when we do the nodal analysis and biasing.
+
+However, the bulk of the work happnes in the jacobian
+Object, which helps us calculate the jacobian as spelled
+out in the pipe theory readme.
+
+In the constructor
+```csharp
+
+// Construct the IFrictionFactorJacobian object
+_jacobianObject = new ChurchillFrictionFactorJacobian();
+```
+
+We construct our friction factor object. No dependency
+injection here as i don't want to overcomplicate things
+yet.
+
+To help calculate our jacobians, the following code
+is executed:
+
+```csharp
+double dm_dPA = _jacobianObject.dm_dPA(crossSectionalArea,
+		fluidViscosity,
+		hydraulicDiameter,
+		pressureDrop,
+		absoluteRoughness,
+		pipeLength,
+		fluidKinViscosity);
+
+double dm_dPB = _jacobianObject.dm_dPB(crossSectionalArea,
+		fluidViscosity,
+		hydraulicDiameter,
+		pressureDrop,
+		absoluteRoughness,
+		pipeLength,
+		fluidKinViscosity);
+
+double minus_dm_dPA = -_jacobianObject.dm_dPA(crossSectionalArea,
+		fluidViscosity,
+		hydraulicDiameter,
+		pressureDrop,
+		absoluteRoughness,
+		pipeLength,
+		fluidKinViscosity);
+
+double minus_dm_dPB = -_jacobianObject.dm_dPB(crossSectionalArea,
+		fluidViscosity,
+		hydraulicDiameter,
+		pressureDrop,
+		absoluteRoughness,
+		pipeLength,
+		fluidKinViscosity);
+```
+The above required parameters are pulled straight from base parameters
+prior to executing this code.
+
+```csharp
+
+Length pipeLength;
+pipeLength = _bp.pipeLength;
+
+KinematicViscosity fluidKinViscosity;
+fluidKinViscosity = _bp.fluidKinViscosity;
+```
+
+All of these use the EngineeringUnits package inherited from
+SharpFluids:
+
+```csharp
+using EngineeringUnits;
+using EngineeringUnits.Units;
+```
+In this project, dimensionless quantites are doubles,
+the rest are all dimensioned accordingly to force unit checks.
+
+However, when it comes time for the final conversion,
+only then are the Dimensioned Unit objects converted into doubles
+and the unit will always be SI.
+
+```csharp
+
+MassFlow massFlowRate;
+// i noticed that dmdRe is the same
+// as mass/Re due to its linear relationship
+massFlowRate = _jacobianObject.dmdRe(
+		crossSectionalArea,
+		fluidViscosity,
+		hydraulicDiameter);
+massFlowRate *= Re;
+
+double massFlowRateValue;
+massFlowRateValue = massFlowRate.As(MassFlowUnit.SI);
+```
+
+There were a few queirks when i started using this code however.
+Mainly, the flowrate starts out at zero. Now when it does that
+Reynold's number is zero. Which is okay. However, the friction
+factor from churchill correlation will be infinite. Because
+the fanning friction factor is:
+
+$$\frac{16}{Re}$$
+
+So since the friction factor goes to infinity, the code throws
+and error. And also, the gradient when the flowrate approaches 
+zero is undefined.
+
+However, the pressure drop is not undefined, it just approaches
+zero and is therefore a well behaved function. For this reason,
+it may be prudent to use an analytical function or at least 
+modify the jacobian equations slightly to ensure that it doesn't
+approach zero. 
+
+The pressure drop goes as:
+
+$$\frac{16}{Re} * Re^2 = 16 * Re$$
+
+I might want to use a different implmentation of this in future.
+This is so that I will have a mathematically well behaved jacobian.
+
+
+
+
+
+
+
 
 # Bibliography
 
