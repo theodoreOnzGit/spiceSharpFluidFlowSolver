@@ -242,12 +242,135 @@ Note that this is not thread safe.
 
 Only after cleanup, then Reynold's number is returned.
 
+Once the appropriate Reynold's Number is found, we can
+then find the slope at that particular Re.
+
+This is done from the ChurchillMathNetDerivative
+class.
+
+First the derivative dBe/dRe is calculated
+
+```csharp
+public double dB_dRe(double Re, double roughnessRatio,
+		double lengthToDiameter){
+
+	double lengthToDiameterTerm;
+	lengthToDiameterTerm = Math.Pow(4.0*lengthToDiameter,
+			3.0);
 
 
+	//
+	// firstly i need to use the derivative object
+
+	IDerivative derivativeObj;
+	derivativeObj = new MathNetDerivatives();
+
+	// secondly i need a function with a double
+	// in and out
+	// this is the function that returns the Reynold's number
+	// however, the roughness ratio is kept constant
+
+	this.roughnessRatio = roughnessRatio;
+
+	double constantRoughnessFanningReSq(double Re){
+
+		double fanningReSq = this.fanning(Re, this.roughnessRatio)*
+			Math.Pow(Re,2.0);
+
+		return fanningReSq;
+	}
+
+	// now let's calculate the derivative at a specific Re
+
+	double derivativeResult;
+	derivativeResult = derivativeObj.calc(
+			constantRoughnessFanningReSq, Re);
+
+	// after i'm done, clean up the roughness ratio
+	// variable within the class
+
+	this.roughnessRatio = 0.0;
 
 
+	derivativeResult *= lengthToDiameterTerm;
+	derivativeResult /= 32.0;
+
+	return derivativeResult;
 
 
+}
+```
 
+This is important because we need to use this to find the
+other derivatives. Now, do note that there is an issue
+with this code here: If Re = 0, we will get some form
+of infinity multiplied by zero in the intermediate 
+calculation step. This might be patched up in future 
+iterations.
+
+Once dBe/dRe is found, the rest is simpler.
+
+```csharp
+
+public SpecificEnergy dDeltaP_dRe(double Re, double roughnessRatio,
+		double lengthToDiameter,
+		Length lengthScale,
+		KinematicViscosity nu){
+
+	lengthScale = lengthScale.ToUnit(LengthUnit.SI);
+	nu = nu.ToUnit(KinematicViscosityUnit.SI);
+	// dDeltaP_dRe will be in specific energy
+	// SI unit is: m^2/s^2 
+	// this is the same unit as kinematic pressure
+	SpecificEnergy derivativeResult;
+
+	// the type will be unknown unit
+	var intermediateUnitResult = nu.Pow(2)/lengthScale.Pow(2);
+	intermediateUnitResult *= this.dB_dRe(Re,roughnessRatio,
+			lengthToDiameter);
+
+	// after which we transform it to a base unit
+	derivativeResult = (SpecificEnergy)intermediateUnitResult;
+
+	return derivativeResult;
+}
+
+```
+Note that the derivatives here are dimensioned using the 
+EngineeringUnits package.
+
+```csharp
+
+public double dm_dPA(Area crossSectionalArea,
+		DynamicViscosity fluidViscosity,
+		Length hydraulicDiameter,
+		double Re,
+		double roughnessRatio,
+		Length pipeLength,
+		KinematicViscosity fluidKinViscosity){
+
+	double derivativeResult;
+	derivativeResult = this.dDeltaP_dPA();
+
+	MassFlow dmdRe = this.dmdRe(crossSectionalArea,
+			fluidViscosity,
+			hydraulicDiameter);
+
+	double lengthToDiameter;
+	lengthToDiameter = pipeLength.As(LengthUnit.SI)/
+		hydraulicDiameter.As(LengthUnit.SI);
+
+	SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
+			roughnessRatio,
+			lengthToDiameter,
+			pipeLength,
+			fluidKinViscosity);
+
+	derivativeResult *= dmdRe.As(MassFlowUnit.SI);
+	derivativeResult /= dDeltaP_dRe.As(MassFlowUnit.SI);
+
+	return derivativeResult;
+}
+```
 
 
