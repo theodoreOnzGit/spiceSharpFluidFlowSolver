@@ -373,4 +373,10 @@ public double dm_dPA(Area crossSectionalArea,
 }
 ```
 
+Other such functions were similarly designed. 
+
+And that's pretty much how the jacobian was designed.
+
+More iterations are possible and may be used in future instances.
+
 
