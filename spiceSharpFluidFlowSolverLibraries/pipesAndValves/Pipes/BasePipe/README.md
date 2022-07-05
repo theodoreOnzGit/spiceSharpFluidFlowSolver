@@ -300,6 +300,8 @@ I might want to use a different implmentation of this in future.
 This is so that I will have a mathematically well behaved jacobian.
 
 
+The rest of the code though, will be documented through its underlying jacobian
+functions.
 
 
 

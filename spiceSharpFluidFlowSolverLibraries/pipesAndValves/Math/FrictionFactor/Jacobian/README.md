@@ -135,7 +135,7 @@ the return type will be dimensioned in mass flowrate
 ```csharp
 ```
 
-##  $\partial \Delta$p / $\partial p_A$ and  $\partial \Delta$p / $\partial p_B$ derivatives
+##  $\partial \Delta p / \partial p_A$ and  $\partial \Delta p / \partial p_B$ derivatives
 
 We note:
 
