@@ -180,10 +180,67 @@ For that, we need to convert the kinematic pressure drop to Bejan
 number, then obtain the Reynold's number given the relative
 roughness and lengthToDiameter Ratio.
 
+The code that is responsible for this is the Churchill friction
+factor code. However, the jacobian code also inherits from the
+Churchill friction factor code and will have the capability
+to use the same functions.
+
+```csharp
+
+double pressureDropRoot(double Re){
+
+	// fanning term
+	//
+	double fanningTerm;
+	fanningTerm = this.fanning(Re, this.roughnessRatio);
+	fanningTerm *= Math.Pow(Re,2.0);
 
 
+	//  BejanTerm
+	//
+	double bejanTerm;
+	bejanTerm = 32.0 * this.bejanNumber;
+	bejanTerm *= Math.Pow(4.0*this.lengthToDiameter,-3);
+
+	// to set this to zero, we need:
+	//
+	return fanningTerm - bejanTerm;
+
+}
+
+double ReynoldsNumber;
+ReynoldsNumber = FindRoots.OfFunction(pressureDropRoot, 1, 1e8);
+
+// once I'm done, i want to clean up all terms
+this.roughnessRatio = 0.0;
+this.lengthToDiameter = 0.0;
+this.bejanNumber = 0.0;
 
 
+// then let's return Re
+
+return ReynoldsNumber;
+}
+```
+The function is called pressureDropRoots which guesses 
+a Reynold's number from a given Bejan number.
+
+However, i want my lengthToDiameter ratio and my 
+roughnessRatio to be constant before i load the single
+input single output delegate into the root finding algorithm
+To do that, I assign the input parameters to variables
+or properties within the class. These are then referenced 
+by the delegate when the root finding occurs.
+
+The FindRoots function in the mathnet library is then used
+to find the Reynold's number.
+
+Once that is done, the roughness ratio, bejan number and
+lengthToDiameter ratio of the object are all set to zero.
+
+Note that this is not thread safe.
+
+Only after cleanup, then Reynold's number is returned.
 
 
 
