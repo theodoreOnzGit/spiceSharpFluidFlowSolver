@@ -1,6 +1,8 @@
 using SpiceSharp;
 using SpiceSharp.Components;
 using SpiceSharp.Simulations;
+using EngineeringUnits;
+using EngineeringUnits.Units;
 
 using spiceSharpFluidFlowSolverLibraries;
 
@@ -36,12 +38,47 @@ public class pipesAndValvesUnitTest : testOutputHelper
 				);
 
 		// Setup the simulation and export our current
-		var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
+		double pressureDropMin;
+		pressureDropMin = 1.45;
+
+		double Be;
+		Be = pressureDropMin;
+		Be *= mockPipe.Parameters.pipeLength.
+			As(LengthUnit.SI);
+		Be *= mockPipe.Parameters.pipeLength.
+			As(LengthUnit.SI);
+		Be /= mockPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SI);
+		Be /= mockPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SI);
+
+		double Re;
+		ChurchillFrictionFactorJacobian _jacobianObject;
+		_jacobianObject = new ChurchillFrictionFactorJacobian();
+		double roughnessRatio = mockPipe.Parameters.roughnessRatio();
+		double lengthToDiameter = mockPipe.Parameters.lengthToDiameter();
+		Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+		MassFlow massFlowRate;
+		massFlowRate = mockPipe.Parameters.fluidViscosity*
+			mockPipe.Parameters.crossSectionalArea()/
+			mockPipe.Parameters.hydraulicDiameter*
+			Re;
+
+		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+
+		this.cout("\n The reference Mass flowrate is: " + 
+				massFlowRate.ToString());
+
+
+
+
+		var dc = new DC("DC", "V1", pressureDropMin, 1.5, 0.05);
 		var currentExport = new RealPropertyExport(dc, "V1", "i");
-		this.cout("\n BasePipe without pipeFactory \n");
 		dc.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
+			System.Console.Write("Base Pipe Verification: \n");
 			System.Console.Write("{0}, ".FormatString(current));
 		};
 		dc.Run(ckt);

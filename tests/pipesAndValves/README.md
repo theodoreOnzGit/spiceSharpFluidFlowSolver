@@ -566,9 +566,122 @@ This means to say two things:
 
 So this means that the MathNet thing is working quite well.
 
+## Tests for Validity of the BasePipe class
+
+So far, here are the test results of the basepipe class
+
+```csharp
+
+var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
+var currentExport = new RealPropertyExport(dc, "V1", "i");
+this.cout("\n BasePipe without pipeFactory \n");
+dc.ExportSimulationData += (sender, args) =>
+{
+	var current = -currentExport.Value;
+	System.Console.Write("{0}, ".FormatString(current));
+};
+dc.Run(ckt);
+double current = -currentExport.Value;
+
+currentExport.Destroy();
+// </example_customcomponent_nonlinearresistor_test>
+```
+
+Here i am essentially putting in a kinematic pressure of
+1.45 $m^2/s^2$ and 1.5 $m^2/s^2$.
+
+Currently, results are as follows:
+
+```csharp
+Base Pipe Verification: 
+3659.999407477403, 
+Base Pipe Verification: 
+3723.3071369684676, 
+```
+This means that we have a flowrate of about 3660 kg/s and 3723 kg/s.
+
+Now, the thing is results are printed
+and therefore i have no way of 
+estimating programatically testing.
+
+And i have to visually inspect one
+by one.
+
+What i can do though is to say the
+expected Re and flowrate.
+
+In either case, we still need some code to calculate our reference
+mass flowrate value.
+
+We are given kinematic pressure $\Delta p$. And i need a correct
+mass flowrate.
+
+For this, I want to get a reference Re. And to get reference Re
+we need Be. 
+
+$$ Be = \frac{\Delta p L^2}{\nu^2}$$
+
+```csharp
+double pressureDropMin;
+pressureDropMin = 1.45;
+
+double Be;
+Be = pressureDropMin;
+Be *= mockPipe.Parameters.pipeLength.
+As(LengthUnit.SI);
+Be *= mockPipe.Parameters.pipeLength.
+As(LengthUnit.SI);
+Be /= mockPipe.Parameters.fluidKinViscosity.
+As(KinematicViscosityUnit.SI);
+Be /= mockPipe.Parameters.fluidKinViscosity.
+As(KinematicViscosityUnit.SI);
+```
+
+From this i can get Re:
+
+```csharp
+
+double Re;
+ChurchillFrictionFactorJacobian _jacobianObject;
+_jacobianObject = new ChurchillFrictionFactorJacobian();
+double roughnessRatio = mockPipe.Parameters.roughnessRatio();
+double lengthToDiameter = mockPipe.Parameters.lengthToDiameter();
+Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+```
+
+And then convert Re to MassFlowrate in correct units:
 
 
+```csharp
+MassFlow massFlowRate;
+	massFlowRate = mockPipe.Parameters.fluidViscosity*
+mockPipe.Parameters.crossSectionalArea()/
+	mockPipe.Parameters.hydraulicDiameter*
+	Re;
 
+	massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+
+	this.cout("\n The reference Mass flowrate is: " + 
+			massFlowRate.ToString());
+```
+
+The results are for now, quite satisfactory:
+
+```zsh
+
+ The reference Mass flowrate is: 3660 kg/s
+Base Pipe Verification: 
+3659.999407477403, Base Pipe Verification: 
+3723.3071369684676, 
+ nonlinearResistorReference_NoFactoryBuild 
+```
+
+The latter answer is for a kinematic pressure of
+1.5 $m^2/s^2$. Whereas the minimum kinematic pressure is
+1.45 $m^2/s^2$.
+
+So far this shows that pipe flow in this range is definitely
+correct as expected!
 
 
 
