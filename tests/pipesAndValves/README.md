@@ -1,5 +1,6 @@
 # pipesAndValves Test Readme
 
+
 This is the test suite for the pipes and valve classes.
 
 
@@ -683,11 +684,31 @@ The latter answer is for a kinematic pressure of
 So far this shows that pipe flow in this range is definitely
 correct as expected!
 
+## Going Beyond BasePipe
+
+Now that the BasePipe is confirmed to at least known to function 
+correctly compraed to the base classes which calculate Re and all 
+associated functions. We now want to move on to make the BasePipe
+class suitable for use in a transient simulation.
+
+Only thereafter we want to use a OPCUA server to help us perform
+transient simulation. 
+
+Now to start off, let's see how we can get a good steady state simulation.
+
+Here are a list of things to do:
+
+1. ensure the pipe can handle zero and reverse flow
+2. ensure that we are using only steady state simulations rather than 
+DC simulations
+3. ensure that we are able to pass out all mass flowrate and kinemtaic 
+pressure values.
+4. be able to deal with hydrostatic pressure and pipe arrangement.
+5. validate simuple flow cases for CIET or other flow setups at 
+steady state. 
 
 
-
-
-
+Most of these features are discussed in the pipesAndValues file, rather than
 
 
 
