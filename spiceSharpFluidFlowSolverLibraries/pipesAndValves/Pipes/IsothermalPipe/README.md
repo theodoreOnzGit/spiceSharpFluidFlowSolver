@@ -53,6 +53,18 @@ multiply Re in manually in order to obtain the relevant values.
 
 The other place this particular derivative is used is during root finding. 
 
+However, the function of which we find the root is also related to 
+
+$$f*Re^2$$
+
+So we don't actually have to find the friction factor directly but can
+calculate $f*Re^2$.
+
+The main dependency is changed when the jacobianObject is declared and
+when we need to find the jacobians.
+
+I need to make a new class implementing the jacobianObject interface
+and change it accordingly in the IsothermalPipe class.
 
 
 
