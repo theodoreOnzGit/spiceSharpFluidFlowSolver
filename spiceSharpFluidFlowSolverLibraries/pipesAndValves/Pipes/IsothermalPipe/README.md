@@ -1,17 +1,63 @@
-# BasePipe Readme
+# IsothermalPipe Readme
 
 This is a pipe where we do not consider
 1. Temperature
-2. Height/Elevation
-3. Entrance effects
+2. Entrance effects
 
 The only thing we consider here is the pipe friction factor 
-calculateed using Churchill Correlation.
+calculateed using Churchill Correlation. Plus some height effects.
 
-## Design
+## Issues with BasePipe
 
 The BasePipe class is a straight up modification of the MockPipe class
 which takes from the CustomResistor Example.
+
+It has been tested somewhat to produce the same results as the
+Churchill friction factor correlation. So that for a pressure drop
+of 1.45 $m^2/s^2$, we can get about 3600 kg/s of flow through a pipe
+1m in diameter 10m in length, assuming water at 18C is the fluid.
+No entrance effects are considered here.
+
+The issue with basepipe first and foremost is the inability to handle 
+flow near zero or equal to zero. Because then the friction factor
+terms will go towards infinity. Also BasePipe is not designed to deal 
+with reverse flow.
+
+The second issue is an inability to extract simulation data. However,
+that is more to do with the simulation class rather than the pipe 
+classes. So this issue will not be discussed here.
+
+The third issue is that we want BasePipe to be able to deal with 
+hydrostatic pressure and height in general.
+
+### Strategies to deal with the zero flow issue:
+
+For the zero flow issue, it is apparent that the issue comes from
+the friction factor tending toward zero.
+
+Since I've already verified the original churchill Friction factor
+class, I will use that as a baseline to now compare a new class of
+jacobians and with which we can eliminate the flow set to zero 
+issue.
+
+The two places where the friction factor is actually used is where
+we get the Bejan derivative with respect to Re. dBe/dRe. 
+
+This particular derivatve makes use of the derivative
+
+$$\frac{d (f*Re^2) }{d Re}$$
+
+While the fanning friction factor is not well behaved close to zero,
+$f*Re^2$ is relatively well behaved close to zero. So I will have to
+multiply Re in manually in order to obtain the relevant values. 
+
+The other place this particular derivative is used is during root finding. 
+
+
+
+
+
+## Design:
 
 Most of the math happens in biasing behavior, where a specific element
 set is created called elements with the following indices:
