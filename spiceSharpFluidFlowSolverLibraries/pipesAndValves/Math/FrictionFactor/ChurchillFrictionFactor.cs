@@ -87,13 +87,26 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 			double roughnessRatio,
 			double lengthToDiameter){
 
-		// If there is no pressure drop
-		// Reynold's number is automatically 0
+		// now i want to make sure this function can handle negative 
+		// pressure drop
+		//
+		// ie pressure drops in reverse direction, and this should
+		// yield us reverse flow and negative Reynold's numbers
+		// so what i'll do is this: if Be < 0,
+		// then i'll make it positive
+		//
 
-		if(Be == 0)
-			return 0.0;
-
-
+		bool isNegative;
+		if (Be < 0)
+		{
+			Be *= -1;
+			isNegative = true;
+		}
+		else 
+		{
+			isNegative = false;
+		}
+	
 
 		this.roughnessRatio = roughnessRatio;
 		this.lengthToDiameter = lengthToDiameter;
@@ -148,6 +161,11 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 
 
 		// then let's return Re
+
+		if (isNegative)
+		{
+			return -ReynoldsNumber;
+		}
 
 		return ReynoldsNumber;
 	}
