@@ -105,9 +105,25 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 
 			// fanning term
 			//
+			//
+			// Now here is a potential issue for stability,
+			// if Re = 0, the fanning friction factor is not well behaved,
+			// Hence it's better to use the laminar term at low Reynold's number
+			//
+			// we note that in the laminar regime, 
+			// f = 16/Re
+			// so f*Re^2 = 16*Re
 			double fanningTerm;
-			fanningTerm = this.fanning(Re, this.roughnessRatio);
-			fanningTerm *= Math.Pow(Re,2.0);
+
+			if (Re > 1800)
+			{
+				fanningTerm = this.fanning(Re, this.roughnessRatio);
+				fanningTerm *= Math.Pow(Re,2.0);
+			}
+			else
+			{
+				fanningTerm = 16.0*Re;
+			}
 
 
 			//  BejanTerm

@@ -77,7 +77,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		dc.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
-			System.Console.Write("Base Pipe Verification: \n");
+			System.Console.Write("IsothermalPipe Verification: \n");
 			System.Console.Write("{0}, ".FormatString(current));
 		};
 		dc.Run(ckt);

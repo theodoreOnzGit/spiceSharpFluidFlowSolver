@@ -34,7 +34,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
             _baseConfig = context.GetSimulationParameterSet<BiasingParameters>();
 
 			// Construct the IFrictionFactorJacobian object
-			_jacobianObject = new ChurchillFrictionFactorJacobian();
+			_jacobianObject = new StabilisedChurchillJacobian();
 
             // Request the node variables
             var state = context.GetState<IBiasingSimulationState>();
@@ -84,10 +84,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// defined for the churchill correlation.
 			// i will arbitrarily add 1000 to the bejan number
 			// if it is zero so that we can continue simulation
-			if(pressureDrop.As(SpecificEnergyUnit.SI) == 0){
-				pressureDrop = new SpecificEnergy(100
-						,SpecificEnergyUnit.SI);
-			}
 			bejanNumber = _jacobianObject.getBejanNumber(
 					pressureDrop,
 					fluidKinViscosity,
@@ -130,12 +126,9 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// if not the simulation will crash
 			// we'll just get
 
-			double Re = 0;
-			if(bejanNumber > 0){
-				Re = _jacobianObject.getRe(bejanNumber, 
-						roughnessRatio, 
-						lengthToDiameter);
-			}
+			double Re = _jacobianObject.getRe(bejanNumber, 
+					roughnessRatio, 
+					lengthToDiameter);
 
 
 			Area crossSectionalArea;
