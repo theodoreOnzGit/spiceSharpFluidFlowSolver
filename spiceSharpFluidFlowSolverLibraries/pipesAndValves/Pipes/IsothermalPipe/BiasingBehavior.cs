@@ -59,12 +59,12 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
         {
             // First get the current iteration voltage, but for basepipe
 			// , this is actually pressuredrop
-            var v = _nodeA.Value - _nodeB.Value;
+            var deltaP = _nodeA.Value - _nodeB.Value;
 			SpecificEnergy pressureDrop;
-			pressureDrop = new SpecificEnergy(v, SpecificEnergyUnit.SI);
+			pressureDrop = new SpecificEnergy(deltaP, SpecificEnergyUnit.SI);
 
             // Calculate the derivative w.r.t. one of the voltages
-            var isNegative = v < 0;
+            var isNegative = deltaP < 0;
 			// c here is current, but 
 			// we don't really use it
 			// the equivalent is to calculate mass flowrate
@@ -159,16 +159,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			double massFlowRateValue;
 			massFlowRateValue = massFlowRate.As(MassFlowUnit.SI);
 
-            var c = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B);
-			// that pretty much covers the current
-			// as mass flowrate
-            double g;
-
-            // If v=0 the derivative is either 0 or infinity (avoid 0^(negative number) = not a number)
-            if (v.Equals(0.0))
-                g = _bp.B < 1.0 / _bp.A ? double.PositiveInfinity : 0.0;
-            else
-                g = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B - 1.0) / _bp.A;
 
 			// For basepipe, we just calculate the jacobian straightaway
 			// so we first load everything else from the base parameters
@@ -217,19 +207,12 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
             minus_dm_dPA = Math.Max(minus_dm_dPA, _baseConfig.Gmin);
             minus_dm_dPB = Math.Max(minus_dm_dPB, _baseConfig.Gmin);
 
-            // If the voltage was reversed, reverse the current back
-            if (isNegative)
-                c = -c;
-			// likewise if pressure difference is reversed
+			//  if pressure difference is reversed
 			// mass flowrate is also reversed
 			if (isNegative)
 				massFlowRateValue = -massFlowRateValue;
 
             // Load the RHS vector
-			// traditionally we use c for current
-			// we add the jacobian term times voltage
-			// back into the current for the RHS term
-            c -= g * v;
 
 			// so for the mass flowrate case we use:
 			// RHS term 1 is the

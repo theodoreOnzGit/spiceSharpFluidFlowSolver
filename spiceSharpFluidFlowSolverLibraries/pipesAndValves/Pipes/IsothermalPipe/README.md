@@ -333,7 +333,7 @@ double massFlowRateValue;
 massFlowRateValue = massFlowRate.As(MassFlowUnit.SI);
 ```
 
-There were a few queirks when i started using this code however.
+There were a few quirks when i started using this code however.
 Mainly, the flowrate starts out at zero. Now when it does that
 Reynold's number is zero. Which is okay. However, the friction
 factor from churchill correlation will be infinite. Because
