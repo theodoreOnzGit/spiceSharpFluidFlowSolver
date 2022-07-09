@@ -32,11 +32,49 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 		this.roughnessRatio = roughnessRatio;
 
 		double constantRoughnessFanningReSq(double Re){
-			
-			double fanningReSq = this.fanning(Re, this.roughnessRatio)*
-				Math.Pow(Re,2.0);
 
-			return fanningReSq;
+			// the fanning friction factor function (this.fanning)
+			// can return Re values for various values in turbulent as
+			// well as laminar region
+			//
+			// However, if Re is close to zero, 
+			// the function is not well behaved
+			//
+			// since we are returning f*Re^2
+			// we can use the laminar region fanning friction factor
+			// which is 16/Re
+			// for lower Re eg. Re<1
+			// However, we also note that it's quite computationally cheap
+			// in that you only need to perform one calculation
+			// Hence, it's quite advantageous to let it take more Reynold's 
+			// numbers
+			// so for most of the laminar regime, it is good to use the 
+			// 16/Re formula
+			//
+			// We should note however that for a piecewise function
+			// there is some discontinuity between the two functions
+			// ie the churchill and the Pousille function
+			//
+			// While this is a concern, let's ignore it for now
+			// and fix the problem if it crops up.
+			//
+			// So if Re>1800 we return the traditional fanning formula
+
+			if (Re > 1800)
+			{
+				double fanningReSq = this.fanning(Re, this.roughnessRatio)*
+					Math.Pow(Re,2.0);
+
+				return fanningReSq;
+			}
+
+			// otherwise we return 16/Re*Re^2 or 16*Re
+			//
+
+			return 16.0*Re;
+			
+			// my only concern here is a potential problem if the root is exactly at
+			// Re = 1800
 		}
 
 		// now let's calculate the derivative at a specific Re
