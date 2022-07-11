@@ -23,7 +23,7 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 
 		return this.darcy(ReynoldsNumber,roughnessRatio);
 	}
-	
+
 	public double darcy(double ReynoldsNumber, double roughnessRatio){
 
 		// darcy friction factor is 4x fanning friction factor
@@ -82,7 +82,7 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 	 */
 
 
-	 
+
 	public double getRe(double Be, 
 			double roughnessRatio,
 			double lengthToDiameter){

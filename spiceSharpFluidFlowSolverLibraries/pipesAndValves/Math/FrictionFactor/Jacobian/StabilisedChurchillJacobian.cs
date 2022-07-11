@@ -33,6 +33,12 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 
 		double constantRoughnessFanningReSq(double Re){
 
+			// now the graph in the negative x direction should be a 
+			// reflection of the graph in positive x direction along
+			// the y axis. So this is using absolute value of Re
+
+			Re = Math.Abs(Re);
+
 			// the fanning friction factor function (this.fanning)
 			// can return Re values for various values in turbulent as
 			// well as laminar region
