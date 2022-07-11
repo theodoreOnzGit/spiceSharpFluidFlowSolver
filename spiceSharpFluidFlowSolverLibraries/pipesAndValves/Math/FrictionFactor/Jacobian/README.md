@@ -379,4 +379,163 @@ And that's pretty much how the jacobian was designed.
 
 More iterations are possible and may be used in future instances.
 
+# Patches to Jacobian
+
+## problem statement for patch 1
+Now we note an issue where the friction factor term produces NaN values
+when the pressure drop is zero. This is rather problematic for generating
+our jacobian values especially since our initial pressure drop will be zero.
+
+Furthermore, the jacobian term will not be able to deal with negative Reynold's
+number should the flow reverse.
+
+For the friction factor going close to zero, we recognise that the laminar
+formula for friction factor, 16/Re for fanning friction factor will go to
+infinity if Re goes to zero.
+
+However, pressure drop doesn't go to infinity, but rather to zero.
+
+It appears the quantity of interest to calculate pressure drop is not f,
+but rather $f*Re^2$. $f*Re^2$ is a mathematically well behaved which does
+not go to infinity at Re = 0. And for the laminar region, the formula to 
+calculate this is 16Re. 
+
+So to obtain our jacobian, we need to modify only two functions, 
+
+1. the getRe function
+2. the dB_dRe function
+
+The getRe function has this major change in mind when it comes to finding
+the Re from pressure drop. 
+
+```csharp
+
+double pressureDropRoot(double Re){
+
+	// fanning term
+	//
+	//
+	// Now here is a potential issue for stability,
+	// if Re = 0, the fanning friction factor is not well behaved,
+	// Hence it's better to use the laminar term at low Reynold's number
+	//
+	// we note that in the laminar regime, 
+	// f = 16/Re
+	// so f*Re^2 = 16*Re
+	double fanningTerm;
+
+	if (Re > 1800)
+	{
+		fanningTerm = this.fanning(Re, this.roughnessRatio);
+		fanningTerm *= Math.Pow(Re,2.0);
+	}
+	else
+	{
+		fanningTerm = 16.0*Re;
+	}
+
+
+	//  BejanTerm
+	//
+	double bejanTerm;
+	bejanTerm = 32.0 * this.bejanNumber;
+	bejanTerm *= Math.Pow(4.0*this.lengthToDiameter,-3);
+
+	// to set this to zero, we need:
+	//
+	return fanningTerm - bejanTerm;
+
+}
+```
+
+So basically, we note that for Re below 1, the friction factor kind 
+of goes to infinity. 
+Hence we are better off using 16Re for the fanningTerm for Re below 1
+. However, we note 
+that using churchill correlation to calculate the bejan number in 
+the laminar region is 
+computationally expensive. We may as well use the 16Re for the 
+fanningTerm in the entire
+laminar region. That is Re<2300.
+
+However, this presents another issue: there is potential 
+discontinuity in transitioning
+from the laminar Re equation and the churchill equation. Hence i'd 
+rather not transition
+at Re = 2300, but maybe at 1800 where the curve is smoother and the 
+discontinuity is less.
+
+I noted in earlier unit tests that there is excellent agreement for 
+churchill and the laminar
+friction factor equation at Re<2000. One can hope that at Re<2000, 
+the discontinuity is small and we can still live with a smooth 
+solver. 
+
+One important test for this is to test for root finding at Re=1800,
+and gradient finding at Re=1800. I suspect gradient finding at
+Re=1800 will have issues.
+
+
+Speaking of gradient finding, here is the new code for dB_dRe
+
+```csharp
+
+double constantRoughnessFanningReSq(double Re){
+
+	// now the graph in the negative x direction should be a 
+	// reflection of the graph in positive x direction along
+	// the y axis. So this is using absolute value of Re
+
+	Re = Math.Abs(Re);
+
+	// the fanning friction factor function (this.fanning)
+	// can return Re values for various values in turbulent as
+	// well as laminar region
+	//
+	// However, if Re is close to zero, 
+	// the function is not well behaved
+	//
+	// since we are returning f*Re^2
+	// we can use the laminar region fanning friction factor
+	// which is 16/Re
+	// for lower Re eg. Re<1
+	// However, we also note that it's quite computationally cheap
+	// in that you only need to perform one calculation
+	// Hence, it's quite advantageous to let it take more Reynold's 
+	// numbers
+	// so for most of the laminar regime, it is good to use the 
+	// 16/Re formula
+	//
+	// We should note however that for a piecewise function
+	// there is some discontinuity between the two functions
+	// ie the churchill and the Pousille function
+	//
+	// While this is a concern, let's ignore it for now
+	// and fix the problem if it crops up.
+	//
+	// So if Re>1800 we return the traditional fanning formula
+
+	if (Re > 1800)
+	{
+		double fanningReSq = this.fanning(Re, this.roughnessRatio)*
+			Math.Pow(Re,2.0);
+
+		return fanningReSq;
+	}
+
+	// otherwise we return 16/Re*Re^2 or 16*Re
+	//
+
+	return 16.0*Re;
+
+	// my only concern here is a potential problem if the root is exactly at
+	// Re = 1800
+}
+
+```
+
+It will be important to test dB_dRe at Re=1800. The way to test this is with the
+non stablised version and see how bad the discontinuity is.
+
+
 
