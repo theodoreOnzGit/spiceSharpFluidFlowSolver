@@ -23,6 +23,66 @@ public class FrictionFactorTests : testOutputHelper
 		this._derivativeObj = derivativeObj;
 	}
 
+	[Theory]
+	[InlineData(1800)]
+	[InlineData(1799)]
+	[InlineData(1801)]
+	[InlineData(0)]
+	public void continuityTest_dB_dRe(double Re){
+		double roughnessRatio = 0.05;
+		double lengthToDiameter = 10.0;
+
+		// basically at Re=1800, i transit from
+		// churchill correlation to 16/Re for dB_dRe
+		// for the stabilised churchill
+		// I just want to see how bad the discontinuity is
+		//
+
+		IFrictionFactorJacobian _churchill;
+		IFrictionFactorJacobian _stabilisedChurchill;
+
+		_churchill = new ChurchillFrictionFactorJacobian();
+		_stabilisedChurchill = new StabilisedChurchillJacobian();
+
+		double dB_dRe_reference;
+		if(Re > 100){
+			dB_dRe_reference = _churchill.
+				dB_dRe(Re, roughnessRatio, lengthToDiameter);
+		}
+		else{
+			dB_dRe_reference = 16 *Re;
+		}
+
+		//Act
+
+		double dB_dRe_result = _stabilisedChurchill.
+			dB_dRe(Re, roughnessRatio, lengthToDiameter);
+
+		// Assert
+
+		//Assert.Equal(dB_dRe_reference, dB_dRe_result,0);
+
+
+		double errorMax = 0.002;
+		// Act
+
+		
+
+		double error = Math.Abs(dB_dRe_result - dB_dRe_reference)/dB_dRe_reference;
+
+		// Assert
+		//
+
+		// Assert.Equal(referenceDarcyFactor,resultDarcyFactor);
+		if(Re == 0.0){
+			Assert.Equal(dB_dRe_reference,
+					dB_dRe_result);
+			return;
+		}
+		Assert.True(error < errorMax);
+		return;
+	}
+
 
 	[Theory]
 	[InlineData(100, 0.05)]
@@ -541,7 +601,8 @@ public class FrictionFactorTests : testOutputHelper
 		// Reynold's number
 		//
 		// so it tests the ability of the frictionFactor Jacobian
-		// to deal with negative values
+		// to deal with negative values of Re for the getRe
+		// function
 		//
 		// we have a reference Reynold's number
 		//

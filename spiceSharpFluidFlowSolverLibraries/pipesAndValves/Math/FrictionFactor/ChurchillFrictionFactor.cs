@@ -3,6 +3,7 @@
 
 using System;
 using MathNet.Numerics;
+using MathNet.Numerics.Interpolation;
 
 
 
@@ -126,17 +127,37 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 			// we note that in the laminar regime, 
 			// f = 16/Re
 			// so f*Re^2 = 16*Re
+			double transitionPoint = 1800.0;
 			double fanningTerm;
 
-			if (Re > 1800)
+			if (Re > transitionPoint)
 			{
 				fanningTerm = this.fanning(Re, this.roughnessRatio);
 				fanningTerm *= Math.Pow(Re,2.0);
 			}
 			else
 			{
-				fanningTerm = 16.0*Re;
+				// otherwise we return 16/Re*Re^2 or 16*Re
+				// or rather an interpolated version to preserve the
+				// continuity of the points.
+				IInterpolation _linear;
+
+				IList<double> xValues = new List<double>();
+				IList<double> yValues = new List<double>();
+				xValues.Add(0.0);
+				xValues.Add(transitionPoint);
+
+				yValues.Add(0.0);
+				yValues.Add(this.fanning(transitionPoint,this.roughnessRatio)*
+						Math.Pow(transitionPoint,2.0));
+
+				_linear = Interpolate.Linear(xValues,yValues);
+				fanningTerm = _linear.Interpolate(Re);
 			}
+
+
+
+
 
 
 			//  BejanTerm

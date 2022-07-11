@@ -537,5 +537,251 @@ double constantRoughnessFanningReSq(double Re){
 It will be important to test dB_dRe at Re=1800. The way to test this is with the
 non stablised version and see how bad the discontinuity is.
 
+```zsh
+
+  Failed tests.FrictionFactorTests.continuityTest_dB_dRe(Re: 1800) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure
+Expected: 32036.447387421504
+Actual:   88767.44732959196
+```
+
+so in other words, pretty bad...
+
+```zsh
+
+  Error Message:
+   Assert.Equal() Failure
+Expected: 32035.72572208941
+Actual:   32000
+```
+For Re = 1799, the 16/Re function is compared against the traditional churchill
+function, it seems that the discontinuity there isn't that bad.
+
+
+The third way i guess to really deal with this discontinuity is to multiply
+$Re^2$ in. However, that will do nothing really because of the log term,
+which is also not well behaved close to zero.
+
+There is also a way to patch the second way though: it is with linear 
+interpolation or some other interpolation methods which smooth the curve.
+
+The only criteria for this is that:
+
+1. the function is not disjointed (continuous)
+2. the function is still a function (one x value for one y value).
+
+The function may not be smooth, but we only need the derivatives to find 
+our roots of the equation so as to solve the hydraulic circuit. 
+Nothing more. 
+
+Hence we can use mathnet's interpolation functions.
+
+For the $f(Re^2)$ function, i can supply two points. At Re = 0, this 
+function's value is zero. At f(Re^2) = 1800, we will use the churchill
+notation. Linearly interpolate and that's it!
+
+This is convenient because the function in the laminar region
+$f(Re^2)$ is very much linear: 16Re for the fanning friction
+factor version.
+
+with linear interpolation for the jacobian we get:
+
+```csharp
+
+double transitionPoint = 1800.0;
+
+if (Re > transitionPoint)
+{
+	double fanningReSq = this.fanning(Re, this.roughnessRatio)*
+		Math.Pow(Re,2.0);
+
+	return fanningReSq;
+}
+
+// otherwise we return 16/Re*Re^2 or 16*Re
+//
+IInterpolation _linear;
+
+IList<double> xValues = new List<double>();
+IList<double> yValues = new List<double>();
+xValues.Add(0.0);
+xValues.Add(transitionPoint);
+
+yValues.Add(0.0);
+yValues.Add(this.fanning(transitionPoint,this.roughnessRatio)*
+		Math.Pow(transitionPoint,2.0));
+
+_linear = Interpolate.Linear(xValues,yValues);
+
+
+return _linear.Interpolate(Re);
+```
+
+this yields better results at the transition point and also passes the
+Re = 0  test.
+
+```zsh
+
+  Failed tests.FrictionFactorTests.continuityTest_dB_dRe(Re: 1800) [< 1 ms]
+  Error Message:
+   Assert.Equal() Failure
+Expected: 32036.447387421504
+Actual:   32018.719154875726
+
+  Failed tests.FrictionFactorTests.continuityTest_dB_dRe(Re: 1799) [8 ms]
+  Error Message:
+   Assert.Equal() Failure
+Expected: 32035.72572208941
+Actual:   32000.98522962071
+```
+While not exactly equal, the linearly interpolated result is quite close to
+the churchill value at the transition Point. 
+
+The differences in derivative aren't great and within 0.2% of the churchill 
+derivative. That's fine by me. As long as we can find the roots and solve
+the hydraulics equation, we don't have to be extremely precise about 
+the derivative and smooth functions. 
+
+And well, the same linear interpolation process was done for the 
+pressureDropRoot nested function within the ChurchillFrictionFactor
+class.
+
+
+```csharp
+
+double pressureDropRoot(double Re){
+
+	// fanning term
+	//
+	//
+	// Now here is a potential issue for stability,
+	// if Re = 0, the fanning friction factor is not well behaved,
+	// Hence it's better to use the laminar term at low Reynold's number
+	//
+	// we note that in the laminar regime, 
+	// f = 16/Re
+	// so f*Re^2 = 16*Re
+	double transitionPoint = 1800.0;
+	double fanningTerm;
+
+	if (Re > transitionPoint)
+	{
+		fanningTerm = this.fanning(Re, this.roughnessRatio);
+		fanningTerm *= Math.Pow(Re,2.0);
+	}
+	else
+	{
+		// otherwise we return 16/Re*Re^2 or 16*Re
+		// or rather an interpolated version to preserve the
+		// continuity of the points.
+		IInterpolation _linear;
+
+		IList<double> xValues = new List<double>();
+		IList<double> yValues = new List<double>();
+		xValues.Add(0.0);
+		xValues.Add(transitionPoint);
+
+		yValues.Add(0.0);
+		yValues.Add(this.fanning(transitionPoint,this.roughnessRatio)*
+				Math.Pow(transitionPoint,2.0));
+
+		_linear = Interpolate.Linear(xValues,yValues);
+		fanningTerm = _linear.Interpolate(Re);
+	}
+
+
+
+
+
+
+	//  BejanTerm
+	//
+	double bejanTerm;
+	bejanTerm = 32.0 * this.bejanNumber;
+	bejanTerm *= Math.Pow(4.0*this.lengthToDiameter,-3);
+
+	// to set this to zero, we need:
+	//
+	return fanningTerm - bejanTerm;
+
+}
+```
+
+All unit tests still pass, which is a good thing!
+
+```csharp
+
+[Theory]
+[InlineData(1800)]
+[InlineData(1799)]
+[InlineData(1801)]
+[InlineData(0)]
+public void continuityTest_dB_dRe(double Re){
+	double roughnessRatio = 0.05;
+	double lengthToDiameter = 10.0;
+
+	// basically at Re=1800, i transit from
+	// churchill correlation to 16/Re for dB_dRe
+	// for the stabilised churchill
+	// I just want to see how bad the discontinuity is
+	//
+
+	IFrictionFactorJacobian _churchill;
+	IFrictionFactorJacobian _stabilisedChurchill;
+
+	_churchill = new ChurchillFrictionFactorJacobian();
+	_stabilisedChurchill = new StabilisedChurchillJacobian();
+
+	double dB_dRe_reference;
+	if(Re > 100){
+		dB_dRe_reference = _churchill.
+			dB_dRe(Re, roughnessRatio, lengthToDiameter);
+	}
+	else{
+		dB_dRe_reference = 16 *Re;
+	}
+
+	//Act
+
+	double dB_dRe_result = _stabilisedChurchill.
+		dB_dRe(Re, roughnessRatio, lengthToDiameter);
+
+	// Assert
+
+	//Assert.Equal(dB_dRe_reference, dB_dRe_result,0);
+
+
+	double errorMax = 0.002;
+	// Act
+
+
+
+	double error = Math.Abs(dB_dRe_result - dB_dRe_reference)/dB_dRe_reference;
+
+	// Assert
+	//
+
+	// Assert.Equal(referenceDarcyFactor,resultDarcyFactor);
+	if(Re == 0.0){
+		Assert.Equal(dB_dRe_reference,
+				dB_dRe_result);
+		return;
+	}
+	Assert.True(error < errorMax);
+	return;
+}
+```
+So this was the test to test for the continuity issue. It adds a Re=0 test
+for testing the dB_dRe at Re=0. So as to see if the undefined result comes in again.
+
+Also it tests for the relative error in gradient between churchill and the 
+linearly interpolated function. It seems to be less than 0.2% compared
+to the normal churchill function. Meaning to say the gradient is rather smooth.
+Even though there is a small kink, it is less than 0.2% change. 
+And the function is absolutely continuous.
+
+
+
 
 

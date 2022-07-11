@@ -3,6 +3,7 @@
 
 using System;
 using MathNet.Numerics;
+using MathNet.Numerics.Interpolation;
 using EngineeringUnits;
 using EngineeringUnits.Units;
 
@@ -37,6 +38,7 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 			// reflection of the graph in positive x direction along
 			// the y axis. So this is using absolute value of Re
 
+			
 			Re = Math.Abs(Re);
 
 			// the fanning friction factor function (this.fanning)
@@ -66,7 +68,9 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 			//
 			// So if Re>1800 we return the traditional fanning formula
 
-			if (Re > 1800)
+			double transitionPoint = 1800.0;
+
+			if (Re > transitionPoint)
 			{
 				double fanningReSq = this.fanning(Re, this.roughnessRatio)*
 					Math.Pow(Re,2.0);
@@ -76,8 +80,21 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 
 			// otherwise we return 16/Re*Re^2 or 16*Re
 			//
+			IInterpolation _linear;
 
-			return 16.0*Re;
+			IList<double> xValues = new List<double>();
+			IList<double> yValues = new List<double>();
+			xValues.Add(0.0);
+			xValues.Add(transitionPoint);
+
+			yValues.Add(0.0);
+			yValues.Add(this.fanning(transitionPoint,this.roughnessRatio)*
+					Math.Pow(transitionPoint,2.0));
+
+			_linear = Interpolate.Linear(xValues,yValues);
+
+
+			return _linear.Interpolate(Re);
 			
 			// my only concern here is a potential problem if the root is exactly at
 			// Re = 1800
