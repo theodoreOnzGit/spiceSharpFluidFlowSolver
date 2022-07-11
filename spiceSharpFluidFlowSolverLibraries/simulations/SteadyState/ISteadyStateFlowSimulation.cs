@@ -9,5 +9,6 @@ namespace SpiceSharp.Simulations
     public interface ISteadyStateFlowSimulation : 
 		IBiasingSimulation
     {
+		public double simulationResult { get; set; }
     }
 }

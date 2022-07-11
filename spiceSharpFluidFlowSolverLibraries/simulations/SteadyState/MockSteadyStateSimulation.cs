@@ -6,21 +6,18 @@ namespace SpiceSharp.Simulations
     /// Class that implements the operating point analysis.
     /// </summary>
     /// <seealso cref="BiasingSimulation" />
-    public class PrototypeSteadyStateFlowSimulation : 
-		BiasingSimulation, ISteadyStateFlowSimulation
+    public class MockSteadyStateFlowSimulation : 
+		BiasingSimulation
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="OP"/> class.
         /// </summary>
         /// <param name="name">The name of the simulation.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <c>null</c>.</exception>
-        public PrototypeSteadyStateFlowSimulation(string name)
+        public MockSteadyStateFlowSimulation(string name)
             : base(name)
         {
         }
-
-		double ISteadyStateFlowSimulation.
-			simulationResult { get; set; }
 
         /// <inheritdoc/>
         protected override void Execute()
