@@ -6,7 +6,8 @@ namespace SpiceSharp.Simulations
     /// Class that implements the operating point analysis.
     /// </summary>
     /// <seealso cref="BiasingSimulation" />
-    public class PrototypeSteadyStateFlowSimulation : BiasingSimulation
+    public class PrototypeSteadyStateFlowSimulation : 
+		BiasingSimulation, ISteadyStateFlowSimulation
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="OP"/> class.

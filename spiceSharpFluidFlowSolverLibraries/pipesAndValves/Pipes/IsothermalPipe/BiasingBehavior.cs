@@ -96,27 +96,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			double lengthToDiameter;
 			lengthToDiameter = _bp.lengthToDiameter();
 
-			void checkNumbers(double bejanNumber,
-					double roughnessRatio,
-					double lengthToDiameter){
-
-				if(Double.IsNaN(bejanNumber))
-					throw new Exception("bejanNumber is NaN");
-
-				if(Double.IsNaN(roughnessRatio))
-					throw new Exception("roughnessRatio is NaN");
-
-				if(Double.IsNaN(lengthToDiameter))
-					throw new Exception("lengthToDiameter is NaN");
-
-				if(1 == 1){
-					string errorMsg ="";
-					errorMsg += "\n bejanNumber is " + bejanNumber.ToString();
-					errorMsg += "\n roughnessRatio is " + roughnessRatio.ToString();
-					errorMsg += "\n lengthToDiameter is " + lengthToDiameter.ToString();
-					throw new Exception(errorMsg);
-				}
-			}
 
 			// checkNumbers(bejanNumber, roughnessRatio, lengthToDiameter);
 
