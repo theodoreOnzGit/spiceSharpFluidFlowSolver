@@ -1123,7 +1123,25 @@ This data persists even after the event is over. And I can simply
 extract it out of the simulation object and use it to perform
 an Assert Test. Goodbye to print tests!!
 
+## ensuring that pipes can deal with hydrostatic pressure
 
+I want to test for zero flow for an incline angle.
+
+At pressure 1.45 $m^2/s^2$, the z height is pretty much
+
+$$z = \frac{1.45 m^2 s^{-2}}{9.81 m s^{-2}}$$
+$$z = 0.147808\ m$$
+
+And the incline angle to give zero flow is:
+
+$$\theta = \arcsin \frac{z}{L} = \arcsin \frac{0.147808}{10}$$
+$$\theta = 0.01478 radians$$
+$$\theta = 0.84691 degrees$$
+
+So i will input 0.84691 degrees as the incline angle and hopefully
+that will stop any flow coming in at 1.45 m^2/s^2.
+
+Isothermal pipe should be able to deal with inclines
 
 
 

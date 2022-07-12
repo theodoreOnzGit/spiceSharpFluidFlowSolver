@@ -60,6 +60,19 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
             // First get the current iteration voltage, but for basepipe
 			// , this is actually pressuredrop
             var deltaP = _nodeA.Value - _nodeB.Value;
+			// let's include height also
+			// gz is the hydrostatic kinematic pressure increment from
+			// node A to node B
+			Length pipeLength;
+			pipeLength = _bp.pipeLength;
+			double gz;
+			// of course g is 9.81 m/s^2
+			// we note that z = L sin \theta
+			gz = 9.81 * pipeLength.As(LengthUnit.SI) *
+				Math.Sin(_bp.inclineAngle.As(AngleUnit.Radian));
+
+			deltaP -= gz;
+
 			SpecificEnergy pressureDrop;
 			pressureDrop = new SpecificEnergy(deltaP, SpecificEnergyUnit.SI);
 
@@ -71,8 +84,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// so first let's calculate a Bejan number
 			//
 
-			Length pipeLength;
-			pipeLength = _bp.pipeLength;
 
 			KinematicViscosity fluidKinViscosity;
 			fluidKinViscosity = _bp.fluidKinViscosity;
