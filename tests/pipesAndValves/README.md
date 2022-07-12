@@ -704,7 +704,7 @@ DC simulations
 3. ensure that we are able to pass out all mass flowrate and kinemtaic 
 pressure values.
 4. be able to deal with hydrostatic pressure and pipe arrangement.
-5. validate simuple flow cases for CIET or other flow setups at 
+5. validate simple flow cases for CIET or other flow setups at 
 steady state. 
 
 
@@ -1266,3 +1266,25 @@ tests with obtuse angles:
 [InlineData(1.45, 180-0.846910353, 0.0)]
 [InlineData(0.0, 180+0.846910353, 3660)]
 ```
+
+Tests have also passed.
+
+
+## validating flow cases for CIET at steady state.
+
+Now next comes something somewhat more exciting,
+
+We have the minimum tools now to build a hydrualic circuit,
+nonetheless very primitive ones, since we do not have
+a coordinate checker which checks the alignments of pipes.
+
+Meaning to say, we cannot check if our pipes are formed
+in a perfect loop. Ie does the start of the pipe network
+join correctly with the end
+
+Also we do not have entrance and exit effects. So this
+is somewhat problematic since we do not have value or
+flowmeter components.
+
+Nevertheless, we can work with this and get things started.
+
