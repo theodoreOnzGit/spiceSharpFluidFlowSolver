@@ -31,8 +31,6 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
 		IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
 		testPipe.Connect("out","0");
-		testPipe.Parameters.A = 2.0e3;
-		testPipe.Parameters.B = 0.5; 
 
 		// Build the circuit
 		var ckt = new Circuit(
@@ -127,8 +125,6 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
 		IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
 		testPipe.Connect("out","0");
-		testPipe.Parameters.A = 2.0e3;
-		testPipe.Parameters.B = 0.5; 
 
 		// Build the circuit
 		var ckt = new Circuit(
@@ -202,8 +198,6 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
 		IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
 		testPipe.Connect("out","0");
-		testPipe.Parameters.A = 2.0e3;
-		testPipe.Parameters.B = 0.5; 
 
 		// Build the circuit
 		var ckt = new Circuit(
@@ -275,8 +269,6 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
 		IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
 		testPipe.Connect("out","0");
-		testPipe.Parameters.A = 2.0e3;
-		testPipe.Parameters.B = 0.5; 
 
 		// Build the circuit
 		var ckt = new Circuit(
@@ -343,8 +335,6 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
 		IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
 		testPipe.Connect("out","0");
-		testPipe.Parameters.A = 2.0e3;
-		testPipe.Parameters.B = 0.5; 
 
 		// Build the circuit
 		var ckt = new Circuit(
@@ -414,8 +404,6 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
 		IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
 		testPipe.Connect("out","0");
-		testPipe.Parameters.A = 2.0e3;
-		testPipe.Parameters.B = 0.5; 
 
 		// Build the circuit
 		var ckt = new Circuit(

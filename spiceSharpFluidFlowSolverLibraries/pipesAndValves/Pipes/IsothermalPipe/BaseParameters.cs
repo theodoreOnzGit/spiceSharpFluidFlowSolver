@@ -8,9 +8,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
     public partial class BaseParameters : 
 		ParameterSet<BaseParameters>
     {
-        public double A { get; set; } = 1.0e3;
-
-        public double B { get; set; } = 1.0;
 
 		// now we have the dimensioned units for pipe
 		// this is assumed to be circular
@@ -20,6 +17,11 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 		public Length pipeLength { get; set; } = 
 			new Length(10.0,LengthUnit.SI);
+
+		// next we also have angles as well
+
+		public Angle inclineAngle { get; set; } =
+			new Angle(0.0, AngleUnit.Degree);
 
 		// carbon steel surface roughness used as default
 		public Length absoluteRoughness { get; set; } =
