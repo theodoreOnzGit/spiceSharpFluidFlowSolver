@@ -18,17 +18,22 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
-	[Fact]
-	public void WhenInclinedToZeroPressureDrop_ExpectNoFlow(){
+	[Theory]
+	[InlineData(1.45, 0.846910353, 0.0)]
+	[InlineData(0.0, -0.846910353, 3660)]
+	[InlineData(1.45, 180-0.846910353, 0.0)]
+	[InlineData(0.0, 180+0.846910353, 3660)]
+	public void WhenInclinedToZeroPressureDrop_ExpectNoFlow(
+			double pressureDrop,
+			double inclineAngleDegrees,
+			double expectedFlowrateKgPerSecond){
 
 		// Setup
 
-		// pressure drop set in m^2/s^2
-		double pressureDrop = 1.45;
 
 		// for 10m long pipe, angle of incline for zero pressure drop
 		// is about 0.84691 degrees
-		Angle inclinedAngle = new Angle(0.846910353, AngleUnit.Degree);
+		Angle inclinedAngle = new Angle(inclineAngleDegrees, AngleUnit.Degree);
 		// this step is needed to cast the mockPipe as the
 		// correct type
 		Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
@@ -62,7 +67,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 		// Assert
 		
-		Assert.Equal(0.0, massFlowrate,2);
+		Assert.Equal(expectedFlowrateKgPerSecond, 
+				massFlowrate,2);
 	}
 
 	[Theory]
