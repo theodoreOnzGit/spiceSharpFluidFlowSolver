@@ -150,6 +150,23 @@ $$\theta = 0.84691 degrees$$
 So i will input 0.84691 degrees as the incline angle and hopefully
 that will stop any flow coming in at 1.45 m^2/s^2.
 
+Now the first time i tested it, it failed. So in fact, i found
+that i need to change the RHS term as well.
+
+Basically nodeB pressure must have the gz value subtracted from it.
+
+```csharp
+double nodeARHSTerm;
+nodeARHSTerm = -massFlowRateValue + dm_dPA * _nodeA.Value +
+dm_dPB * (_nodeB.Value - gz);
+
+double nodeBRHSTerm;
+nodeBRHSTerm = massFlowRateValue + minus_dm_dPA * _nodeA.Value +
+minus_dm_dPB * (_nodeB.Value - gz);
+```
+
+with this, the code worked and was tested to be OK.
+
 ## Design:
 
 ## inner workings and bugs

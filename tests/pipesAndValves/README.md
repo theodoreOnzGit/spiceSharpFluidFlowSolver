@@ -1144,4 +1144,57 @@ that will stop any flow coming in at 1.45 m^2/s^2.
 Isothermal pipe should be able to deal with inclines
 
 
+```csharp
+[Fact]
+public void WhenInclinedToZeroPressureDrop_ExpectNoFlow(){
+
+	// Setup
+
+	// pressure drop set in m^2/s^2
+	double pressureDrop = 1.45;
+
+	// for 10m long pipe, angle of incline for zero pressure drop
+	// is about 0.84691 degrees
+	Angle inclinedAngle = new Angle(0.846910353, AngleUnit.Degree);
+	// this step is needed to cast the mockPipe as the
+	// correct type
+	Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
+	IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
+	testPipe.Connect("out","0");
+	testPipe.Parameters.inclineAngle = inclinedAngle;
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", pressureDrop),
+			testPipe
+			);
+
+	// build simulation
+	ISteadyStateFlowSimulation steadyStateSim = 
+		new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+
+	var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+	steadyStateSim.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("PrototypeSteadyStateFlowSimulation: \n");
+		System.Console.Write("{0}, ".FormatString(current));
+		steadyStateSim.simulationResult = current;
+	};
+
+	// Act
+	steadyStateSim.Run(ckt);
+	double massFlowrate = steadyStateSim.simulationResult;
+
+	// Assert
+
+	Assert.Equal(0.0, massFlowrate,2);
+}
+```
+
+The test passed; there was no massFlowrate at the given incline
+angle.
+
+
 

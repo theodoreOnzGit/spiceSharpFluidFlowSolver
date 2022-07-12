@@ -205,11 +205,11 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// at the resistor
 			double nodeARHSTerm;
 			nodeARHSTerm = -massFlowRateValue + dm_dPA * _nodeA.Value +
-				dm_dPB * _nodeB.Value;
+				dm_dPB * (_nodeB.Value - gz);
 
 			double nodeBRHSTerm;
 			nodeBRHSTerm = massFlowRateValue + minus_dm_dPA * _nodeA.Value +
-				minus_dm_dPB * _nodeB.Value;
+				minus_dm_dPB * (_nodeB.Value - gz);
 
 
             this._elements.Add(
