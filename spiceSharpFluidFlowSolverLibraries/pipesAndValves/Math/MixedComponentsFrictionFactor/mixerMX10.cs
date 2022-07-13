@@ -130,6 +130,14 @@ public partial class mixerMX10 : IfLDKFactor
 	public double bejanNumber;
 
 
+	// These are specifications of area and hydraulic diameter
+	// so that we can calculate Re easily
+	// or get mass flowrate from Re easily
+	public Area XSArea { get; set; } = new Area(
+			6.11e-4, AreaUnit.SquareMeter);
+
+	public Length hydraulicDiameter { get; set; } = new Length(
+			2.79e-2, LengthUnit.Meter);
 
 
 }
