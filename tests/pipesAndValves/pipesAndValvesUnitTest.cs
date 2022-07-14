@@ -244,6 +244,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	[Theory]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
+	[InlineData(-1e-2)]
+	[InlineData(1e-2)]
 	[InlineData(0.0)]
 	public void When_seriesSetupExpect3xFlowLength(
 			double pressureDrop){
