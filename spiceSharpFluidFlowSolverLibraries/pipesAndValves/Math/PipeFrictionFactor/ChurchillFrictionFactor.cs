@@ -3,6 +3,7 @@
 
 using System;
 using MathNet.Numerics;
+using MathNet.Numerics.Interpolation;
 
 
 
@@ -23,7 +24,7 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 
 		return this.darcy(ReynoldsNumber,roughnessRatio);
 	}
-	
+
 	public double darcy(double ReynoldsNumber, double roughnessRatio){
 
 		// darcy friction factor is 4x fanning friction factor
@@ -82,18 +83,31 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 	 */
 
 
-	 
+
 	public double getRe(double Be, 
 			double roughnessRatio,
 			double lengthToDiameter){
 
-		// If there is no pressure drop
-		// Reynold's number is automatically 0
+		// now i want to make sure this function can handle negative 
+		// pressure drop
+		//
+		// ie pressure drops in reverse direction, and this should
+		// yield us reverse flow and negative Reynold's numbers
+		// so what i'll do is this: if Be < 0,
+		// then i'll make it positive
+		//
 
-		if(Be == 0)
-			return 0.0;
-
-
+		bool isNegative;
+		if (Be < 0)
+		{
+			Be *= -1;
+			isNegative = true;
+		}
+		else 
+		{
+			isNegative = false;
+		}
+	
 
 		this.roughnessRatio = roughnessRatio;
 		this.lengthToDiameter = lengthToDiameter;
@@ -105,9 +119,45 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 
 			// fanning term
 			//
+			//
+			// Now here is a potential issue for stability,
+			// if Re = 0, the fanning friction factor is not well behaved,
+			// Hence it's better to use the laminar term at low Reynold's number
+			//
+			// we note that in the laminar regime, 
+			// f = 16/Re
+			// so f*Re^2 = 16*Re
+			double transitionPoint = 1800.0;
 			double fanningTerm;
-			fanningTerm = this.fanning(Re, this.roughnessRatio);
-			fanningTerm *= Math.Pow(Re,2.0);
+
+			if (Re > transitionPoint)
+			{
+				fanningTerm = this.fanning(Re, this.roughnessRatio);
+				fanningTerm *= Math.Pow(Re,2.0);
+			}
+			else
+			{
+				// otherwise we return 16/Re*Re^2 or 16*Re
+				// or rather an interpolated version to preserve the
+				// continuity of the points.
+				IInterpolation _linear;
+
+				IList<double> xValues = new List<double>();
+				IList<double> yValues = new List<double>();
+				xValues.Add(0.0);
+				xValues.Add(transitionPoint);
+
+				yValues.Add(0.0);
+				yValues.Add(this.fanning(transitionPoint,this.roughnessRatio)*
+						Math.Pow(transitionPoint,2.0));
+
+				_linear = Interpolate.Linear(xValues,yValues);
+				fanningTerm = _linear.Interpolate(Re);
+			}
+
+
+
+
 
 
 			//  BejanTerm
@@ -132,6 +182,11 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 
 
 		// then let's return Re
+
+		if (isNegative)
+		{
+			return -ReynoldsNumber;
+		}
 
 		return ReynoldsNumber;
 	}

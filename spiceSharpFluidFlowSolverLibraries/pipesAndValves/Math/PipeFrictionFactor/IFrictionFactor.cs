@@ -15,3 +15,21 @@ public interface IFrictionFactorGetRe
 	double getRe(double Be, double roughnessRatio, 
 			double lengthToDiameter);
 }
+
+public interface IfLDKFactorPipe {
+
+	double generic_fLDK(double ReynoldsNumber, double roughnessRatio,
+			double lengthToDiameter,
+			double K);
+
+	double generic_fLDK_ReSq(double ReynoldsNumber, double roughnessRatio,
+			double lengthToDiameter,
+			double K);
+}
+
+public interface IfLDKFactorGetRePipe
+{
+	double generic_getRe(double Be, double roughnessRatio, 
+			double lengthToDiameter,
+			double K);
+}

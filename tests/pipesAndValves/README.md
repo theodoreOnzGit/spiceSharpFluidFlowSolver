@@ -704,21 +704,587 @@ DC simulations
 3. ensure that we are able to pass out all mass flowrate and kinemtaic 
 pressure values.
 4. be able to deal with hydrostatic pressure and pipe arrangement.
-5. validate simuple flow cases for CIET or other flow setups at 
+5. validate simple flow cases for CIET or other flow setups at 
 steady state. 
 
 
 Most of these features are discussed in the pipesAndValues file, rather than
 
+## ensure that we can handle zero and reverse flow
+
+The zero and reverse flow solvers for the friction factor and jacobian are
+handled in the isothermal pipe implementation.
+
+```csharp
+
+// Construct the IFrictionFactorJacobian object
+_jacobianObject = new StabilisedChurchillJacobian();
+
+```
+
+This is the StabilisedChurchillJacobian class. 
+
+```csharp
+
+[Fact]
+public void When_IsothermalPipeNegativePressureExpectNoError(){
+
+	// this step is needed to cast the mockPipe as the
+	// correct type
+	Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
+	IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
+	testPipe.Connect("out","0");
+	testPipe.Parameters.A = 2.0e3;
+	testPipe.Parameters.B = 0.5; 
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", 0.0),
+			testPipe
+			);
+
+	// Setup the simulation and export our current
+	double pressureDropMin;
+	pressureDropMin = 1.45;
+
+	double Be;
+	Be = pressureDropMin;
+	Be *= testPipe.Parameters.pipeLength.
+		As(LengthUnit.SI);
+	Be *= testPipe.Parameters.pipeLength.
+		As(LengthUnit.SI);
+	Be /= testPipe.Parameters.fluidKinViscosity.
+		As(KinematicViscosityUnit.SI);
+	Be /= testPipe.Parameters.fluidKinViscosity.
+		As(KinematicViscosityUnit.SI);
+
+	double Re;
+	ChurchillFrictionFactorJacobian _jacobianObject;
+	_jacobianObject = new ChurchillFrictionFactorJacobian();
+	double roughnessRatio = testPipe.Parameters.roughnessRatio();
+	double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+	Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+	MassFlow massFlowRate;
+	massFlowRate = testPipe.Parameters.fluidViscosity*
+		testPipe.Parameters.crossSectionalArea()/
+		testPipe.Parameters.hydraulicDiameter*
+		Re;
+
+	massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+
+	this.cout("\n The reference Mass flowrate is: " + 
+			massFlowRate.ToString());
 
 
 
 
+	var dc = new DC("DC", "V1", -1.5, -pressureDropMin, 0.05);
+	var currentExport = new RealPropertyExport(dc, "V1", "i");
+	dc.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("IsothermalPipe NegativePressure Verification: \n");
+		System.Console.Write("{0}, ".FormatString(current));
+	};
+	dc.Run(ckt);
+	double current = -currentExport.Value;
+
+	currentExport.Destroy();
+	// </example_customcomponent_nonlinearresistor_test>
+
+
+	//throw new Exception();
+}
+
+```
+
+So far, the isothermal pipe seems to hold up well when tested.
+
+```zsh
+ The reference Mass flowrate is: 3660 kg/s
+IsothermalPipe NegativePressure Verification: 
+3723.3071369684676, IsothermalPipe NegativePressure Verification: 
+3659.999407477403, 
+```
+
+To ensure that the simulation can handle zero pressure drop
+refer to the next section: where i use zero pressure drop
+as an input parameter to an operating point simulation.
 
 
 
 
+## ensure that we are only using steady state simulations
+
+Previously, i didn't use operating point simulations successfully because 
+they didn't print results. Now it's ok:
+
+```csharp
+[Theory]
+[InlineData(1.45)]
+[InlineData(-1.45)]
+[InlineData(0.0)]
+public void When_OperatingPoint_PrintResult(double pressureDrop){
+
+
+	// this step is needed to cast the mockPipe as the
+	// correct type
+	Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
+	IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
+	testPipe.Connect("out","0");
+	testPipe.Parameters.A = 2.0e3;
+	testPipe.Parameters.B = 0.5; 
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", pressureDrop),
+			testPipe
+			);
+
+	// Setup the simulation and export our current
+
+	double Be;
+	Be = pressureDrop;
+	Be *= testPipe.Parameters.pipeLength.
+		As(LengthUnit.SI);
+	Be *= testPipe.Parameters.pipeLength.
+		As(LengthUnit.SI);
+	Be /= testPipe.Parameters.fluidKinViscosity.
+		As(KinematicViscosityUnit.SI);
+	Be /= testPipe.Parameters.fluidKinViscosity.
+		As(KinematicViscosityUnit.SI);
+
+	double Re;
+	ChurchillFrictionFactorJacobian _jacobianObject;
+	_jacobianObject = new ChurchillFrictionFactorJacobian();
+	double roughnessRatio = testPipe.Parameters.roughnessRatio();
+	double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+	Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+	MassFlow massFlowRate;
+	massFlowRate = testPipe.Parameters.fluidViscosity*
+		testPipe.Parameters.crossSectionalArea()/
+		testPipe.Parameters.hydraulicDiameter*
+		Re;
+
+	massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+
+	this.cout("\n The reference flowrate for steadyStateSimTest is: " + 
+			massFlowRate.ToString());
 
 
 
+
+	var steadyStateSim = new OP("OP");
+	var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+	steadyStateSim.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("steadyStateSimTestOperatingPoint: \n");
+		System.Console.Write("{0}, ".FormatString(current));
+	};
+	steadyStateSim.Run(ckt);
+
+	currentExport.Destroy();
+	// </example_customcomponent_nonlinearresistor_test>
+
+
+	//throw new Exception();
+}
+```
+
+The results are:
+
+```zsh
+ The reference flowrate for steadyStateSimTest is: 3660 kg/s
+steadyStateSimTestOperatingPoint: 
+3659.999407477403, 
+ The reference flowrate for steadyStateSimTest is: -3.372e-14 kg/s
+steadyStateSimTestOperatingPoint: 
+-3.37236795406772E-14, 
+ The reference flowrate for steadyStateSimTest is: -3660 kg/s
+steadyStateSimTestOperatingPoint: 
+3659.999407477403
+```
+
+So it looks like the test works very well. One is that DC simulation
+is no longer needed to facilitate steady state tests, and two that
+flowrates near or equal to zero are numerically stable. Also, operating
+in negative flowrate region is also numerically okay. However, we will 
+not get the negative sign as the output.
+
+## ensuring that we can pass values out of the steady State simulation
+
+For this, i'm not really sure how to do this elegantly. But a simple
+solution would be to create my own steady state simulation class.
+
+I'll just call it flowCircuitSteadyState. And the first version is
+called MockFlowCircuitSteadyState. Which is nothing but a rename of
+the operating point class found in OP.cs.
+
+```zsh
+
+[Theory]
+[InlineData(1.45)]
+[InlineData(-1.45)]
+[InlineData(0.0)]
+public void When_MockSteadyStateFlowSimulation_expectNoError(
+		double pressureDrop){
+
+
+	// this step is needed to cast the mockPipe as the
+	// correct type
+	Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
+	IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
+	testPipe.Connect("out","0");
+	testPipe.Parameters.A = 2.0e3;
+	testPipe.Parameters.B = 0.5; 
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", pressureDrop),
+			testPipe
+			);
+
+	// Setup the simulation and export our current
+
+	double Be;
+	Be = pressureDrop;
+	Be *= testPipe.Parameters.pipeLength.
+		As(LengthUnit.SI);
+	Be *= testPipe.Parameters.pipeLength.
+		As(LengthUnit.SI);
+	Be /= testPipe.Parameters.fluidKinViscosity.
+		As(KinematicViscosityUnit.SI);
+	Be /= testPipe.Parameters.fluidKinViscosity.
+		As(KinematicViscosityUnit.SI);
+
+	double Re;
+	ChurchillFrictionFactorJacobian _jacobianObject;
+	_jacobianObject = new ChurchillFrictionFactorJacobian();
+	double roughnessRatio = testPipe.Parameters.roughnessRatio();
+	double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+	Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+	MassFlow massFlowRate;
+	massFlowRate = testPipe.Parameters.fluidViscosity*
+		testPipe.Parameters.crossSectionalArea()/
+		testPipe.Parameters.hydraulicDiameter*
+		Re;
+
+	massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+
+	this.cout("\n The reference flowrate for MockSteadyStateFlowSimulationTest is: " + 
+			massFlowRate.ToString());
+
+
+
+
+	var steadyStateSim = new MockSteadyStateFlowSimulation(
+			"MockSteadyStateFlowSimulation");
+	var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+	steadyStateSim.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("MockSteadyStateFlowSimulation: \n");
+		System.Console.Write("{0}, ".FormatString(current));
+	};
+	steadyStateSim.Run(ckt);
+
+	currentExport.Destroy();
+	// </example_customcomponent_nonlinearresistor_test>
+
+
+	//throw new Exception();
+}
+```
+
+This gives me confidence that i can make a new simulation class without
+a hitch.
+
+It is the same test and doesn't really do anything new. It ran 
+successfully.
+
+Then to start experimenting i have PrototypeSteadyStateFlowSimulation.cs.
+
+For which i will add an interface ISteadyStateFlowSimulation. This 
+interface will allow the user to interact with some class variables
+and store simulation data in them to be extracted.
+
+Once the basics are setup, the  I will then set some public 
+attributes in the class.  Eg. lists and dictionaries so that
+data can be extracted.
+
+```csharp
+[Theory]
+[InlineData(1.45)]
+[InlineData(-1.45)]
+[InlineData(0.0)]
+public void When_extractDataFromPrototypeSimulation_expectNoError(
+		double pressureDrop){
+
+
+	// this step is needed to cast the mockPipe as the
+	// correct type
+	Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
+	IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
+	testPipe.Connect("out","0");
+	testPipe.Parameters.A = 2.0e3;
+	testPipe.Parameters.B = 0.5; 
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", pressureDrop),
+			testPipe
+			);
+
+	// Setup the simulation and export our current
+
+	double Be;
+	Be = pressureDrop;
+	Be *= testPipe.Parameters.pipeLength.
+		As(LengthUnit.SI);
+	Be *= testPipe.Parameters.pipeLength.
+		As(LengthUnit.SI);
+	Be /= testPipe.Parameters.fluidKinViscosity.
+		As(KinematicViscosityUnit.SI);
+	Be /= testPipe.Parameters.fluidKinViscosity.
+		As(KinematicViscosityUnit.SI);
+
+	double Re;
+	ChurchillFrictionFactorJacobian _jacobianObject;
+	_jacobianObject = new ChurchillFrictionFactorJacobian();
+	double roughnessRatio = testPipe.Parameters.roughnessRatio();
+	double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+	Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+	MassFlow massFlowRate;
+	massFlowRate = testPipe.Parameters.fluidViscosity*
+		testPipe.Parameters.crossSectionalArea()/
+		testPipe.Parameters.hydraulicDiameter*
+		Re;
+
+	massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+
+	this.cout("\n The reference flowrate for PrototypeSteadyStateFlowSimulationTest is: " + 
+			massFlowRate.ToString());
+
+
+
+
+	ISteadyStateFlowSimulation steadyStateSim = 
+		new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+	var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+	steadyStateSim.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("PrototypeSteadyStateFlowSimulation: \n");
+		System.Console.Write("{0}, ".FormatString(current));
+		steadyStateSim.simulationResult = current;
+	};
+	steadyStateSim.Run(ckt);
+
+	currentExport.Destroy();
+	// </example_customcomponent_nonlinearresistor_test>
+
+	double massFlowRateTestValue;
+	massFlowRateTestValue = steadyStateSim.simulationResult;
+	MassFlow massFlowRateTestResult;
+	massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
+			MassFlowUnit.SI);
+
+	this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
+			massFlowRateTestResult.ToString());
+
+	// Assert
+	// 
+	// Note that the Math.Abs is there because some massflowrates
+	// are negative.
+	// And also the massFlowRateTestResult are both
+	// MassFlow objects, ie. dimensioned units
+	// so i need to convert them to double using the .As()
+	// method
+	Assert.Equal(Math.Abs(massFlowRate.As(MassFlowUnit.SI)),
+			massFlowRateTestResult.As(MassFlowUnit.SI),3);
+
+	//throw new Exception();
+}
+```
+
+So this is the test used to see if we could extract data from
+PrototypeSteadyStateFlowSimulation objects. It appears we can!
+
+The test passed. So basically when the event was activated,
+I set the simulationObject property simulationResult to the current.
+
+This data persists even after the event is over. And I can simply
+extract it out of the simulation object and use it to perform
+an Assert Test. Goodbye to print tests!!
+
+## ensuring that pipes can deal with hydrostatic pressure
+
+I want to test for zero flow for an incline angle.
+
+At pressure 1.45 $m^2/s^2$, the z height is pretty much
+
+$$z = \frac{1.45 m^2 s^{-2}}{9.81 m s^{-2}}$$
+$$z = 0.147808\ m$$
+
+And the incline angle to give zero flow is:
+
+$$\theta = \arcsin \frac{z}{L} = \arcsin \frac{0.147808}{10}$$
+$$\theta = 0.01478 radians$$
+$$\theta = 0.84691 degrees$$
+
+So i will input 0.84691 degrees as the incline angle and hopefully
+that will stop any flow coming in at 1.45 m^2/s^2.
+
+Isothermal pipe should be able to deal with inclines
+
+
+```csharp
+[Fact]
+public void WhenInclinedToZeroPressureDrop_ExpectNoFlow(){
+
+	// Setup
+
+	// pressure drop set in m^2/s^2
+	double pressureDrop = 1.45;
+
+	// for 10m long pipe, angle of incline for zero pressure drop
+	// is about 0.84691 degrees
+	Angle inclinedAngle = new Angle(0.846910353, AngleUnit.Degree);
+	// this step is needed to cast the mockPipe as the
+	// correct type
+	Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
+	IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
+	testPipe.Connect("out","0");
+	testPipe.Parameters.inclineAngle = inclinedAngle;
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", pressureDrop),
+			testPipe
+			);
+
+	// build simulation
+	ISteadyStateFlowSimulation steadyStateSim = 
+		new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+
+	var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+	steadyStateSim.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("PrototypeSteadyStateFlowSimulation: \n");
+		System.Console.Write("{0}, ".FormatString(current));
+		steadyStateSim.simulationResult = current;
+	};
+
+	// Act
+	steadyStateSim.Run(ckt);
+	double massFlowrate = steadyStateSim.simulationResult;
+
+	// Assert
+
+	Assert.Equal(0.0, massFlowrate,2);
+}
+```
+
+The test passed; there was no massFlowrate at the given incline
+angle.
+
+Now i can repeat this test for an angle decline and it should
+give us around 3660 kg/s at zero pressureDrop.
+
+```csharp
+
+[Theory]
+[InlineData(1.45, 0.846910353, 0.0)]
+[InlineData(0.0, -0.846910353, 3660)]
+public void WhenInclinedToZeroPressureDrop_ExpectNoFlow(
+		double pressureDrop,
+		double inclineAngleDegrees,
+		double expectedFlowrateKgPerSecond){
+
+	// Setup
+
+
+	// for 10m long pipe, angle of incline for zero pressure drop
+	// is about 0.84691 degrees
+	Angle inclinedAngle = new Angle(inclineAngleDegrees, AngleUnit.Degree);
+	// this step is needed to cast the mockPipe as the
+	// correct type
+	Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
+	IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
+	testPipe.Connect("out","0");
+	testPipe.Parameters.inclineAngle = inclinedAngle;
+
+	// Build the circuit
+	var ckt = new Circuit(
+			new VoltageSource("V1", "out", "0", pressureDrop),
+			testPipe
+			);
+
+	// build simulation
+	ISteadyStateFlowSimulation steadyStateSim = 
+		new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+
+	var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+	steadyStateSim.ExportSimulationData += (sender, args) =>
+	{
+		var current = -currentExport.Value;
+		System.Console.Write("PrototypeSteadyStateFlowSimulation: \n");
+		System.Console.Write("{0}, ".FormatString(current));
+		steadyStateSim.simulationResult = current;
+	};
+
+	// Act
+	steadyStateSim.Run(ckt);
+	double massFlowrate = steadyStateSim.simulationResult;
+
+	// Assert
+
+	Assert.Equal(expectedFlowrateKgPerSecond, 
+			massFlowrate,2);
+}
+```
+
+This test passed.
+
+I also took the liberty of repeating these with 
+tests with obtuse angles:
+
+```csharp
+
+[Theory]
+[InlineData(1.45, 0.846910353, 0.0)]
+[InlineData(0.0, -0.846910353, 3660)]
+[InlineData(1.45, 180-0.846910353, 0.0)]
+[InlineData(0.0, 180+0.846910353, 3660)]
+```
+
+Tests have also passed.
+
+
+## validating flow cases for CIET at steady state.
+
+Now next comes something somewhat more exciting,
+
+We have the minimum tools now to build a hydrualic circuit,
+nonetheless very primitive ones, since we do not have
+a coordinate checker which checks the alignments of pipes.
+
+Meaning to say, we cannot check if our pipes are formed
+in a perfect loop. Ie does the start of the pipe network
+join correctly with the end
+
+Also we do not have entrance and exit effects. So this
+is somewhat problematic since we do not have value or
+flowmeter components.
+
+Nevertheless, we can work with this and get things started.
 

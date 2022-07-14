@@ -34,7 +34,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
             _baseConfig = context.GetSimulationParameterSet<BiasingParameters>();
 
 			// Construct the IFrictionFactorJacobian object
-			_jacobianObject = new ChurchillFrictionFactorJacobian();
+			_jacobianObject = new StabilisedChurchillJacobian();
 
             // Request the node variables
             var state = context.GetState<IBiasingSimulationState>();
@@ -59,20 +59,31 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
         {
             // First get the current iteration voltage, but for basepipe
 			// , this is actually pressuredrop
-            var v = _nodeA.Value - _nodeB.Value;
+            var deltaP = _nodeA.Value - _nodeB.Value;
+			// let's include height also
+			// gz is the hydrostatic kinematic pressure increment from
+			// node A to node B
+			Length pipeLength;
+			pipeLength = _bp.pipeLength;
+			double gz;
+			// of course g is 9.81 m/s^2
+			// we note that z = L sin \theta
+			gz = 9.81 * pipeLength.As(LengthUnit.SI) *
+				Math.Sin(_bp.inclineAngle.As(AngleUnit.Radian));
+
+			deltaP -= gz;
+
 			SpecificEnergy pressureDrop;
-			pressureDrop = new SpecificEnergy(v, SpecificEnergyUnit.SI);
+			pressureDrop = new SpecificEnergy(deltaP, SpecificEnergyUnit.SI);
 
             // Calculate the derivative w.r.t. one of the voltages
-            var isNegative = v < 0;
+            var isNegative = deltaP < 0;
 			// c here is current, but 
 			// we don't really use it
 			// the equivalent is to calculate mass flowrate
 			// so first let's calculate a Bejan number
 			//
 
-			Length pipeLength;
-			pipeLength = _bp.pipeLength;
 
 			KinematicViscosity fluidKinViscosity;
 			fluidKinViscosity = _bp.fluidKinViscosity;
@@ -84,10 +95,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// defined for the churchill correlation.
 			// i will arbitrarily add 1000 to the bejan number
 			// if it is zero so that we can continue simulation
-			if(pressureDrop.As(SpecificEnergyUnit.SI) == 0){
-				pressureDrop = new SpecificEnergy(100
-						,SpecificEnergyUnit.SI);
-			}
 			bejanNumber = _jacobianObject.getBejanNumber(
 					pressureDrop,
 					fluidKinViscosity,
@@ -100,27 +107,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			double lengthToDiameter;
 			lengthToDiameter = _bp.lengthToDiameter();
 
-			void checkNumbers(double bejanNumber,
-					double roughnessRatio,
-					double lengthToDiameter){
-
-				if(Double.IsNaN(bejanNumber))
-					throw new Exception("bejanNumber is NaN");
-
-				if(Double.IsNaN(roughnessRatio))
-					throw new Exception("roughnessRatio is NaN");
-
-				if(Double.IsNaN(lengthToDiameter))
-					throw new Exception("lengthToDiameter is NaN");
-
-				if(1 == 1){
-					string errorMsg ="";
-					errorMsg += "\n bejanNumber is " + bejanNumber.ToString();
-					errorMsg += "\n roughnessRatio is " + roughnessRatio.ToString();
-					errorMsg += "\n lengthToDiameter is " + lengthToDiameter.ToString();
-					throw new Exception(errorMsg);
-				}
-			}
 
 			// checkNumbers(bejanNumber, roughnessRatio, lengthToDiameter);
 
@@ -130,12 +116,9 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// if not the simulation will crash
 			// we'll just get
 
-			double Re = 0;
-			if(bejanNumber > 0){
-				Re = _jacobianObject.getRe(bejanNumber, 
-						roughnessRatio, 
-						lengthToDiameter);
-			}
+			double Re = _jacobianObject.getRe(bejanNumber, 
+					roughnessRatio, 
+					lengthToDiameter);
 
 
 			Area crossSectionalArea;
@@ -159,16 +142,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			double massFlowRateValue;
 			massFlowRateValue = massFlowRate.As(MassFlowUnit.SI);
 
-            var c = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B);
-			// that pretty much covers the current
-			// as mass flowrate
-            double g;
-
-            // If v=0 the derivative is either 0 or infinity (avoid 0^(negative number) = not a number)
-            if (v.Equals(0.0))
-                g = _bp.B < 1.0 / _bp.A ? double.PositiveInfinity : 0.0;
-            else
-                g = Math.Pow(Math.Abs(v) / _bp.A, 1.0 / _bp.B - 1.0) / _bp.A;
 
 			// For basepipe, we just calculate the jacobian straightaway
 			// so we first load everything else from the base parameters
@@ -217,19 +190,12 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
             minus_dm_dPA = Math.Max(minus_dm_dPA, _baseConfig.Gmin);
             minus_dm_dPB = Math.Max(minus_dm_dPB, _baseConfig.Gmin);
 
-            // If the voltage was reversed, reverse the current back
-            if (isNegative)
-                c = -c;
-			// likewise if pressure difference is reversed
+			//  if pressure difference is reversed
 			// mass flowrate is also reversed
 			if (isNegative)
 				massFlowRateValue = -massFlowRateValue;
 
             // Load the RHS vector
-			// traditionally we use c for current
-			// we add the jacobian term times voltage
-			// back into the current for the RHS term
-            c -= g * v;
 
 			// so for the mass flowrate case we use:
 			// RHS term 1 is the
@@ -239,11 +205,11 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// at the resistor
 			double nodeARHSTerm;
 			nodeARHSTerm = -massFlowRateValue + dm_dPA * _nodeA.Value +
-				dm_dPB * _nodeB.Value;
+				dm_dPB * (_nodeB.Value - gz);
 
 			double nodeBRHSTerm;
 			nodeBRHSTerm = massFlowRateValue + minus_dm_dPA * _nodeA.Value +
-				minus_dm_dPB * _nodeB.Value;
+				minus_dm_dPB * (_nodeB.Value - gz);
 
 
             this._elements.Add(

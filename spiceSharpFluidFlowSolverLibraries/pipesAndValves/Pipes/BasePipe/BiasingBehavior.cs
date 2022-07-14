@@ -214,8 +214,8 @@ namespace SpiceSharp.Components.BasePipeBehaviors
             //g = Math.Max(g, _baseConfig.Gmin);
             dm_dPA = Math.Max(dm_dPA, _baseConfig.Gmin);
             dm_dPB = Math.Max(dm_dPB, _baseConfig.Gmin);
-            minus_dm_dPA = Math.Max(minus_dm_dPA, _baseConfig.Gmin);
-            minus_dm_dPB = Math.Max(minus_dm_dPB, _baseConfig.Gmin);
+            minus_dm_dPA = -Math.Max(-minus_dm_dPA, _baseConfig.Gmin);
+            minus_dm_dPB = -Math.Max(-minus_dm_dPB, _baseConfig.Gmin);
 
             // If the voltage was reversed, reverse the current back
             if (isNegative)

@@ -23,6 +23,121 @@ public class FrictionFactorTests : testOutputHelper
 		this._derivativeObj = derivativeObj;
 	}
 
+	[Theory]
+	[InlineData(1800)]
+	[InlineData(1799)]
+	[InlineData(1801)]
+	[InlineData(0)]
+	public void continuityTest_dB_dRe(double Re){
+		double roughnessRatio = 0.05;
+		double lengthToDiameter = 10.0;
+
+		// basically at Re=1800, i transit from
+		// churchill correlation to 16/Re for dB_dRe
+		// for the stabilised churchill
+		// I just want to see how bad the discontinuity is
+		//
+
+		IFrictionFactorJacobian _churchill;
+		IFrictionFactorJacobian _stabilisedChurchill;
+
+		_churchill = new ChurchillFrictionFactorJacobian();
+		_stabilisedChurchill = new StabilisedChurchillJacobian();
+
+		double dB_dRe_reference;
+		if(Re > 100){
+			dB_dRe_reference = _churchill.
+				dB_dRe(Re, roughnessRatio, lengthToDiameter);
+		}
+		else{
+			dB_dRe_reference = 16 *Re;
+		}
+
+		//Act
+
+		double dB_dRe_result = _stabilisedChurchill.
+			dB_dRe(Re, roughnessRatio, lengthToDiameter);
+
+		// Assert
+
+		//Assert.Equal(dB_dRe_reference, dB_dRe_result,0);
+
+
+		double errorMax = 0.002;
+		// Act
+
+		
+
+		double error = Math.Abs(dB_dRe_result - dB_dRe_reference)/dB_dRe_reference;
+
+		// Assert
+		//
+
+		// Assert.Equal(referenceDarcyFactor,resultDarcyFactor);
+		if(Re == 0.0){
+			Assert.Equal(dB_dRe_reference,
+					dB_dRe_result);
+			return;
+		}
+		Assert.True(error < errorMax);
+		return;
+	}
+
+
+	[Theory]
+	[InlineData(100, 0.05)]
+	[InlineData(200, 0.05)]
+	[InlineData(300, 0.05)]
+	[InlineData(400, 0.05)]
+	[InlineData(400, 0.0)]
+	[InlineData(500, 0.05)]
+	[InlineData(600, 0.05)]
+	[InlineData(800, 0.05)]
+	[InlineData(1000, 0.05)]
+	[InlineData(1200, 0.05)]
+	[InlineData(1400, 0.05)]
+	[InlineData(1600, 0.05)]
+	[InlineData(1800, 0.05)]
+	[InlineData(2000, 0.05)]
+	public void When_negativeReFor_dB_dRe_ExpectNegativeResult(
+			double Re,
+			double roughnessRatio){
+
+
+		// this test shows that when calculating negative
+		// Re values dBe_dRe should return 
+		// a negative derivative 
+		// so in fact the Bejan Number on the Positive Re
+		// side will have a reflection about the
+		// y axis on the negative Re side
+
+		// Setup
+		IFrictionFactorJacobian _jacobianObject;
+		_jacobianObject = new ChurchillFrictionFactorJacobian();
+
+		double negativeRe;
+		negativeRe = -Re;
+		double lengthToDiameter = 10.0;
+		double jacobianDerivativePositiveRe;
+		double jacobianDerivativeNegativeRe;
+		// Act
+		//
+		jacobianDerivativePositiveRe = _jacobianObject.
+			getRe(Re, 
+					roughnessRatio,
+					lengthToDiameter);
+
+		jacobianDerivativeNegativeRe = _jacobianObject.
+			getRe(negativeRe,
+					roughnessRatio,
+					lengthToDiameter);
+
+
+		// Assert
+		Assert.Equal(jacobianDerivativePositiveRe,
+				-jacobianDerivativeNegativeRe);
+
+	}
 
 	[Theory(Skip = "buggy and probably not worth the effort")]
 	[InlineData(100, 0.05)]
@@ -457,7 +572,164 @@ public class FrictionFactorTests : testOutputHelper
 
 	}
 
+	[Theory]
+	[InlineData(4000, 0.05, 0.076986834889224, 4.0)]
+	[InlineData(40000, 0.05, 0.07212405402775,5.0)]
+	[InlineData(4e5, 0.05, 0.071608351787938, 10.0)]
+	[InlineData(4e6, 0.05,  0.071556444535705, 20.0)]
+	[InlineData(4e7, 0.05,  0.071551250389636, 100.0)]
+	[InlineData(4e8, 0.05, 0.071550730940769, 1000.0)]
+	[InlineData(4e9, 0.05, 0.071550678995539, 65.0)]
+	[InlineData(4e3, 0.0, 0.039907014055631, 20.0 )]
+	[InlineData(4e7, 0.00005, 0.010627694187016, 35.0)]
+	[InlineData(4e6, 0.001, 0.019714092419925, 8.9)]
+	[InlineData(4e5, 0.01, 0.038055838413508, 50.0)]
+	[InlineData(4e4, 0.03,  0.057933060738478, 1.0e5)]
+	public void Test_churchillJacobianShouldGetAccurateNegativeReTurbulent(
+			double Re,
+			double roughnessRatio, 
+			double referenceDarcyFrictionFactor,
+			double lengthToDiameter){
+		// the objective of this test is to test the
+		// accuracy of getting Re using the getRe function
+		// in the ChurchillFrictionFactorJacobian 
+		// Implementation
+		// BUT i use negative Bejan number instead
+		//
+		// And if i use the negative Bejan number
+		// i should get the negative reflection of the reference
+		// Reynold's number
+		//
+		// so it tests the ability of the frictionFactor Jacobian
+		// to deal with negative values of Re for the getRe
+		// function
+		//
+		// we have a reference Reynold's number
+		//
+		// and we need to get a Re using
+		// fanning friction factor
+		// and roughness Ratio
+		//
+		// we already have roughness ratio
+		// but we need Bejan number and L/D
+		//
+		// Bejan number would be known in real life.
+		// however, in this case, we cannot arbitrarily
+		// specify it
+		// the only equation that works now
+		// is Be = f*Re^2*(4L/D)^3/32.0
+		// That means we just specify a L/D ratio
+		// and that would specify everything.
+		// So I'm going to randomly specify L/D ratios and hope that
+		// works
+		
 
+		// setup
+		//
+		double referenceRe = Re;
+
+		IFrictionFactorGetRe testObject;
+		testObject = new ChurchillFrictionFactorJacobian();
+
+
+		double fanningFrictionFactor = 0.25*referenceDarcyFrictionFactor;
+		double Be = fanningFrictionFactor*Math.Pow(Re,2.0);
+		Be *= Math.Pow(4.0*lengthToDiameter,3);
+		Be *= 1.0/32.0;
+
+		// act
+
+		double resultNegativeRe;
+		resultNegativeRe = testObject.getRe(-Be,roughnessRatio,lengthToDiameter);
+
+		// Assert (manual test)
+
+		// Assert.Equal(referenceRe, resultNegativeRe);
+
+		// Assert (auto test)
+		// test if error is within 1% of actual Re
+		double errorFraction = Math.Abs(-resultNegativeRe - referenceRe)/Math.Abs(referenceRe);
+		double errorTolerance = 0.01;
+
+		Assert.True(errorFraction < errorTolerance);
+
+
+	}
+
+	[Theory]
+	[InlineData(4000, 0.05, 0.076986834889224, 4.0)]
+	[InlineData(40000, 0.05, 0.07212405402775,5.0)]
+	[InlineData(4e5, 0.05, 0.071608351787938, 10.0)]
+	[InlineData(4e6, 0.05,  0.071556444535705, 20.0)]
+	[InlineData(4e7, 0.05,  0.071551250389636, 100.0)]
+	[InlineData(4e8, 0.05, 0.071550730940769, 1000.0)]
+	[InlineData(4e9, 0.05, 0.071550678995539, 65.0)]
+	[InlineData(4e3, 0.0, 0.039907014055631, 20.0 )]
+	[InlineData(4e7, 0.00005, 0.010627694187016, 35.0)]
+	[InlineData(4e6, 0.001, 0.019714092419925, 8.9)]
+	[InlineData(4e5, 0.01, 0.038055838413508, 50.0)]
+	[InlineData(4e4, 0.03,  0.057933060738478, 1.0e5)]
+	public void Test_churchillJacobianShouldGetAccurateReTurbulent(
+			double Re,
+			double roughnessRatio, 
+			double referenceDarcyFrictionFactor,
+			double lengthToDiameter){
+		// the objective of this test is to test the
+		// accuracy of getting Re using the getRe function
+		// in the ChurchillFrictionFactorJacobian 
+		// Implementation
+		//
+		// we have a reference Reynold's number
+		//
+		// and we need to get a Re using
+		// fanning friction factor
+		// and roughness Ratio
+		//
+		// we already have roughness ratio
+		// but we need Bejan number and L/D
+		//
+		// Bejan number would be known in real life.
+		// however, in this case, we cannot arbitrarily
+		// specify it
+		// the only equation that works now
+		// is Be = f*Re^2*(4L/D)^3/32.0
+		// That means we just specify a L/D ratio
+		// and that would specify everything.
+		// So I'm going to randomly specify L/D ratios and hope that
+		// works
+		
+
+		// setup
+		//
+		double referenceRe = Re;
+
+		IFrictionFactorGetRe testObject;
+		testObject = new ChurchillFrictionFactorJacobian();
+
+
+		double fanningFrictionFactor = 0.25*referenceDarcyFrictionFactor;
+		double Be = fanningFrictionFactor*Math.Pow(Re,2.0);
+		Be *= Math.Pow(4.0*lengthToDiameter,3);
+		Be *= 1.0/32.0;
+
+		// act
+
+		double resultRe;
+		resultRe = testObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+		// Assert (manual test)
+
+		// Assert.Equal(referenceRe, resultRe);
+
+		// Assert (auto test)
+		// test if error is within 1% of actual Re
+		double errorFraction = Math.Abs(resultRe - referenceRe)/Math.Abs(referenceRe);
+		double errorTolerance = 0.01;
+
+		Assert.True(errorFraction < errorTolerance);
+
+
+	}
 
 
 	[Theory]
