@@ -18,6 +18,37 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
+	[Fact]
+	public void sandboxForSeriesCircuits(){
+
+		double voltage = 1.5;
+		double resistance = 1e3;
+
+		var cktB = new Circuit(
+				new VoltageSource("V1", "in", "0", voltage),
+				new Resistor("R1", "in", "out", resistance),
+				new Resistor("R2", "out", "int", resistance),
+				new Resistor("R3", "int", "0", resistance)
+				);
+
+
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(cktB);
+
+		// Assert
+		Assert.Equal(voltage/(3.0*resistance),
+				steadyStateSim.simulationResult);
+
+	}
+
 	[Theory]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
@@ -33,21 +64,24 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		// this step is needed to cast the testPipe as the
 		// correct type
 		//
-		Component preCastPipe = new IsothermalPipe("isothermalPipe1","pumpOutlet",
-				"int");
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1");
 		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
-		//testPipe.Connect("pumpOutlet","int");
-		preCastPipe = new IsothermalPipe("isothermalPipe2","int","0");
+		testPipe.Connect("pumpOutlet","1");
+		preCastPipe = new IsothermalPipe("isothermalPipe2");
 		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
-		//testPipe2.Connect("int","0");
+		testPipe2.Connect("1","2");
+		preCastPipe = new IsothermalPipe("isothermalPipe3");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Connect("2","0");
 
 		// Build the circuit
 		var ckt = new Circuit(
 				new VoltageSource("V1", "pumpOutlet", "0", pressureDrop),
 				testPipe,
-				testPipe2
-				//,testPipe3
+				testPipe2,
+				testPipe3
 				);
+
 
 		// Setup the simulation and export our current
 
