@@ -135,6 +135,112 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		
 	}
 
+	[Fact]
+	public void sandbox_isothermalPipeWithCurrentSource(){
+
+
+		// for this test i'm going to have 3 pipes in series
+		// for the same pressure drop across 3 pipes in series
+		// i should expect the same flowrate as 
+		// a pipe 3 times as long
+
+		// this step is needed to cast the testPipe as the
+		// correct type
+		//
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Connect("pumpOutlet","1");
+		preCastPipe = new IsothermalPipe("isothermalPipe2");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Connect("1","2");
+		preCastPipe = new IsothermalPipe("isothermalPipe3");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Connect("2","0");
+
+		double pressureDrop = 1.45;
+		double currentExpected = -677.632;
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new CurrentSource("V1", "pumpOutlet", "0", currentExpected),
+				testPipe,
+				testPipe2,
+				testPipe3
+				);
+
+
+		// Setup the simulation and export our current
+
+		double Be;
+		Be = pressureDrop;
+		Be *= testPipe.Parameters.pipeLength.
+			As(LengthUnit.SI);
+		Be *= testPipe.Parameters.pipeLength.
+			As(LengthUnit.SI);
+		Be /= testPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SI);
+		Be /= testPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SI);
+
+		double Re;
+		ChurchillFrictionFactorJacobian _jacobianObject;
+		_jacobianObject = new ChurchillFrictionFactorJacobian();
+		double roughnessRatio = testPipe.Parameters.roughnessRatio();
+		double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+		// now for 3 pipes in series, my length is actually 3 times as long
+		// so i need to multiply my L/D ratio by 3
+		lengthToDiameter *= 3.0;
+		Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+		MassFlow massFlowRate;
+		massFlowRate = testPipe.Parameters.fluidViscosity*
+			testPipe.Parameters.crossSectionalArea()/
+			testPipe.Parameters.hydraulicDiameter*
+			Re;
+
+		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+
+
+
+
+
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(ckt);
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+
+		double massFlowRateTestValue;
+		massFlowRateTestValue = steadyStateSim.simulationResult;
+		MassFlow massFlowRateTestResult;
+		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
+				MassFlowUnit.SI);
+
+		this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
+				massFlowRateTestResult.ToString());
+
+		// Assert
+		// 
+		// Note that the Math.Abs is there because some massflowrates
+		// are negative.
+		// And also the massFlowRateTestResult are both
+		// MassFlow objects, ie. dimensioned units
+		// so i need to convert them to double using the .As()
+		// method
+		Assert.Equal(massFlowRate.As(MassFlowUnit.SI),
+				massFlowRateTestResult.As(MassFlowUnit.SI),3);
+
+		//throw new Exception();
+	}
+
 	[Theory]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
