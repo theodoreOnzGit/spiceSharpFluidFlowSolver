@@ -19,7 +19,92 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	}
 
 	[Fact]
-	public void sandboxForSeriesCircuits(){
+	public void sandboxForSeriesCircuitsMockPipe(){
+
+		double voltage = 150;
+		double resistance = 1e3;
+
+		MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1");
+		mockPipe.Connect("in","out");
+		mockPipe.Parameters.A = 2.0e3;
+		mockPipe.Parameters.B = 0.5; 
+
+		MockPipeCustomResistor mockPipe2 = new MockPipeCustomResistor("RNL2");
+		mockPipe2.Connect("out","int");
+		mockPipe2.Parameters.A = 2.0e3;
+		mockPipe2.Parameters.B = 0.5; 
+
+		MockPipeCustomResistor mockPipe3 = new MockPipeCustomResistor("RNL3");
+		mockPipe3.Connect("int","0");
+		mockPipe3.Parameters.A = 2.0e3;
+		mockPipe3.Parameters.B = 0.5; 
+
+
+
+		var ckt2 = new Circuit(
+				new VoltageSource("V1", "in", "0", voltage),
+				mockPipe,
+				mockPipe2,
+				mockPipe3
+				);
+
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(ckt2);
+
+		// Assert
+		Assert.Equal(0.0,
+				steadyStateSim.simulationResult);
+
+		
+	}
+
+	[Fact]
+	public void sandboxForCircuitsSingleMockPipe(){
+
+		double voltage = 150;
+		double resistance = 1e3;
+
+		MockPipeCustomResistor mockPipe = new MockPipeCustomResistor("RNL1");
+		mockPipe.Connect("in","0");
+		mockPipe.Parameters.A = 2.0e3;
+		mockPipe.Parameters.B = 0.5; 
+
+
+
+
+		var ckt2 = new Circuit(
+				new VoltageSource("V1", "in", "0", voltage),
+				mockPipe
+				);
+
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(ckt2);
+
+		// Assert
+		Assert.Equal(0.0,
+				steadyStateSim.simulationResult);
+
+		
+	}
+
+	[Fact]
+	public void sandboxForSeriesCircuitsLinearResistor(){
 
 		double voltage = 1.5;
 		double resistance = 1e3;
@@ -47,6 +132,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		Assert.Equal(voltage/(3.0*resistance),
 				steadyStateSim.simulationResult);
 
+		
 	}
 
 	[Theory]
