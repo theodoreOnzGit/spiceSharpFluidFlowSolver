@@ -158,7 +158,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		// MassFlow objects, ie. dimensioned units
 		// so i need to convert them to double using the .As()
 		// method
-		Assert.Equal(Math.Abs(massFlowRate.As(MassFlowUnit.SI)),
+		Assert.Equal(massFlowRate.As(MassFlowUnit.SI),
 				massFlowRateTestResult.As(MassFlowUnit.SI),3);
 
 		//throw new Exception();

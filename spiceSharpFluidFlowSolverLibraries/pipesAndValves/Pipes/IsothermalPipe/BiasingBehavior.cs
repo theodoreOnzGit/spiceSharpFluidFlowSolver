@@ -192,8 +192,10 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 			//  if pressure difference is reversed
 			// mass flowrate is also reversed
-			if (isNegative)
-				massFlowRateValue = -massFlowRateValue;
+			//if (isNegative)
+			//	massFlowRateValue = -massFlowRateValue;
+			// this was originally to ensure current or massflowrate is positive.
+			// but it prevents us from seeing if backflow is possible
 
             // Load the RHS vector
 
