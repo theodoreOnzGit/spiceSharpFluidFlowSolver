@@ -173,7 +173,7 @@ public partial class ChurchillFrictionFactor : IFrictionFactor
 		}
 
 		double ReynoldsNumber;
-		ReynoldsNumber = FindRoots.OfFunction(pressureDropRoot, 1, 1e8);
+		ReynoldsNumber = FindRoots.OfFunction(pressureDropRoot, 0.001, 1e8);
 
 		// once I'm done, i want to clean up all terms
 		this.roughnessRatio = 0.0;
