@@ -22,13 +22,36 @@ namespace SpiceSharp.Simulations
 		double ISteadyStateFlowSimulation.
 			simulationResult { get; set; }
 
+		string simulationMode = "vanilla";
+
         /// <inheritdoc/>
         protected override void Execute()
         {
+			// these two lings of code are for me to force source stepping
+			//BiasingParameters.NoOperatingPointIterate = true;
+			//BiasingParameters.GminSteps = 0;
             base.Execute();
-            Op(BiasingParameters.DcMaxIterations);
+
+			switch (simulationMode)
+			{
+				case "vanilla":
+					Op(BiasingParameters.DcMaxIterations);
+					break;
+
+				case "sourceStepping":
+					int maxiterations = 100;
+					int sourceSteps = 10;
+					IterateSourceStepping(maxiterations,sourceSteps);
+					break;
+			
+				default:
+					break;
+			}
             var exportargs = new ExportDataEventArgs(this);
             OnExport(exportargs);
         }
+
+
+
     }
 }
