@@ -499,6 +499,20 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	[Theory]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
+	[InlineData(1.35)]
+	[InlineData(1.25)]
+	[InlineData(1.15)]
+	[InlineData(1.05)]
+	[InlineData(0.95)]
+	[InlineData(0.85)]
+	[InlineData(0.75)]
+	[InlineData(0.65)]
+	[InlineData(0.55)]
+	[InlineData(0.45)]
+	[InlineData(0.35)]
+	[InlineData(0.25)]
+	[InlineData(0.15)]
+	[InlineData(0.05)]
 	[InlineData(0.0)]
 	public void When_extractDataFromPrototypeSimulation_expectNoError(
 			double pressureDrop){
@@ -566,8 +580,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
 				MassFlowUnit.SI);
 
-		this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
-				massFlowRateTestResult.ToString());
+		//this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
+		//		massFlowRateTestResult.ToString());
 
 		// Assert
 		// 
