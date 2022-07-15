@@ -55,6 +55,9 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
         /// <summary>
         /// Load the Y-matrix and Rhs-vector.
         /// </summary>
+
+		public double relaxationFactor = 0.3;
+
         void IBiasingBehavior.Load()
         {
             // First get the current iteration voltage, but for basepipe

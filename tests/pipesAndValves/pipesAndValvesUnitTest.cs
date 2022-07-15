@@ -234,7 +234,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//throw new Exception();
 	}
 
-	[Theory(Skip="sandbox failed test, instability, TBD")]
+	[Theory]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
 	[InlineData(-1e-2)]
