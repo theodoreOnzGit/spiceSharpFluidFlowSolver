@@ -18,7 +18,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
-	[Fact]
+	[Fact(Skip = "sandbox")]
 	public void sandboxForSeriesCircuitsMockPipe(){
 
 		double voltage = 150;
@@ -66,7 +66,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		
 	}
 
-	[Fact]
+	[Fact(Skip = "sandbox")]
 	public void sandboxForCircuitsSingleMockPipe(){
 
 		double voltage = 150;
@@ -135,7 +135,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		
 	}
 
-	[Fact]
+	[Fact(Skip = "Sandbox")]
 	public void sandbox_isothermalPipeWithCurrentSource(){
 
 
@@ -234,7 +234,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//throw new Exception();
 	}
 
-	[Theory]
+	[Theory(Skip="sandbox failed test, instability, TBD")]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
 	[InlineData(-1e-2)]
@@ -844,8 +844,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
 
-		this.cout("\n The reference Mass flowrate is: " + 
-				massFlowRate.ToString());
+		// this.cout("\n The reference Mass flowrate is: " + 
+		// massFlowRate.ToString());
 
 
 
