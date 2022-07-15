@@ -43,7 +43,7 @@ public class systemCurveGeneratingSolver : testOutputHelper
 
 
 
-		ISteadyStateFlowSimulation steadyStateSim = 
+		ISystemCurveSimulator steadyStateSim = 
 			new systemCurveSimulator(
 				"systemCurveSimulator");
 		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
