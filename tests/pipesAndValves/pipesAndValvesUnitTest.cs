@@ -208,35 +208,28 @@ public class pipesAndValvesUnitTest : testOutputHelper
 			new PrototypeSteadyStateFlowSimulation(
 				"PrototypeSteadyStateFlowSimulation");
 		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		var pumpOutletKinPressure = new RealVoltageExport(steadyStateSim,
+				"pumpOutlet");
+		var freesurfaceKinPressure = new RealVoltageExport(steadyStateSim,
+				"0");
+
+
 		steadyStateSim.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
-			steadyStateSim.simulationResult = current;
+			var pressreDropValue = pumpOutletKinPressure.Value -
+				freesurfaceKinPressure.Value;
+			steadyStateSim.simulationResult = pressreDropValue;
 		};
 		steadyStateSim.Run(ckt);
 
 		currentExport.Destroy();
 		// </example_customcomponent_nonlinearresistor_test>
 
-		double massFlowRateTestValue;
-		massFlowRateTestValue = steadyStateSim.simulationResult;
-		MassFlow massFlowRateTestResult;
-		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
-				MassFlowUnit.SI);
-
-		this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
-				massFlowRateTestResult.ToString());
-
-		// Assert
-		// 
-		// Note that the Math.Abs is there because some massflowrates
-		// are negative.
-		// And also the massFlowRateTestResult are both
-		// MassFlow objects, ie. dimensioned units
-		// so i need to convert them to double using the .As()
-		// method
-		Assert.Equal(massFlowRate.As(MassFlowUnit.SI),
-				massFlowRateTestResult.As(MassFlowUnit.SI),3);
+		double pressureDropResult;
+		pressureDropResult = steadyStateSim.simulationResult;
+		Assert.Equal(pressureDrop,
+				pressureDropResult,3);
 
 		//throw new Exception();
 	}
