@@ -19,8 +19,8 @@ namespace SpiceSharp.Simulations
         {
         }
 
-		double ISystemCurveSimulator.
-			simulationResult { get; set; }
+		public IList<double> simulationResult { get; set; }
+		= new List<double>();
 
 		string simulationMode = "vanilla";
 

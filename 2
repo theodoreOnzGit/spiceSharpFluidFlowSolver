@@ -1,3 +1,6 @@
+// Here is a class for Fanning Friction Factor using Churchill's Correlation
+//
+
 using System;
 using MathNet.Numerics;
 using MathNet.Numerics.Interpolation;
@@ -6,7 +9,8 @@ using EngineeringUnits.Units;
 
 
 public partial class flowmeterFM40 : IfLDKFactor
-								 ,IfLDKFactorGetRe
+								 ,IfLDKFactorGetRe,
+								 IfLDKFactorJacobian
 {
 
 
@@ -130,7 +134,6 @@ public partial class flowmeterFM40 : IfLDKFactor
 			2.79e-2, LengthUnit.Meter);
 
 
-	
 
 }
 

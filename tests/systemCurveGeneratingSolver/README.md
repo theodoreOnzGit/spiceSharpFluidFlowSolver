@@ -92,4 +92,8 @@ Repeat it for all the desired pressure drops.
 We should have lots of data once we do this. And them sum the curves as 
 described before.  
 
+# issues
+
+Now when i put pipes in parallel, i seem to get a reading of 0.0 mass flowrate
+through them. Which is quite curious and frankly nonsensical. 
 

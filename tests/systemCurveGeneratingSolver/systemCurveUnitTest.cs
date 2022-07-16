@@ -46,32 +46,44 @@ public class systemCurveGeneratingSolver : testOutputHelper
 		ISystemCurveSimulator steadyStateSim = 
 			new systemCurveSimulator(
 				"systemCurveSimulator");
-		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		var currentExport1 = new RealPropertyExport(steadyStateSim, 
+				"IsothermalPipe1", "i");
+		var currentExport2 = new RealPropertyExport(steadyStateSim, 
+				"IsothermalPipe2", "i");
+		var currentExport3 = new RealPropertyExport(steadyStateSim, 
+				"IsothermalPipe3", "i");
 		steadyStateSim.ExportSimulationData += (sender, args) =>
 		{
-			var current = -currentExport.Value;
-			steadyStateSim.simulationResult = current;
+			var current1 = -currentExport1.Value;
+			var current2 = -currentExport2.Value;
+			var current3 = -currentExport3.Value;
+			steadyStateSim.simulationResult.Add(current1);
+			steadyStateSim.simulationResult.Add(current2);
+			steadyStateSim.simulationResult.Add(current3);
+
+			Assert.Equal(2.1,current1);
+
 		};
 		steadyStateSim.Run(ckt);
 
-		currentExport.Destroy();
+		currentExport1.Destroy();
+		currentExport2.Destroy();
+		currentExport3.Destroy();
 		// </example_customcomponent_nonlinearresistor_test>
 
-		double massFlowRateTestValue;
-		massFlowRateTestValue = steadyStateSim.simulationResult;
+		double massFlowRateTestValue = 0.0;
+		foreach (double entry in steadyStateSim.simulationResult)
+		{
+			massFlowRateTestValue += entry;
+		}
 		MassFlow massFlowRateTestResult;
 		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
 				MassFlowUnit.SI);
 
 
 		// Assert
-		// 
-		// Note that the Math.Abs is there because some massflowrates
-		// are negative.
-		// And also the massFlowRateTestResult are both
-		// MassFlow objects, ie. dimensioned units
-		// so i need to convert them to double using the .As()
-		// method
+
+		Assert.Equal(2.1, massFlowRateTestValue);
 	}
 
 	[Theory]

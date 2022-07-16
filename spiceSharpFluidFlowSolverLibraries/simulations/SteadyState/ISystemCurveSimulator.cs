@@ -9,6 +9,6 @@ namespace SpiceSharp.Simulations
     public interface ISystemCurveSimulator : 
 		IBiasingSimulation
     {
-		public double simulationResult { get; set; }
+		public IList<double> simulationResult { get; set; }
     }
 }
