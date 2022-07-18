@@ -23,6 +23,8 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 	public SpecificEnergy dDeltaP_dRe(double Re,
 			Length lengthScale,
 			KinematicViscosity nu){
+		// for FM40, and most other components,
+		// the lengthscale here is diameter
 
 		lengthScale = lengthScale.ToUnit(LengthUnit.SI);
 		nu = nu.ToUnit(KinematicViscosityUnit.SI);
@@ -45,6 +47,8 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 	public MassFlow dmdRe(Area crossSectionalArea,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter){
+
+		// dmdRe is here to help us convert derivatives, no change here
 
 		crossSectionalArea = crossSectionalArea.ToUnit(AreaUnit.SI);
 		fluidViscosity = fluidViscosity.ToUnit(DynamicViscosityUnit.SI);
@@ -73,6 +77,10 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 			SpecificEnergy pressureDrop,
 			KinematicViscosity fluidKinViscosity,
 			Length hydraulicDiameter){
+
+		// Be = deltaP * D^2 / nu^2
+		// D is hydraulic diameter, nu is kinematic viscosity
+		// deltaP is pressureDrop
 
 		pressureDrop = pressureDrop.ToUnit(SpecificEnergyUnit.SI);
 		fluidKinViscosity = fluidKinViscosity.ToUnit(KinematicViscosityUnit.SI);
@@ -106,6 +114,7 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 			double roughnessRatio,
 			Length pipeLength,
 			KinematicViscosity fluidKinViscosity){
+		
 
 		double derivativeResult;
 		derivativeResult = this.dDeltaP_dPA();
@@ -113,10 +122,6 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 		MassFlow dmdRe = this.dmdRe(crossSectionalArea,
 				fluidViscosity,
 				hydraulicDiameter);
-
-		double lengthToDiameter;
-		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
 
 		SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
 				pipeLength,
@@ -144,10 +149,6 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 		MassFlow dmdRe = this.dmdRe(crossSectionalArea,
 				fluidViscosity,
 				hydraulicDiameter);
-
-		double lengthToDiameter;
-		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
 
 		SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
 				pipeLength,
@@ -180,10 +181,6 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 				fluidKinViscosity,
 				pipeLength);
 
-		double lengthToDiameter;
-		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
-
 		double Re = this.getRe(Be);
 
 		double derivativeResult;
@@ -211,10 +208,6 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 		Be = this.getBejanNumber(pressureDrop,
 				fluidKinViscosity,
 				pipeLength);
-
-		double lengthToDiameter;
-		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
 
 		double Re = this.getRe(Be);
 
