@@ -16,7 +16,7 @@ namespace SpiceSharp.Components.FM40Behaviors
         private readonly ElementSet<double> _elements;
         private readonly BaseParameters _bp;
         private readonly BiasingParameters _baseConfig;
-		private IFrictionFactorJacobian _jacobianObject;
+		private IfLDKFactorJacobian _jacobianObject;
 
         /// <summary>
         /// Creates a new instance of the <see cref="BiasingBehavior"/> class.
@@ -34,7 +34,7 @@ namespace SpiceSharp.Components.FM40Behaviors
             _baseConfig = context.GetSimulationParameterSet<BiasingParameters>();
 
 			// Construct the IFrictionFactorJacobian object
-			_jacobianObject = new StabilisedChurchillJacobian();
+			_jacobianObject = new flowmeterFM40Jacobian();
 
             // Request the node variables
             var state = context.GetState<IBiasingSimulationState>();
@@ -87,6 +87,8 @@ namespace SpiceSharp.Components.FM40Behaviors
 			// so first let's calculate a Bejan number
 			//
 
+			Length hydraulicDiameter;
+			hydraulicDiameter = _bp.hydraulicDiameter;
 
 			KinematicViscosity fluidKinViscosity;
 			fluidKinViscosity = _bp.fluidKinViscosity;
@@ -101,14 +103,7 @@ namespace SpiceSharp.Components.FM40Behaviors
 			bejanNumber = _jacobianObject.getBejanNumber(
 					pressureDrop,
 					fluidKinViscosity,
-					componentLength);
-
-
-			double roughnessRatio;
-			roughnessRatio = _bp.roughnessRatio();
-
-			double lengthToDiameter;
-			lengthToDiameter = _bp.lengthToDiameter();
+					hydraulicDiameter);
 
 
 			// checkNumbers(bejanNumber, roughnessRatio, lengthToDiameter);
@@ -119,16 +114,11 @@ namespace SpiceSharp.Components.FM40Behaviors
 			// if not the simulation will crash
 			// we'll just get
 
-			double Re = _jacobianObject.getRe(bejanNumber, 
-					roughnessRatio, 
-					lengthToDiameter);
+			double Re = _jacobianObject.getRe(bejanNumber);
 
 
 			Area crossSectionalArea;
 			crossSectionalArea = _bp.crossSectionalArea();
-
-			Length hydraulicDiameter;
-			hydraulicDiameter = _bp.hydraulicDiameter;
 
 			DynamicViscosity fluidViscosity;
 			fluidViscosity = _bp.fluidViscosity;
@@ -150,41 +140,23 @@ namespace SpiceSharp.Components.FM40Behaviors
 			// so we first load everything else from the base parameters
 
 
-			Length absoluteRoughness;
-			absoluteRoughness = _bp.absoluteRoughness;
 
 
 			double dm_dPA = _jacobianObject.dm_dPA(crossSectionalArea,
 					fluidViscosity,
 					hydraulicDiameter,
 					pressureDrop,
-					absoluteRoughness,
-					componentLength,
 					fluidKinViscosity);
 
 			double dm_dPB = _jacobianObject.dm_dPB(crossSectionalArea,
 					fluidViscosity,
 					hydraulicDiameter,
 					pressureDrop,
-					absoluteRoughness,
-					componentLength,
 					fluidKinViscosity);
 
-			double minus_dm_dPA = -_jacobianObject.dm_dPA(crossSectionalArea,
-					fluidViscosity,
-					hydraulicDiameter,
-					pressureDrop,
-					absoluteRoughness,
-					componentLength,
-					fluidKinViscosity);
+			double minus_dm_dPA = -dm_dPA;
 
-			double minus_dm_dPB = -_jacobianObject.dm_dPB(crossSectionalArea,
-					fluidViscosity,
-					hydraulicDiameter,
-					pressureDrop,
-					absoluteRoughness,
-					componentLength,
-					fluidKinViscosity);
+			double minus_dm_dPB = -dm_dPB;
 
             // In order to avoid having a singular matrix, we want to have at least a very small value here.
             //g = Math.Max(g, _baseConfig.Gmin);

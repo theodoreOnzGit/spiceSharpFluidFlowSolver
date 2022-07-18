@@ -111,8 +111,6 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter,
 			double Re,
-			double roughnessRatio,
-			Length pipeLength,
 			KinematicViscosity fluidKinViscosity){
 		
 
@@ -139,8 +137,6 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter,
 			double Re,
-			double roughnessRatio,
-			Length pipeLength,
 			KinematicViscosity fluidKinViscosity){
 
 		double derivativeResult;
@@ -172,14 +168,12 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter,
 			SpecificEnergy pressureDrop,
-			double roughnessRatio,
-			Length pipeLength,
 			KinematicViscosity fluidKinViscosity){
 
 		double Be;
 		Be = this.getBejanNumber(pressureDrop,
 				fluidKinViscosity,
-				pipeLength);
+				hydraulicDiameter);
 
 		double Re = this.getRe(Be);
 
@@ -188,8 +182,6 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 				fluidViscosity,
 				hydraulicDiameter,
 				Re,
-				roughnessRatio,
-				pipeLength,
 				fluidKinViscosity);
 		return derivativeResult;
 	}
@@ -200,14 +192,12 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter,
 			SpecificEnergy pressureDrop,
-			double roughnessRatio,
-			Length pipeLength,
 			KinematicViscosity fluidKinViscosity){
 
 		double Be;
 		Be = this.getBejanNumber(pressureDrop,
 				fluidKinViscosity,
-				pipeLength);
+				hydraulicDiameter);
 
 		double Re = this.getRe(Be);
 
@@ -216,8 +206,6 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 				fluidViscosity,
 				hydraulicDiameter,
 				Re,
-				roughnessRatio,
-				pipeLength,
 				fluidKinViscosity);
 		return derivativeResult;
 	}

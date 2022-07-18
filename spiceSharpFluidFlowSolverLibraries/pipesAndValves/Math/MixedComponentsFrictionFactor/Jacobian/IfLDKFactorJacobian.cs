@@ -23,32 +23,24 @@ public interface IfLDKFactorJacobian : IfLDKFactorGetRe
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter,
 			SpecificEnergy pressureDrop,
-			double roughnessRatio,
-			Length pipeLength,
 			KinematicViscosity fluidKinViscosity);
 
 	double dm_dPB(Area crossSectionalArea,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter,
 			SpecificEnergy pressureDrop,
-			double roughnessRatio,
-			Length pipeLength,
 			KinematicViscosity fluidKinViscosity);
 
 	double dm_dPA(Area crossSectionalArea,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter,
 			double Re,
-			double roughnessRatio,
-			Length pipeLength,
 			KinematicViscosity fluidKinViscosity);
 
 	double dm_dPB(Area crossSectionalArea,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter,
 			double Re,
-			double roughnessRatio,
-			Length pipeLength,
 			KinematicViscosity fluidKinViscosity);
 
 }
