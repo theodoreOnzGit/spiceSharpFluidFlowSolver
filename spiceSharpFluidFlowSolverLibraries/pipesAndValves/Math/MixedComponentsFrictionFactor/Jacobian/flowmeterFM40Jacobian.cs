@@ -124,7 +124,7 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 				hydraulicDiameter);
 
 		SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
-				pipeLength,
+				hydraulicDiameter,
 				fluidKinViscosity);
 
 		derivativeResult *= dmdRe.As(MassFlowUnit.SI);
@@ -151,7 +151,7 @@ public class flowmeterFM40Jacobian : flowmeterFM40,
 				hydraulicDiameter);
 
 		SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
-				pipeLength,
+				hydraulicDiameter,
 				fluidKinViscosity);
 
 		derivativeResult *= dmdRe.As(MassFlowUnit.SI);
