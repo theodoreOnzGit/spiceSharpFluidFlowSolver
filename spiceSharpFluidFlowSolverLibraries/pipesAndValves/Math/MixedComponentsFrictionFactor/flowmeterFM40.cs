@@ -20,6 +20,12 @@ public partial class flowmeterFM40 : IfLDKFactor
 
 	public double fLDK_ReSq(double ReynoldsNumber){
 
+		bool isNegative = false;
+		if(ReynoldsNumber < 0){
+			ReynoldsNumber *= -1;
+			isNegative = true;
+		}
+
 		double specificFM40FLDK_ReSq;
 
 		// the original correlation is:
@@ -27,6 +33,10 @@ public partial class flowmeterFM40 : IfLDKFactor
 
 		specificFM40FLDK_ReSq = 18.0*Math.Pow(ReynoldsNumber,2.0);
 		specificFM40FLDK_ReSq += 93000.0*Math.Pow(ReynoldsNumber,2.0-1.35);
+
+		if(isNegative){
+			specificFM40FLDK_ReSq *= -1;
+		}
 
 		return specificFM40FLDK_ReSq;
 
