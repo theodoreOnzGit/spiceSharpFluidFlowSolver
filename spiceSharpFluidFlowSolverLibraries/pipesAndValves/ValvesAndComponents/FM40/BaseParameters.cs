@@ -48,15 +48,15 @@ namespace SpiceSharp.Components.FM40Behaviors
 
 
 		// and also fluid properties
-		// water at 18C used as default
-		// https://www.engineeringtoolbox.com/water-dynamic-kinematic-viscosity-d_596.html
-		// will probably change to therminol VP1 later
+		// therminol VP-1 properties used at 20C
+		// room temp
+		// https://www.therminol.com/sites/therminol/files/documents/TF09A_Therminol_VP1.pdf
 
 		public KinematicViscosity fluidKinViscosity { get; set; } =
-			new KinematicViscosity(1.0533, KinematicViscosityUnit.Centistokes);
+			new KinematicViscosity(4.03, KinematicViscosityUnit.Centistokes);
 
 		public DynamicViscosity fluidViscosity { get; set; } =
-			new DynamicViscosity(1.0518, DynamicViscosityUnit.Centipoise);
+			new DynamicViscosity(4.29, DynamicViscosityUnit.Centipoise);
 
 
 
