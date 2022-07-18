@@ -33,6 +33,10 @@ public partial class flowmeterFM40 : IfLDKFactor
 
 		specificFM40FLDK_ReSq = 18.0*Math.Pow(ReynoldsNumber,2.0);
 		specificFM40FLDK_ReSq += 93000.0*Math.Pow(ReynoldsNumber,2.0-1.35);
+		// I could not get operating point convergence previously
+		// this line is just to test if linear relations is ok
+		//
+		// specificFM40FLDK_ReSq = 18.0*Math.Pow(ReynoldsNumber,1.0);
 
 		if(isNegative){
 			specificFM40FLDK_ReSq *= -1;

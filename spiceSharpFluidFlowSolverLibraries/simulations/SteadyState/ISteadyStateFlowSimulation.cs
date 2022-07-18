@@ -10,5 +10,6 @@ namespace SpiceSharp.Simulations
 		IBiasingSimulation
     {
 		public double simulationResult { get; set; }
+		public string simulationMode { get; set ; }
     }
 }

@@ -23,7 +23,7 @@ namespace SpiceSharp.Simulations
 			simulationResult { get; set; }
 
 
-		string simulationMode = "vanilla";
+		public string simulationMode { get; set; } = "vanilla";
 
         /// <inheritdoc/>
         protected override void Execute()

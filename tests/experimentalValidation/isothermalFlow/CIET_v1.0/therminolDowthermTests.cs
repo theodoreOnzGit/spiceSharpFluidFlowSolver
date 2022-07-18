@@ -5,6 +5,7 @@ using EngineeringUnits;
 using EngineeringUnits.Units;
 
 using spiceSharpFluidFlowSolverLibraries;
+using System;
 namespace tests;
 
 public class therminolDowthermTests : testOutputHelper
@@ -25,7 +26,7 @@ public class therminolDowthermTests : testOutputHelper
 			double pressureDrop)
     {
 
-		FM40 flowmeter = new FM40("RNL3");
+		FM40 flowmeter = new FM40("flowmeter40");
 		flowmeter.Connect("0","in");
 
 
@@ -50,4 +51,58 @@ public class therminolDowthermTests : testOutputHelper
 		Assert.Equal(0.0,
 				steadyStateSim.simulationResult);
     }
+
+	[Theory]
+	[InlineData(3.0)]
+	public void WhenFM40InSeries_ExpectNonInfinity(
+			double pressureDrop){
+
+		FM40 FM40_1 = new FM40("flowmeter1");
+		FM40_1.Connect("flowcircuitInlet","pt1");
+
+		FM40 FM40_2 = new FM40("flowmeter2");
+		FM40_2.Connect("pt1","pt2");
+
+		FM40 FM40_3 = new FM40("flowmeter3");
+		FM40_3.Connect("pt2","0");
+
+		var ckt2 = new Circuit(
+				new VoltageSource("V1", "0", "flowcircuitInlet", pressureDrop),
+				FM40_1,
+				FM40_2,
+				FM40_3
+				);
+
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+
+
+		steadyStateSim.simulationMode ="sourceStepping";
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(ckt2);
+
+		if(steadyStateSim.simulationResult == double.NaN){
+			string exceptionMsg = "NaN number";
+			throw new Exception();
+		}
+		else if (steadyStateSim.simulationResult == double.NegativeInfinity | 
+				steadyStateSim.simulationResult == double.PositiveInfinity)
+		{
+			string exceptionMsg = "Infinty";
+			throw new Exception();
+		}
+
+		// Assert
+		Assert.Equal(steadyStateSim.simulationResult,
+				steadyStateSim.simulationResult);
+	}
 }
+
+
