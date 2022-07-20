@@ -30,7 +30,7 @@ public class therminolDowthermTests : testOutputHelper
 		// Setup
 		double hydrostaticPressureIncrease =
 			0.36*9.81*Math.Sin(90.0*Math.PI/180.0);
-		double pressureDrop = 0.36*9.81;
+		double pressureDrop = 1;
 
 		// here are our reference parameters
 		IfLDKFactorGetRe getReObj = new flowmeterFM40();
