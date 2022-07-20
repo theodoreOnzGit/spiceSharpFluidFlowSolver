@@ -66,8 +66,7 @@ namespace SpiceSharp.Components.FM40Behaviors
 			// let's include height also
 			// gz is the hydrostatic kinematic pressure increment from
 			// node A to node B
-			Length componentLength;
-			componentLength = _bp.componentLength;
+			Length componentLength = _bp.componentLength;
 			double gz;
 			// of course g is 9.81 m/s^2
 			// we note that z = L sin \theta
@@ -94,25 +93,10 @@ namespace SpiceSharp.Components.FM40Behaviors
 			fluidKinViscosity = _bp.fluidKinViscosity;
 
 			double bejanNumber;
-			// now here's an issue found during debugging,
-			// if bejan number is zero, the simulation will crash
-			// this is because the derivatives at Re = 0 are not
-			// defined for the churchill correlation.
-			// i will arbitrarily add 1000 to the bejan number
-			// if it is zero so that we can continue simulation
 			bejanNumber = _jacobianObject.getBejanNumber(
 					pressureDrop,
 					fluidKinViscosity,
 					hydraulicDiameter);
-
-
-			// checkNumbers(bejanNumber, roughnessRatio, lengthToDiameter);
-
-			// if Bejan number is zero, then Re is 0
-			// However, for steady state, we don't want to have that 
-			// equals to zero,
-			// if not the simulation will crash
-			// we'll just get
 
 			double Re = _jacobianObject.getRe(bejanNumber);
 
