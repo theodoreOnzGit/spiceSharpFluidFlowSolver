@@ -19,9 +19,105 @@ public class therminolDowthermTests : testOutputHelper
 		// when i run
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
+	[Theory]
+	[InlineData(1.0)]
+	[InlineData(0.5)]
+	[InlineData(0.1)]
+	[InlineData(2.0)]
+	[InlineData(3.0)]
+	public void WhenFM40InSeries3x_Expect3xPressureDrop(
+			double pressureDrop){
+
+		// suppose i have a pressure drop of 3p m^2/s^2
+		// this should produce a Reynolds number of Re
+		// through a series of 3 flowmeters (height taken out)
+		// and if i put the pressure drop P across one
+		// flowmeter, i should get the same Re
+		//
+		//
+		// Setup
+		//
+
+		// Here is the expected pressure drop
+		double referenceRe;
+		{
+			IfLDKFactorGetRe getReObj = new flowmeterFM40();
+			double hydraulicDiameter = 2.79e-2;
+			KinematicViscosity kinViscosityObj= 
+				new KinematicViscosity(4.03, 
+						KinematicViscosityUnit.Centistokes);
+			double kinViscosityValue = kinViscosityObj.As(
+					KinematicViscosityUnit.SI);
+
+			double BejanNumber = (pressureDrop/3.0)
+				*Math.Pow(hydraulicDiameter,
+						2.0);
+			BejanNumber /= Math.Pow(kinViscosityValue,2.0);
+			referenceRe = getReObj.getRe(BejanNumber);
+		}
+
+
+		FM40 FM40_1 = new FM40("flowmeter1");
+		FM40_1.Connect("flowcircuitInlet","pt1");
+		FM40_1.Parameters.inclineAngle =
+			new Angle(0.0,AngleUnit.Degree);
+
+		FM40 FM40_2 = new FM40("flowmeter2");
+		FM40_2.Connect("pt1","pt2");
+		FM40_2.Parameters.inclineAngle =
+			new Angle(0.0,AngleUnit.Degree);
+
+		FM40 FM40_3 = new FM40("flowmeter3");
+		FM40_3.Connect("pt2","0");
+		FM40_3.Parameters.inclineAngle =
+			new Angle(0.0,AngleUnit.Degree);
+
+		var ckt2 = new Circuit(
+				new VoltageSource("V1", "flowcircuitInlet", "0", pressureDrop),
+				FM40_1,
+				FM40_2,
+				FM40_3
+				);
+
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+
+
+		steadyStateSim.simulationMode ="sourceStepping";
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(ckt2);
+
+		// now i collect the results
+		double massFlowValueKgPerS;
+		massFlowValueKgPerS = steadyStateSim.simulationResult;
+
+		// Re = massFlowrate/XSArea * hydraulicDiameter / kinViscosity
+		double resultRe = massFlowValueKgPerS;
+		resultRe *= FM40_1.Parameters.hydraulicDiameter.As(
+				LengthUnit.SI);
+		resultRe /= FM40_1.Parameters.crossSectionalArea().As(
+				AreaUnit.SI);
+		resultRe /= FM40_1.Parameters.fluidViscosity.As(
+				DynamicViscosityUnit.SI);
+
+		if( Math.Abs(1-referenceRe/resultRe) < 0.01){
+			Assert.True(true);
+			return;
+		}
+		// Assert
+		Assert.Equal(referenceRe,
+				resultRe,0);
+	}
 
     [Fact]
-    public void WhenFM40ComponentElevatedShoudlEqualCorrelation()
+    public void WhenFM40ComponentElevatedShouldEqualCorrelation()
     {
 		//note: this test is here to see if the pressure drop
 		// correlation holds if FM40 is raised to 90 degree
