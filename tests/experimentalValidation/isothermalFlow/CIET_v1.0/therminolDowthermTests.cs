@@ -25,9 +25,39 @@ public class therminolDowthermTests : testOutputHelper
     public void WhenFM40Component_FrictionFactorShouldEqualCorrelation(
 			double pressureDrop)
     {
+		// Setup
+
+		// here are our reference parameters
+		IfLDKFactorGetRe getReObj = new flowmeterFM40();
+		
+		// now for a set Bejan number i should get a
+		// set Reynold's number
+		// let's see the Be
+		// Be = deltaP * D^2/nu^2
+		// These are parameters i can get within the flowmeter
+		// parameters (i coded them in)
+		// but i'll just set it manually for simplicity's sake
+		// hydraulic diameter is in meters here
+		double hydraulicDiameter = 2.79e-2;
+		KinematicViscosity kinViscosityObj= 
+			new KinematicViscosity(4.03, 
+					KinematicViscosityUnit.Centistokes);
+		double kinViscosityValue = kinViscosityObj.As(
+				KinematicViscosityUnit.SI);
+
+		double BejanNumber = pressureDrop*Math.Pow(hydraulicDiameter,
+				2.0);
+		BejanNumber /= Math.Pow(kinViscosityValue,2.0);
+
+		double referenceRe = getReObj.getRe(BejanNumber);
+
+		// here are the result parameters
+
 
 		FM40 flowmeter = new FM40("flowmeter40");
 		flowmeter.Connect("0","in");
+		flowmeter.Parameters.inclineAngle =
+			new Angle(0.0,AngleUnit.Degree);
 
 
 
@@ -45,11 +75,28 @@ public class therminolDowthermTests : testOutputHelper
 			var current = -currentExport.Value;
 			steadyStateSim.simulationResult = current;
 		};
+		// Act
 		steadyStateSim.Run(ckt2);
 
+		// now i collect the results
+		double massFlowValueKgPerS;
+		massFlowValueKgPerS = steadyStateSim.simulationResult;
+
+		// Re = massFlowrate/XSArea * hydraulicDiameter / kinViscosity
+		double resultRe = massFlowValueKgPerS;
+		resultRe *= flowmeter.Parameters.hydraulicDiameter.As(
+				LengthUnit.SI);
+		resultRe /= flowmeter.Parameters.crossSectionalArea().As(
+				AreaUnit.SI);
+		resultRe /= flowmeter.Parameters.fluidViscosity.As(
+				DynamicViscosityUnit.SI);
+
+
+
+
 		// Assert
-		Assert.Equal(0.0,
-				steadyStateSim.simulationResult);
+		Assert.Equal(referenceRe,
+				resultRe,3);
     }
 
 	[Theory]
