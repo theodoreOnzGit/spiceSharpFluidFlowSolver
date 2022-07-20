@@ -358,7 +358,7 @@ public class FrictionFactorTests : testOutputHelper
 
 	}
 	
-	[Theory]
+	[Theory(Skip = "Deprecated")]
 	[InlineData(4000, 0.05)]
 	[InlineData(40000, 0.05)]
 	[InlineData(4e5, 0.05)]
@@ -440,7 +440,7 @@ public class FrictionFactorTests : testOutputHelper
 
 	}
 
-	[Theory]
+	[Theory(Skip = "Deprecated")]
 	[InlineData(4000, 0.05)]
 	[InlineData(40000, 0.05)]
 	[InlineData(4e5, 0.05)]
@@ -536,7 +536,7 @@ public class FrictionFactorTests : testOutputHelper
 	}
 
 
-	[Theory]
+	[Theory(Skip = "Deprecated")]
 	[InlineData(4e3, 0.0, 0.039907014055631)]
 	[InlineData(4e7, 0.00005, 0.010627694187016)]
 	[InlineData(4e6, 0.001, 0.019714092419925)]

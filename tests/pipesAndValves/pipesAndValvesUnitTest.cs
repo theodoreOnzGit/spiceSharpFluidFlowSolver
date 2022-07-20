@@ -239,7 +239,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//throw new Exception();
 	}
 
-	[Theory]
+	[Theory(Skip = "unstable, use other solver")]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
 	[InlineData(-1e-2)]
@@ -651,8 +651,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
 
-		this.cout("\n The reference flowrate for PrototypeSteadyStateFlowSimulationTest is: " + 
-				massFlowRate.ToString());
+		//this.cout("\n The reference flowrate for PrototypeSteadyStateFlowSimulationTest is: " + 
+		//		massFlowRate.ToString());
 
 
 
@@ -664,8 +664,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		steadyStateSim.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
-			System.Console.Write("PrototypeSteadyStateFlowSimulation: \n");
-			System.Console.Write("{0}, ".FormatString(current));
+			//System.Console.Write("PrototypeSteadyStateFlowSimulation: \n");
+			//System.Console.Write("{0}, ".FormatString(current));
 		};
 		steadyStateSim.Run(ckt);
 
@@ -724,8 +724,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
 
-		this.cout("\n The reference flowrate for MockSteadyStateFlowSimulationTest is: " + 
-				massFlowRate.ToString());
+		//this.cout("\n The reference flowrate for MockSteadyStateFlowSimulationTest is: " + 
+		//		massFlowRate.ToString());
 
 
 
@@ -736,8 +736,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		steadyStateSim.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
-			System.Console.Write("MockSteadyStateFlowSimulation: \n");
-			System.Console.Write("{0}, ".FormatString(current));
+			//System.Console.Write("MockSteadyStateFlowSimulation: \n");
+			//System.Console.Write("{0}, ".FormatString(current));
 		};
 		steadyStateSim.Run(ckt);
 
@@ -748,7 +748,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		//throw new Exception();
 	}
 	
-	[Theory]
+	[Theory(Skip = "tested, too verbose")]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
 	[InlineData(0.0)]
@@ -874,8 +874,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		dc.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
-			System.Console.Write("IsothermalPipe NegativePressure Verification: \n");
-			System.Console.Write("{0}, ".FormatString(current));
+			//System.Console.Write("IsothermalPipe NegativePressure Verification: \n");
+			//System.Console.Write("{0}, ".FormatString(current));
 		};
 		dc.Run(ckt);
 		double current = -currentExport.Value;
@@ -1005,8 +1005,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
 
-		this.cout("\n The reference Mass flowrate is: " + 
-				massFlowRate.ToString());
+		//this.cout("\n The reference Mass flowrate is: " + 
+		//		massFlowRate.ToString());
 
 
 
@@ -1016,8 +1016,8 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		dc.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
-			System.Console.Write("Base Pipe Verification: \n");
-			System.Console.Write("{0}, ".FormatString(current));
+			//System.Console.Write("Base Pipe Verification: \n");
+			//System.Console.Write("{0}, ".FormatString(current));
 		};
 		dc.Run(ckt);
 		double current = -currentExport.Value;
@@ -1052,11 +1052,11 @@ public class pipesAndValvesUnitTest : testOutputHelper
 		// Setup the simulation and export our current
 		var dc = new DC("DC", "V1", 1.45, 1.5, 0.05);
 		var currentExport = new RealPropertyExport(dc, "V1", "i");
-		this.cout("\n mockPipeClass with pipeFactory \n");
+		//this.cout("\n mockPipeClass with pipeFactory \n");
 		dc.ExportSimulationData += (sender, args) =>
 		{
 			var current = -currentExport.Value;
-			System.Console.Write("{0}, ".FormatString(current));
+			//System.Console.Write("{0}, ".FormatString(current));
 		};
 		dc.Run(ckt);
 		double current = -currentExport.Value;
@@ -1068,7 +1068,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 	// mockpipe class built without factory, reference for
 	// factory class
-	[Fact]
+	[Fact(Skip = "already tested, too verbose")]
 	public void mockPipeReference_NoFactoryBuild()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
@@ -1101,7 +1101,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 	}
 
 	// nonlinear resistor reference
-	[Fact]
+	[Fact(Skip = "already tested, too verbose")]
 	public void nonlinearResistorReference_NoFactoryBuild()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
@@ -1168,7 +1168,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 
 	// this test here is to help us print useful data
-	[Fact]
+	[Fact(Skip = "sandbox, not included")]
 	public void SandBoxPrintResult()
 	{
 		// <example_customcomponent_nonlinearresistor_test>
@@ -1285,7 +1285,7 @@ public class pipesAndValvesUnitTest : testOutputHelper
 
 	}
 
-	[Fact]
+	[Fact(Skip = "already tested, too verbose")]
 	public void mockPipeResult()
 	{
 		// <example_customcomponent_nonlinearresistor_test>

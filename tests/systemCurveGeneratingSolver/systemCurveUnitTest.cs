@@ -86,7 +86,7 @@ public class systemCurveGeneratingSolver : testOutputHelper
 		Assert.Equal(2.1, massFlowRateTestValue);
 	}
 
-	[Theory]
+	[Theory(Skip = "unstable, use other solver")]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
 	[InlineData(-1e-2)]
@@ -280,8 +280,8 @@ public class systemCurveGeneratingSolver : testOutputHelper
 		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
 				MassFlowUnit.SI);
 
-		this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
-				massFlowRateTestResult.ToString());
+		//this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
+		//		massFlowRateTestResult.ToString());
 
 		// Assert
 		// 

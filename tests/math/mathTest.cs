@@ -40,7 +40,7 @@ public class mathTest : testOutputHelper
 		return x*x*x*this.a;
 	}
 
-	[Theory]
+	[Theory(Skip = "deprecated")]
 	[InlineData(0.5)]
 	[InlineData(0.01)]
 	[InlineData(0.1)]
@@ -97,7 +97,7 @@ public class mathTest : testOutputHelper
 
 	}
 	
-	[Theory]
+	[Theory(Skip = "Deprecated")]
 	[InlineData(1e-4/4)]
 	public void Test_centralDifferenceShouldThrowBadlyBehavedError(
 			double x){
@@ -119,7 +119,7 @@ public class mathTest : testOutputHelper
 
 	}
 
-	[Fact]
+	[Fact(Skip = "Deprecated")]
 	public void Test_centralDifferenceShouldThrowUndefinedError(){
 		// Setup
 
@@ -141,7 +141,7 @@ public class mathTest : testOutputHelper
 	}
 
 
-	[Theory]
+	[Theory(Skip = "Deprecated")]
 	[InlineData(5,5)]
 	[InlineData(5,375)]
 	[InlineData(144,5)]
@@ -181,7 +181,7 @@ public class mathTest : testOutputHelper
 	{
 		return x*this.a;
 	}
-	[Theory]
+	[Theory(Skip = "Deprecated")]
 	[InlineData(5,5)]
 	[InlineData(5,1)]
 	[InlineData(5,10)]
