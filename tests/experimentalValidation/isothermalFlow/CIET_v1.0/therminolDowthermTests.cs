@@ -106,12 +106,18 @@ public class therminolDowthermTests : testOutputHelper
 				AreaUnit.SI);
 		resultRe /= FM40_1.Parameters.fluidViscosity.As(
 				DynamicViscosityUnit.SI);
+		// Assert
+		//
+		// There are two ways of asserting here
+		// one is where the error is less than 1%,
+		// just assert true and return;
+		//
+		// otherwise show the actual number
 
 		if( Math.Abs(1-referenceRe/resultRe) < 0.01){
 			Assert.True(true);
 			return;
 		}
-		// Assert
 		Assert.Equal(referenceRe,
 				resultRe,0);
 	}
