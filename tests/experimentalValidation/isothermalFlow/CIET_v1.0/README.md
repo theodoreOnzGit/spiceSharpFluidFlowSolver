@@ -48,6 +48,36 @@ I'm also not sure of the valve lineup for this dataset. I'll have to
 assume for now that it is the normal flow pattern without bypass or
 flow reversal.
 
+## stability testing
+
+So far, i have noted that for this setup, whenever i connect two
+or more pipe systems in series, the solver is unable to converge
+to a suitable value. I suspected it is because of the transition
+region in turbulence.
+
+Therefore I tried taking a shortcut: CIET mostly had flow regimes
+in the laminar region, therefore just use the components with 
+fLDK correlations (ie Be = (f *L/D + K)*Re^2).
+
+Those don't seem to have transition regions, and do not seem to 
+blow up when connected in series with source stepping. However, 
+this is only true for
+lower Reynold's numbers eg 1100 and below. Any higher and the solver
+fails to converge even with source stepping. 
+
+I therefore conclude that the system curve generating method would be 
+best to help either solve the system of equations or get so close
+to the solution that the curve has sort of a linear jacobian
+within the vicinity of the solution.
+
+This leaves us with two problems.
+
+1. get an algorithm to help us automatically call methods within
+each component to help generate the Bejan number given a Re
+
+2. supply the pressure drops here into an initial guess for the nodes
+so as to help the solver converge.
+
 
 # Bibliogrpahy
 Zweibaum, N. (2015). Experimental Validation of Passive Safety System 
