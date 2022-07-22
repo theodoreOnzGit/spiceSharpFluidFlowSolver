@@ -131,21 +131,14 @@ namespace SpiceSharp.Entities
         /// <param name="item">The object to add to the <see cref="ICollection{T}" />.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="item"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown if another entity with the same name already exists.</exception>
-        public void Add(IFluidEntity item)
-        {
-			// first i make a copy of the item and cast it
-			// into IEntity type
-
-			IEntity entityItem;
-			entityItem = (IEntity)item;
-
-			this.Add(entityItem);
-
-			_fluidEntities.Add(item.Name, item);
-        }
 
         public void Add(IEntity item)
         {
+			// Also if i add an IEntity object which happens to
+			// implement the IFluidEntity interface, 
+			// i also want to add it to the dictionary.
+
+
             item.ThrowIfNull(nameof(item));
             try
             {
@@ -156,7 +149,59 @@ namespace SpiceSharp.Entities
                 throw new ArgumentException(Properties.Resources.EntityCollection_KeyExists.FormatString(item.Name));
             }
             OnEntityAdded(new EntityEventArgs(item));
+
+			this.TryAddToFluidEntityDict(item);
+
         }
+
+		// this function helps me check if an IEntity is a IFluidEntity
+		// if it is, then add it to the Dictionary
+		// if not, then do nothing
+
+		public void TryAddToFluidEntityDict(IEntity item){
+
+			// i want to see if the item
+			// is castable as an IFluidEntity
+			// I will declare the type first
+
+			IFluidEntity fluidEntity;
+
+			bool isFluidEntity = this.TryCastToIFluidEntity(
+					item, 
+					out fluidEntity);
+
+			if (isFluidEntity)
+			{
+				_fluidEntities.Add(fluidEntity.Name, fluidEntity);
+				return;
+			}
+
+			return;
+
+		}
+
+		// This function is here to try and cast the entity
+		// type to IFluidEntity.
+		//
+		public bool TryCastToIFluidEntity(IEntity item, 
+			out IFluidEntity result){
+
+			if (item is IFluidEntity)
+			{
+				result = (IFluidEntity)item;
+				return true;
+			}
+			result = default(IFluidEntity);
+			return false;
+
+		}
+
+		// Now for the remove bits, i can remove an entry
+		// by name or by object
+		//
+		// If removing by name, i want to check both lists
+		// if the name exists, and remove the entry from
+		// both lists
 
         /// <inheritdoc/>
         public bool Remove(string name)
@@ -166,6 +211,17 @@ namespace SpiceSharp.Entities
                 return false;
             _entities.Remove(name);
             OnEntityRemoved(new EntityEventArgs(entity));
+			
+			// once i removed the entities, great,
+			// i want to check if the name is present in
+			// the _fluidEntities dictionary
+			// if it's there, remove it
+			// else, do nothing
+			//
+            if (_fluidEntities.TryGetValue(name, out var 
+						fluidEntity))
+				_fluidEntities.Remove(name);
+
             return true;
         }
 
@@ -184,24 +240,51 @@ namespace SpiceSharp.Entities
                 return false;
             _entities.Remove(item.Name);
             OnEntityRemoved(new EntityEventArgs(item));
+
+			// now to this method, i also want to remove
+			// the fluidEntity if it is castable as a fluidEntity
+			// else do nothing
+			this.TryRemoveFluidEntityDict(item);
+
             return true;
         }
 
-        public bool Remove(IFluidEntity item)
-        {
-			// first i make a copy of the item and cast it
-			// into IEntity type
 
-			IEntity entityItem;
-			entityItem = (IEntity)item;
+		// this function removes an entity from the fluidEntity
+		// Dictionary if 
+		public void TryRemoveFluidEntityDict(IEntity item){
 
-			this.Remove(entityItem);
+			// i want to see if the item
+			// is castable as an IFluidEntity
+			// I will declare the type first
 
-            if (!_fluidEntities.TryGetValue(item.Name, out var result) || result != item)
-                return false;
-            _fluidEntities.Remove(item.Name);
-            return true;
-        }
+            item.ThrowIfNull(nameof(item));
+			IFluidEntity fluidEntity;
+
+			bool isFluidEntity = this.TryCastToIFluidEntity(
+					item, 
+					out fluidEntity);
+
+			// if it's a fluidEntity, then try to remove it
+			// from the dictionary,
+			// we also check if the fluidEntity name is found
+			// inside the dictionary
+			// if it's not found, don't do anything
+			//
+            if (!_fluidEntities.TryGetValue(fluidEntity.Name, 
+						out var result) || result != item)
+                return;
+			if (isFluidEntity)
+			{
+				_fluidEntities.Remove(fluidEntity.Name);
+				return;
+			}
+
+			return;
+
+		}
+
+
 
         /// <inheritdoc/>
         public bool Contains(string name) => _entities.ContainsKey(name);
