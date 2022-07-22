@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using EngineeringUnits;
+using EngineeringUnits.Units;
 
 // to help the FluidEntityCollection implement both 
 // IEntityCollection and ICollection<IFluidEntity>
@@ -28,11 +30,44 @@ namespace SpiceSharp.Entities
     /// <seealso cref="IEntityCollection" />
     public class FluidEntityCollection : IEntityCollection,
 	IEnumerable<IFluidEntity>,
-	ICollection<IFluidEntity>
+	ICollection<IFluidEntity>,
+	IFluidEntityCollection
     {
         private readonly Dictionary<string, IEntity> _entities;
 		private readonly Dictionary<string, IFluidEntity> _fluidEntities;
 
+
+		// this is where the fluidEntityCollection is meant to
+		// return pressure drops (kinematic or otherwise)
+		//
+
+		Pressure IFluidEntityCollection.getPressureDrop(
+				MassFlow massFlowrate){
+			Pressure totalPressureDrop;
+			totalPressureDrop = new Pressure(0.0, 
+					PressureUnit.SI);
+			foreach (var fluidEntityDictEntry in _fluidEntities)
+			{
+				totalPressureDrop += fluidEntityDictEntry.Value.getPressureDrop(
+						massFlowrate);
+			}
+
+			return totalPressureDrop;
+		}
+
+		SpecificEnergy IFluidEntityCollection.getKinematicPressureDrop(
+				MassFlow massFlowrate){
+			SpecificEnergy totalPressureDrop;
+			totalPressureDrop = new SpecificEnergy(0.0, 
+					SpecificEnergyUnit.SI);
+			foreach (var fluidEntityDictEntry in _fluidEntities)
+			{
+				totalPressureDrop += fluidEntityDictEntry.Value.getPressureDrop(
+						massFlowrate);
+			}
+
+			return totalPressureDrop;
+		}
 
         /// <summary>
         /// Occurs when an entity has been added.
@@ -74,6 +109,7 @@ namespace SpiceSharp.Entities
         public FluidEntityCollection()
         {
             _entities = new Dictionary<string, IEntity>(StringComparer.OrdinalIgnoreCase);
+            _fluidEntities = new Dictionary<string, IFluidEntity>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -83,6 +119,7 @@ namespace SpiceSharp.Entities
         public FluidEntityCollection(IEqualityComparer<string> comparer)
         {
             _entities = new Dictionary<string, IEntity>(comparer ?? Constants.DefaultComparer);
+            _fluidEntities = new Dictionary<string, IFluidEntity>(comparer ?? Constants.DefaultComparer);
         }
 
         /// <summary>
