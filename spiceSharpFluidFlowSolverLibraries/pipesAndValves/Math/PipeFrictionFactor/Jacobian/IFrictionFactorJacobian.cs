@@ -6,7 +6,8 @@ using MathNet.Numerics;
 using EngineeringUnits;
 using EngineeringUnits.Units;
 
-public interface IFrictionFactorJacobian : IFrictionFactorGetRe
+public interface IFrictionFactorJacobian : IFrictionFactorGetRe,
+	   IFrictionFactor
 {
 	double dB_dRe(double Re, double roughnessRatio,
 			double lengthToDiameter);
