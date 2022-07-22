@@ -12,9 +12,55 @@ namespace SpiceSharp
     /// </summary>
     /// <seealso cref="IEntityCollection" />
     public class FluidSeriesCircuit : 
-		IEntityCollection
+		IEntityCollection,
+		IFluidEntityCollection
     {
-        private readonly IEntityCollection _entities;
+        private readonly IFluidEntityCollection _entities;
+
+		public Dictionary<string, IFluidEntity> _fluidEntities 
+		{
+			// basically i'm forcing the user to interact
+			// with the dictionary within the _entities 
+			// FluidEntityCollection
+			get {
+				return _entities._fluidEntities;
+			}
+
+			set {
+				_entities._fluidEntities = value;
+			}
+		}
+		// this is where the fluidEntityCollection is meant to
+		// return pressure drops (kinematic or otherwise)
+		//
+
+		Pressure IFluidEntityCollection.getPressureDrop(
+				MassFlow massFlowrate){
+			Pressure totalPressureDrop;
+			totalPressureDrop = new Pressure(0.0, 
+					PressureUnit.SI);
+			foreach (var fluidEntityDictEntry in _fluidEntities)
+			{
+				totalPressureDrop += fluidEntityDictEntry.Value.getPressureDrop(
+						massFlowrate);
+			}
+
+			return totalPressureDrop;
+		}
+
+		SpecificEnergy IFluidEntityCollection.getKinematicPressureDrop(
+				MassFlow massFlowrate){
+			SpecificEnergy totalPressureDrop;
+			totalPressureDrop = new SpecificEnergy(0.0, 
+					SpecificEnergyUnit.SI);
+			foreach (var fluidEntityDictEntry in _fluidEntities)
+			{
+				totalPressureDrop += fluidEntityDictEntry.Value.getPressureDrop(
+						massFlowrate);
+			}
+
+			return totalPressureDrop;
+		}
 
         /// <inheritdoc/>
         public IEqualityComparer<string> Comparer => _entities.Comparer;
@@ -37,7 +83,7 @@ namespace SpiceSharp
         /// </summary>
         public FluidSeriesCircuit()
         {
-            _entities = new EntityCollection();
+            _entities = new FluidEntityCollection();
         }
 
         /// <summary>
@@ -45,7 +91,7 @@ namespace SpiceSharp
         /// </summary>
         /// <param name="entities">The entities.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="entities"/> is <c>null</c>.</exception>
-        public FluidSeriesCircuit(IEntityCollection entities)
+        public FluidSeriesCircuit(IFluidEntityCollection entities)
         {
             _entities = entities.ThrowIfNull(nameof(entities));
         }
