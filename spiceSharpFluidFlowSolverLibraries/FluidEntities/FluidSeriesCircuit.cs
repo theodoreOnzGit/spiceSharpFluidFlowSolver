@@ -55,7 +55,8 @@ namespace SpiceSharp
 					SpecificEnergyUnit.SI);
 			foreach (var fluidEntityDictEntry in _fluidEntities)
 			{
-				totalPressureDrop += fluidEntityDictEntry.Value.getPressureDrop(
+				totalPressureDrop += fluidEntityDictEntry.
+					Value.getKinematicPressureDrop(
 						massFlowrate);
 			}
 

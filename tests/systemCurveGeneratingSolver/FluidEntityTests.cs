@@ -194,6 +194,81 @@ public class fluidEntityTests : testOutputHelper
 		//throw new Exception();
 	}
 
+
+	[Theory]
+	[InlineData(1.45)]
+	[InlineData(-1.45)]
+	[InlineData(-1e-2)]
+	[InlineData(1e-2)]
+	[InlineData(0.0)]
+	public void When_FluidSeriesCircuitPressureDropExpect3xPressureDrop(
+			double kinematicPressureDropVal){
+		// Setup the simulation and export our current
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Connect("pumpOutlet","1");
+		preCastPipe = new IsothermalPipe("isothermalPipe2");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Connect("1","2");
+		preCastPipe = new IsothermalPipe("isothermalPipe3");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Connect("2","0");
+
+		// Build the circuit
+		SpiceSharp.Entities.IFluidEntityCollection ckt = new FluidSeriesCircuit(
+				new VoltageSource("V1", "pumpOutlet", "0", kinematicPressureDropVal),
+				testPipe,
+				testPipe2,
+				testPipe3
+				);
+
+		double Be;
+		Be = kinematicPressureDropVal;
+		Be *= testPipe.Parameters.pipeLength.
+			As(LengthUnit.SI);
+		Be *= testPipe.Parameters.pipeLength.
+			As(LengthUnit.SI);
+		Be /= testPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SI);
+		Be /= testPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SI);
+
+		double Re;
+		ChurchillFrictionFactorJacobian _jacobianObject;
+		_jacobianObject = new ChurchillFrictionFactorJacobian();
+		double roughnessRatio = testPipe.Parameters.roughnessRatio();
+		double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+		// now for 3 pipes in series, my length is actually 3 times as long
+		// so i need to multiply my L/D ratio by 3
+		lengthToDiameter *= 3.0;
+		Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+		MassFlow massFlowRate;
+		massFlowRate = testPipe.Parameters.fluidViscosity*
+			testPipe.Parameters.crossSectionalArea()/
+			testPipe.Parameters.hydraulicDiameter*
+			Re;
+
+		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+
+		// Act
+		// now if i feed in this massFlowrate, i should get
+		// the pressureDrop as before
+
+		SpecificEnergy kinematicPressureDropResult;
+		kinematicPressureDropResult = ckt.getKinematicPressureDrop(
+				massFlowRate);
+
+		double kinematicPressureDropResultVal
+			= kinematicPressureDropResult.As(
+					SpecificEnergyUnit.SI);
+
+		// Assert
+		Assert.Equal(kinematicPressureDropVal,
+				kinematicPressureDropResultVal);
+
+	}
+
 	// here we test if our FluidSeriesCircuit
 	// is able to behave like a normal circuit
 	// so far so good
@@ -225,7 +300,8 @@ public class fluidEntityTests : testOutputHelper
 		testPipe3.Connect("out","0");
 
 		// Build the circuit
-		var ckt = new FluidSeriesCircuit(
+		SpiceSharp.Entities.IFluidEntityCollection ckt = 
+			new FluidSeriesCircuit(
 				new VoltageSource("V1", "out", "0", pressureDrop),
 				testPipe,
 				testPipe2,
