@@ -2,6 +2,8 @@
 using SpiceSharp.Components.IsothermalPipeBehaviors;
 using SpiceSharp.ParameterSets;
 using SpiceSharp.Simulations;
+using EngineeringUnits;
+using EngineeringUnits.Units;
 
 namespace SpiceSharp.Components
 {
@@ -10,8 +12,8 @@ namespace SpiceSharp.Components
     /// </summary>
     /// <seealso cref="Component" />
     public class IsothermalPipe : Component,
-        IParameterized<BaseParameters>
-		//SpiceSharp.Entities.IFluidEntity
+        IParameterized<BaseParameters>,
+		SpiceSharp.Entities.IFluidEntity
     {
 
 		// copied this from the nonlinear resistor, don't change!
@@ -42,5 +44,20 @@ namespace SpiceSharp.Components
                 behaviors.Add(new BiasingBehavior(Name, context));
             simulation.EntityBehaviors.Add(behaviors);
         }
+
+
+		// these two additional methods fulfil the IFluidEntity 
+		// interface
+		//
+
+		public Pressure getPressureDrop(MassFlow massFlowrate){
+			return Parameters.getPressureDrop(massFlowrate);
+		}
+
+		public SpecificEnergy getKinematicPressureDrop(
+				MassFlow massFlowrate){
+			return Parameters.getKinematicPressureDrop(massFlowrate);
+		}
+
     }
 }
