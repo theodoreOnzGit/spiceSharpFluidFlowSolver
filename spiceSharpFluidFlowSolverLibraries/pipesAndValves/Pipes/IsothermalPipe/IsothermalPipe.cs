@@ -11,6 +11,7 @@ namespace SpiceSharp.Components
     /// <seealso cref="Component" />
     public class IsothermalPipe : Component,
         IParameterized<BaseParameters>
+		//SpiceSharp.Entities.IFluidEntity
     {
 
 		// copied this from the nonlinear resistor, don't change!

@@ -57,6 +57,8 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		public DynamicViscosity fluidViscosity { get; set; } =
 			new DynamicViscosity(1.0518, DynamicViscosityUnit.Centipoise);
 
+		public IFrictionFactorJacobian jacobianObject =
+			new StabilisedChurchillJacobian();
 
 
     }
