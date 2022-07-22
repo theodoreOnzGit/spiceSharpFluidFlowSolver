@@ -2,6 +2,8 @@ using SpiceSharp.Entities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using EngineeringUnits;
+using EngineeringUnits.Units;
 
 namespace SpiceSharp
 {

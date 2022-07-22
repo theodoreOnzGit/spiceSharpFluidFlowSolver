@@ -6,13 +6,14 @@ using EngineeringUnits.Units;
 namespace SpiceSharp.Entities
 {
     public interface IFluidEntityCollection : 
-		IEntityCollection,
-		IEnumerable<IFluidEntity>
+		IEntityCollection
     {
 		// here we have two methods to return both
 		// dynamic and kinematic pressure given a flowrate
 		Pressure getPressureDrop(MassFlow flowrate);
 
 		SpecificEnergy getKinematicPressureDrop(MassFlow flowrate);
+
+		Dictionary<string, IFluidEntity> _fluidEntities { get; set; }
     }
 }

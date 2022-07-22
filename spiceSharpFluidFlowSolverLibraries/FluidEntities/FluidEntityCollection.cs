@@ -29,12 +29,10 @@ namespace SpiceSharp.Entities
     /// </summary>
     /// <seealso cref="IEntityCollection" />
     public class FluidEntityCollection : IEntityCollection,
-	IEnumerable<IFluidEntity>,
-	ICollection<IFluidEntity>,
 	IFluidEntityCollection
     {
         private readonly Dictionary<string, IEntity> _entities;
-		private readonly Dictionary<string, IFluidEntity> _fluidEntities;
+		public Dictionary<string, IFluidEntity> _fluidEntities { get; set; }
 
 
 		// this is where the fluidEntityCollection is meant to
@@ -253,11 +251,8 @@ namespace SpiceSharp.Entities
         /// <returns>
         /// An enumerator that can be used to iterate through the collection.
         /// </returns>
-        public virtual IEnumerator<IEntity> GetEntityEnumerator() => _entities.Values.GetEnumerator();
-        public virtual IEnumerator<IFluidEntity> GetFluidEntityEnumerator() => _fluidEntities.Values.GetEnumerator();
+        public virtual IEnumerator<IEntity> GetEnumerator() => _entities.Values.GetEnumerator();
 
-		IEnumerator<IEntity> IEnumerable<IEntity>.GetEnumerator() => GetEntityEnumerator();
-		IEnumerator<IFluidEntity> IEnumerable<IFluidEntity>.GetEnumerator() => GetFluidEntityEnumerator();
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
@@ -265,7 +260,7 @@ namespace SpiceSharp.Entities
         /// <returns>
         /// An <see cref="IEnumerator" /> object that can be used to iterate through the collection.
         /// </returns>
-        IEnumerator IEnumerable.GetEnumerator() => GetFluidEntityEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 		
 
         /// <summary>
@@ -284,20 +279,6 @@ namespace SpiceSharp.Entities
                 array[arrayIndex++] = item;
         }
 
-		// i don't see much use here, but i'll just implement the method
-		// this will copy the fluid Entities to the exisitng fluidEntity
-		// array, no entities from the entityList will be copied
-        void ICollection<IFluidEntity>.CopyTo(IFluidEntity[] array, 
-				int arrayIndex)
-        {
-            array.ThrowIfNull(nameof(array));
-            if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            if (array.Length < arrayIndex + Count)
-                throw new ArgumentException(Properties.Resources.NotEnoughElements);
-            foreach (var item in _fluidEntities.Values)
-                array[arrayIndex++] = item;
-        }
         /// <summary>
         /// Raises the <see cref="EntityAdded" /> event.
         /// </summary>
