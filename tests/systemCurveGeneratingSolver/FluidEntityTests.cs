@@ -490,4 +490,108 @@ public class fluidEntityTests : testOutputHelper
 				kinematicPressureDropResultVal,2);
 
 	}
+	
+	[Theory]
+	[InlineData(0.45)]
+	[InlineData(150)]
+	[InlineData(3660)]
+	public void WhenSingleFluidEntityCollection_ShouldEqualPressureDropOfOneComponent(
+			double massFlowValueKgPerS){
+	
+		// Setup
+		// First we set up our objects first to see if
+		// And we cast them to IFluidEntity
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
+		SpiceSharp.Entities.IFluidEntity testPipe 
+			= (SpiceSharp.Entities.IFluidEntity)preCastPipe;
+
+		IsothermalPipe referencePipe;
+		referencePipe = (IsothermalPipe)preCastPipe;
+
+		// Secondly we also bring in our standard friction
+		// factor objects
+		// so that we can calculate a pressuredrop
+		// given a mass flowrate
+
+		double getKinematicPressureDrop(double massFlowValueKgPerS){
+			// first we get a mass flowrate value in kg/s
+			// and then we try to get the Reynold's number first
+			MassFlow flowrate = new MassFlow(massFlowValueKgPerS,
+					MassFlowUnit.KilogramPerSecond);
+
+			Area XSArea = referencePipe.Parameters.crossSectionalArea();
+
+			DynamicViscosity mu = referencePipe.Parameters.
+				fluidViscosity;
+
+			KinematicViscosity nu = referencePipe.Parameters.
+				fluidKinViscosity;
+
+			Length hydraulicDiameter = referencePipe.Parameters.
+				hydraulicDiameter;
+
+			// Re = rho U D/ mu = massflow/XSArea * D/mu
+
+			double Re = flowrate.As(MassFlowUnit.KilogramPerSecond);
+			Re /= XSArea.As(AreaUnit.SquareMeter);
+			Re *= hydraulicDiameter.As(LengthUnit.Meter);
+			Re /= mu.As(DynamicViscosityUnit.PascalSecond);
+
+			// we can then get the Bejan number
+			// or we can just get the friction factor first
+
+			double darcyFrictionFactor;
+			double roughnessRatio = referencePipe.Parameters.roughnessRatio();
+			double lengthToDiameter = referencePipe.Parameters.lengthToDiameter();
+
+			IFrictionFactorJacobian _jacobianObject;
+			_jacobianObject = new StabilisedChurchillJacobian();
+
+			darcyFrictionFactor = _jacobianObject.darcy(
+					Re, roughnessRatio);
+
+			// we calculate fLDK after that
+			// assuming there is no inner resistance whatsoever
+			double fLDKReSq;
+			fLDKReSq = darcyFrictionFactor * 
+				Math.Pow(Re,2.0) *
+				lengthToDiameter;
+
+			double Be = fLDKReSq/2.0;
+
+			// Be_D = deltaP * D^2/nu^2
+			// deltaP = Be_D * nu^2/D^2
+			SpecificEnergy pressureDrop = nu.Pow(2)/
+				hydraulicDiameter.Pow(2);
+			pressureDrop *= Be;
+			
+
+
+
+			return pressureDrop.As(SpecificEnergyUnit.JoulePerKilogram);
+		}
+
+		double referencePressreDropJoulePerKg =
+			getKinematicPressureDrop(massFlowValueKgPerS);
+
+		MassFlow massFlowrate;
+		massFlowrate = new MassFlow(massFlowValueKgPerS,
+				MassFlowUnit.KilogramPerSecond);
+
+		// Act
+		//
+		SpecificEnergy kinematicPressureDropResult =
+			testPipe.getKinematicPressureDrop(massFlowrate);
+
+		double kinematicPressureDropResultVal = 
+			kinematicPressureDropResult.As(SpecificEnergyUnit.
+					JoulePerKilogram);
+
+		// Assert
+		//
+		//
+		Assert.Equal(referencePressreDropJoulePerKg,
+				kinematicPressureDropResultVal,2);
+
+	}
 }
