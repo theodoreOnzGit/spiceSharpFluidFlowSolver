@@ -507,11 +507,17 @@ public class fluidEntityTests : testOutputHelper
 
 		IsothermalPipe referencePipe;
 		referencePipe = (IsothermalPipe)preCastPipe;
+		// now we put this fluid entity into a fluidCircuit
 
+		SpiceSharp.Entities.IFluidEntityCollection ckt = new FluidSeriesCircuit(
+				new CurrentSource("I1", "out", "0", massFlowValueKgPerS),
+				testPipe
+				);
 		// Secondly we also bring in our standard friction
 		// factor objects
 		// so that we can calculate a pressuredrop
 		// given a mass flowrate
+		//
 
 		double getKinematicPressureDrop(double massFlowValueKgPerS){
 			// first we get a mass flowrate value in kg/s
@@ -581,7 +587,7 @@ public class fluidEntityTests : testOutputHelper
 		// Act
 		//
 		SpecificEnergy kinematicPressureDropResult =
-			testPipe.getKinematicPressureDrop(massFlowrate);
+			ckt.getKinematicPressureDrop(massFlowrate);
 
 		double kinematicPressureDropResultVal = 
 			kinematicPressureDropResult.As(SpecificEnergyUnit.
@@ -591,7 +597,7 @@ public class fluidEntityTests : testOutputHelper
 		//
 		//
 		Assert.Equal(referencePressreDropJoulePerKg,
-				kinematicPressureDropResultVal,2);
+				kinematicPressureDropResultVal,8);
 
 	}
 }
