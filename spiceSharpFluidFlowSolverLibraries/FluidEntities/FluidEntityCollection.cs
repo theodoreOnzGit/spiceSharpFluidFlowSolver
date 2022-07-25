@@ -67,6 +67,24 @@ namespace SpiceSharp.Entities
 			return totalPressureDrop;
 		}
 
+
+		// here is where i can get mass flowrate values from pressure drops
+		//
+
+		MassFlow IFluidEntityCollection.getMassFlowRate(
+				Pressure dynamicPressureDrop){
+
+			throw new NotImplementedException();
+
+		}
+
+		MassFlow IFluidEntityCollection.getMassFlowRate(
+				SpecificEnergy kinematicPressureDrop){
+
+			throw new NotImplementedException();
+
+		}
+
         /// <summary>
         /// Occurs when an entity has been added.
         /// </summary>

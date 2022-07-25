@@ -63,6 +63,22 @@ namespace SpiceSharp
 			return totalPressureDrop;
 		}
 
+		// here is where i can get mass flowrate values from pressure drops
+		//
+
+		MassFlow IFluidEntityCollection.getMassFlowRate(
+				Pressure dynamicPressureDrop){
+
+			throw new NotImplementedException();
+
+		}
+
+		MassFlow IFluidEntityCollection.getMassFlowRate(
+				SpecificEnergy kinematicPressureDrop){
+
+			throw new NotImplementedException();
+
+		}
         /// <inheritdoc/>
         public IEqualityComparer<string> Comparer => _entities.Comparer;
 

@@ -15,5 +15,13 @@ namespace SpiceSharp.Entities
 		SpecificEnergy getKinematicPressureDrop(MassFlow flowrate);
 
 		Dictionary<string, IFluidEntity> _fluidEntities { get; set; }
+
+		// now suppose i have a full collection of IFluidEntities, 
+		// i will now want to be able to calculate the mass flowrate as well
+		// if i supply a kinematicPressureDrop or dynamicPressureDrop
+
+		MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop);
+
+		MassFlow getMassFlowRate(Pressure dynamicPressureDrop);
     }
 }
