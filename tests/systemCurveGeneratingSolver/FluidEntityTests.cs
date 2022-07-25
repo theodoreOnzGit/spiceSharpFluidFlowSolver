@@ -387,8 +387,12 @@ public class fluidEntityTests : testOutputHelper
 	// pressure drop from code outside the entity?
 	//
 
-	[Fact]
-	public void WhenSingleFluidEntity_ShouldEqualPressureDropOfOneComponent(){
+	[Theory]
+	[InlineData(0.45)]
+	[InlineData(150)]
+	[InlineData(3660)]
+	public void WhenSingleFluidEntity_ShouldEqualPressureDropOfOneComponent(
+			double massFlowValueKgPerS){
 	
 		// Setup
 		// First we set up our objects first to see if
@@ -463,7 +467,6 @@ public class fluidEntityTests : testOutputHelper
 			return pressureDrop.As(SpecificEnergyUnit.JoulePerKilogram);
 		}
 
-		double massFlowValueKgPerS = 0.45;
 		double referencePressreDropJoulePerKg =
 			getKinematicPressureDrop(massFlowValueKgPerS);
 
@@ -483,7 +486,7 @@ public class fluidEntityTests : testOutputHelper
 		//
 		//
 		Assert.Equal(referencePressreDropJoulePerKg,
-				kinematicPressureDropResultVal,6);
+				kinematicPressureDropResultVal,2);
 
 	}
 }

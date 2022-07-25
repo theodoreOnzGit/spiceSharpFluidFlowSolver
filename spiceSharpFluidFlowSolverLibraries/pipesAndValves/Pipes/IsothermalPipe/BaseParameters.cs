@@ -15,10 +15,10 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		// this is assumed to be circular
 
 		public Length hydraulicDiameter { get; set; } = 
-			new Length(1.0,LengthUnit.SI);
+			new Length(1.0,LengthUnit.Meter);
 
 		public Length pipeLength { get; set; } = 
-			new Length(10.0,LengthUnit.SI);
+			new Length(10.0,LengthUnit.Meter);
 
 		// next we also have angles as well
 
@@ -38,13 +38,13 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		}
 
 		public double roughnessRatio(){
-			return absoluteRoughness.As(LengthUnit.SI)/
-				hydraulicDiameter.As(LengthUnit.SI);
+			return absoluteRoughness.As(LengthUnit.Meter)/
+				hydraulicDiameter.As(LengthUnit.Meter);
 		}
 
 		public double lengthToDiameter(){
-			return pipeLength.As(LengthUnit.SI)/
-				hydraulicDiameter.As(LengthUnit.SI);
+			return pipeLength.As(LengthUnit.Meter)/
+				hydraulicDiameter.As(LengthUnit.Meter);
 		}
 		
 
@@ -73,10 +73,10 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// massflowrate/XSArea * hydraulicDiameter / dynamicViscosity
 			double ReynoldsNumber;
 			ReynoldsNumber = massFlowrate.As(MassFlowUnit.SI);
-			ReynoldsNumber /= this.crossSectionalArea().As(AreaUnit.SI);
-			ReynoldsNumber *= this.hydraulicDiameter.As(LengthUnit.SI);
+			ReynoldsNumber /= this.crossSectionalArea().As(AreaUnit.SquareMeter);
+			ReynoldsNumber *= this.hydraulicDiameter.As(LengthUnit.Meter);
 			ReynoldsNumber /= this.fluidViscosity.As(
-					DynamicViscosityUnit.SI);
+					DynamicViscosityUnit.PascalSecond);
 
 			return ReynoldsNumber;
 		}
@@ -189,7 +189,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 			pressureDrop *= BejanNumber;
 			pressureDrop = pressureDrop.ToUnit(
-					PressureUnit.SI);
+					PressureUnit.Pascal);
 
 			return pressureDrop;
 			
@@ -208,7 +208,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 			pressureDrop *= BejanNumber;
 			pressureDrop = pressureDrop.ToUnit(
-					SpecificEnergyUnit.SI);
+					SpecificEnergyUnit.JoulePerKilogram);
 
 			return pressureDrop;
 			
