@@ -78,7 +78,7 @@ public class fluidEntityTests : testOutputHelper
 		}
 		MassFlow massFlowRateTestResult;
 		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
-				MassFlowUnit.SI);
+				MassFlowUnit.KilogramPerSecond);
 
 
 		// Assert
@@ -127,13 +127,13 @@ public class fluidEntityTests : testOutputHelper
 		double Be;
 		Be = pressureDrop;
 		Be *= testPipe.Parameters.pipeLength.
-			As(LengthUnit.SI);
+			As(LengthUnit.Meter);
 		Be *= testPipe.Parameters.pipeLength.
-			As(LengthUnit.SI);
+			As(LengthUnit.Meter);
 		Be /= testPipe.Parameters.fluidKinViscosity.
-			As(KinematicViscosityUnit.SI);
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
 		Be /= testPipe.Parameters.fluidKinViscosity.
-			As(KinematicViscosityUnit.SI);
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
 
 		double Re;
 		ChurchillFrictionFactorJacobian _jacobianObject;
@@ -151,7 +151,7 @@ public class fluidEntityTests : testOutputHelper
 			testPipe.Parameters.hydraulicDiameter*
 			Re;
 
-		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
 
 
 
@@ -175,7 +175,7 @@ public class fluidEntityTests : testOutputHelper
 		massFlowRateTestValue = steadyStateSim.simulationResult;
 		MassFlow massFlowRateTestResult;
 		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
-				MassFlowUnit.SI);
+				MassFlowUnit.KilogramPerSecond);
 
 		this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
 				massFlowRateTestResult.ToString());
@@ -188,8 +188,8 @@ public class fluidEntityTests : testOutputHelper
 		// MassFlow objects, ie. dimensioned units
 		// so i need to convert them to double using the .As()
 		// method
-		Assert.Equal(massFlowRate.As(MassFlowUnit.SI),
-				massFlowRateTestResult.As(MassFlowUnit.SI),3);
+		Assert.Equal(massFlowRate.As(MassFlowUnit.KilogramPerSecond),
+				massFlowRateTestResult.As(MassFlowUnit.KilogramPerSecond),3);
 
 		//throw new Exception();
 	}
@@ -225,13 +225,13 @@ public class fluidEntityTests : testOutputHelper
 		double Be;
 		Be = kinematicPressureDropVal;
 		Be *= testPipe.Parameters.pipeLength.
-			As(LengthUnit.SI);
+			As(LengthUnit.Meter);
 		Be *= testPipe.Parameters.pipeLength.
-			As(LengthUnit.SI);
+			As(LengthUnit.Meter);
 		Be /= testPipe.Parameters.fluidKinViscosity.
-			As(KinematicViscosityUnit.SI);
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
 		Be /= testPipe.Parameters.fluidKinViscosity.
-			As(KinematicViscosityUnit.SI);
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
 
 		double Re;
 		ChurchillFrictionFactorJacobian _jacobianObject;
@@ -249,7 +249,7 @@ public class fluidEntityTests : testOutputHelper
 			testPipe.Parameters.hydraulicDiameter*
 			Re;
 
-		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
 
 		// Act
 		// now if i feed in this massFlowrate, i should get
@@ -261,7 +261,7 @@ public class fluidEntityTests : testOutputHelper
 
 		double kinematicPressureDropResultVal
 			= kinematicPressureDropResult.As(
-					SpecificEnergyUnit.SI);
+					SpecificEnergyUnit.JoulePerKilogram);
 
 		// Assert
 		Assert.Equal(kinematicPressureDropVal,
@@ -313,13 +313,13 @@ public class fluidEntityTests : testOutputHelper
 		double Be;
 		Be = pressureDrop;
 		Be *= testPipe.Parameters.pipeLength.
-			As(LengthUnit.SI);
+			As(LengthUnit.Meter);
 		Be *= testPipe.Parameters.pipeLength.
-			As(LengthUnit.SI);
+			As(LengthUnit.Meter);
 		Be /= testPipe.Parameters.fluidKinViscosity.
-			As(KinematicViscosityUnit.SI);
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
 		Be /= testPipe.Parameters.fluidKinViscosity.
-			As(KinematicViscosityUnit.SI);
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
 
 		double Re;
 		ChurchillFrictionFactorJacobian _jacobianObject;
@@ -337,7 +337,7 @@ public class fluidEntityTests : testOutputHelper
 		// is 3x
 		massFlowRate *= 3.0;
 
-		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.SI);
+		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
 
 
 		ISteadyStateFlowSimulation steadyStateSim = 
@@ -358,7 +358,7 @@ public class fluidEntityTests : testOutputHelper
 		massFlowRateTestValue = steadyStateSim.simulationResult;
 		MassFlow massFlowRateTestResult;
 		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
-				MassFlowUnit.SI);
+				MassFlowUnit.KilogramPerSecond);
 
 		//this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
 		//		massFlowRateTestResult.ToString());
@@ -371,8 +371,8 @@ public class fluidEntityTests : testOutputHelper
 		// MassFlow objects, ie. dimensioned units
 		// so i need to convert them to double using the .As()
 		// method
-		Assert.Equal(massFlowRate.As(MassFlowUnit.SI),
-				massFlowRateTestResult.As(MassFlowUnit.SI),3);
+		Assert.Equal(massFlowRate.As(MassFlowUnit.KilogramPerSecond),
+				massFlowRateTestResult.As(MassFlowUnit.KilogramPerSecond),3);
 
 		//throw new Exception();
 	}
@@ -472,7 +472,7 @@ public class fluidEntityTests : testOutputHelper
 
 		MassFlow massFlowrate;
 		massFlowrate = new MassFlow(massFlowValueKgPerS,
-				MassFlowUnit.SI);
+				MassFlowUnit.KilogramPerSecond);
 
 		// Act
 		//
@@ -480,7 +480,8 @@ public class fluidEntityTests : testOutputHelper
 			testPipe.getKinematicPressureDrop(massFlowrate);
 
 		double kinematicPressureDropResultVal = 
-			kinematicPressureDropResult.As(SpecificEnergyUnit.SI);
+			kinematicPressureDropResult.As(SpecificEnergyUnit.
+					JoulePerKilogram);
 
 		// Assert
 		//
