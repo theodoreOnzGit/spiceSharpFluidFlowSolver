@@ -194,6 +194,85 @@ public class fluidEntityTests : testOutputHelper
 		//throw new Exception();
 	}
 
+	// now suppose i have a pressureDrop
+	// and i wanted to solve for mass flowrate, i should be able to get it
+	// done using MathNet bisection
+	// for a 1.45 m^2/s^2 pressureDrop
+	// i should get approx 3660 kg/s of flow in my isothermalPipe
+	// if i wanted to test for 3 pipes in series
+	// i could make the length of each of these pipes
+	// 1/3 that of the origianl pipe length (10m)
+	//
+	
+	[Theory]
+	[InlineData(1.45)]
+	public void WhenPressureDropSuppliedExpectMassFlowrateValue(
+			double kinematicPressureDropVal){
+
+
+		// Setup 
+		// the simulation and export our current
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Connect("pumpOutlet","1");
+		testPipe.Parameters.pipeLength *= 1.0/3.0;
+		preCastPipe = new IsothermalPipe("isothermalPipe2");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Connect("1","2");
+		testPipe2.Parameters.pipeLength *= 1.0/3.0;
+		preCastPipe = new IsothermalPipe("isothermalPipe3");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Connect("2","0");
+		testPipe3.Parameters.pipeLength *= 1.0/3.0;
+
+		// Build the circuit
+		SpiceSharp.Entities.IFluidEntityCollection ckt = new FluidSeriesCircuit(
+				new VoltageSource("V1", "pumpOutlet", "0", kinematicPressureDropVal),
+				testPipe,
+				testPipe2,
+				testPipe3
+				);
+
+		// now in theory, i should have a pipe 3x as long
+		// i shall call this testPipe4
+		IsothermalPipe testPipe4 = new IsothermalPipe("isothermalPipe4");
+		testPipe4.Connect("pumpOutlet","0");
+
+		SpiceSharp.Entities.IFluidEntityCollection referenceCkt = new FluidSeriesCircuit(
+				new VoltageSource("V1", "pumpOutlet", "0", kinematicPressureDropVal),
+				testPipe4
+				);
+
+		// let's run this reference circuit as usual
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(referenceCkt);
+		double massFlowRateReferenceValue;
+		massFlowRateReferenceValue = steadyStateSim.simulationResult;
+
+		// Act
+		// try to supply a pressureDrop value here and extract a mass flowrate
+		// value
+		double massFlowRateResultValue = 0.0;
+
+
+		// Assert 
+
+		Assert.Equal(massFlowRateReferenceValue,
+				massFlowRateResultValue,3);
+
+
+
+	}
+
+
 
 	[Theory]
 	[InlineData(1.45)]
@@ -203,6 +282,7 @@ public class fluidEntityTests : testOutputHelper
 	[InlineData(0.0)]
 	public void When_FluidSeriesCircuitPressureDropExpect3xPressureDrop(
 			double kinematicPressureDropVal){
+
 		// Setup the simulation and export our current
 		Component preCastPipe = new IsothermalPipe("isothermalPipe1");
 		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
