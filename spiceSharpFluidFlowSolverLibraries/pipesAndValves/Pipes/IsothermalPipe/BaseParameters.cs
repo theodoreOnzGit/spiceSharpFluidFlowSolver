@@ -90,6 +90,20 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		// so no need to include that
 
 		public double getBejanNumber(MassFlow massFlowrate){
+
+			// now i want to develop a way to deal with negative numbers
+			// by default, isNegativeMassFlow is false
+			bool isNegativeMassFlow = false;
+
+			if (massFlowrate.As(MassFlowUnit.SI) < 0.0)
+			{
+				// if mass flowrate is less than 0,
+				// change the boolean isNegativeMassFlow to true
+				// and make the massFlowrate positive
+				isNegativeMassFlow = true;
+				massFlowrate *= -1.0;
+			}
+
 			double Re = this.getReynoldsNumber(massFlowrate);
 
 			double darcyFrictionFactorReSq =
@@ -100,6 +114,12 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			BejanNumber = 0.5;
 			BejanNumber *= darcyFrictionFactorReSq;
 			BejanNumber *= this.lengthToDiameter();
+
+			if(isNegativeMassFlow){
+				// if i have a negative mass flowrate value,
+				// i will return a negative Bejan Number
+				return BejanNumber * -1.0;
+			}
 			return BejanNumber;
 
 		}
