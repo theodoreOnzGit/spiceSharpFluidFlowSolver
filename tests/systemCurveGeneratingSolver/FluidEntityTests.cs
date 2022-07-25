@@ -195,7 +195,7 @@ public class fluidEntityTests : testOutputHelper
 	}
 
 
-	[Theory(Skip = "pending other unit tests")]
+	[Theory]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
 	[InlineData(-1e-2)]
@@ -222,34 +222,46 @@ public class fluidEntityTests : testOutputHelper
 				testPipe3
 				);
 
-		double Be;
-		Be = kinematicPressureDropVal;
-		Be *= testPipe.Parameters.pipeLength.
-			As(LengthUnit.Meter);
-		Be *= testPipe.Parameters.pipeLength.
-			As(LengthUnit.Meter);
-		Be /= testPipe.Parameters.fluidKinViscosity.
-			As(KinematicViscosityUnit.SquareMeterPerSecond);
-		Be /= testPipe.Parameters.fluidKinViscosity.
-			As(KinematicViscosityUnit.SquareMeterPerSecond);
+		// first we get the Bejan number
+		// for a pipe which is 3x as long
+		//
+		// so this means that my pipeLength is 3x as long
+		// Be_L is about 3x as long in other words
+		//
+		MassFlow returnMassFlowRateValue(double kinematicPressureDropValJoulePerKg){
 
-		double Re;
-		ChurchillFrictionFactorJacobian _jacobianObject;
-		_jacobianObject = new ChurchillFrictionFactorJacobian();
-		double roughnessRatio = testPipe.Parameters.roughnessRatio();
-		double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
-		// now for 3 pipes in series, my length is actually 3 times as long
-		// so i need to multiply my L/D ratio by 3
-		lengthToDiameter *= 3.0;
-		Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+			double Be;
+			Be = kinematicPressureDropValJoulePerKg;
+			Be *= testPipe.Parameters.pipeLength.
+				As(LengthUnit.Meter)*3.0;
+			Be *= testPipe.Parameters.pipeLength.
+				As(LengthUnit.Meter)*3.0;
+			Be /= testPipe.Parameters.fluidKinViscosity.
+				As(KinematicViscosityUnit.SquareMeterPerSecond);
+			Be /= testPipe.Parameters.fluidKinViscosity.
+				As(KinematicViscosityUnit.SquareMeterPerSecond);
 
-		MassFlow massFlowRate;
-		massFlowRate = testPipe.Parameters.fluidViscosity*
-			testPipe.Parameters.crossSectionalArea()/
-			testPipe.Parameters.hydraulicDiameter*
-			Re;
+			double Re;
+			ChurchillFrictionFactorJacobian _jacobianObject;
+			_jacobianObject = new ChurchillFrictionFactorJacobian();
+			double roughnessRatio = testPipe.Parameters.roughnessRatio();
+			double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+			// now for 3 pipes in series, my length is actually 3 times as long
+			// so i need to multiply my L/D ratio by 3
+			lengthToDiameter *= 3.0;
+			Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
 
-		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
+			MassFlow massFlowRate;
+			massFlowRate = testPipe.Parameters.fluidViscosity*
+				testPipe.Parameters.crossSectionalArea()/
+				testPipe.Parameters.hydraulicDiameter*
+				Re;
+
+			return massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
+		}
+
+		MassFlow massFlowRate =
+			returnMassFlowRateValue(kinematicPressureDropVal);
 
 		// Act
 		// now if i feed in this massFlowrate, i should get
@@ -265,7 +277,7 @@ public class fluidEntityTests : testOutputHelper
 
 		// Assert
 		Assert.Equal(kinematicPressureDropVal,
-				kinematicPressureDropResultVal);
+				kinematicPressureDropResultVal,3);
 
 	}
 
