@@ -72,7 +72,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// the reynold's number here is based off mass flowrate
 			// massflowrate/XSArea * hydraulicDiameter / dynamicViscosity
 			double ReynoldsNumber;
-			ReynoldsNumber = massFlowrate.As(MassFlowUnit.SI);
+			ReynoldsNumber = massFlowrate.As(MassFlowUnit.KilogramPerSecond);
 			ReynoldsNumber /= this.crossSectionalArea().As(AreaUnit.SquareMeter);
 			ReynoldsNumber *= this.hydraulicDiameter.As(LengthUnit.Meter);
 			ReynoldsNumber /= this.fluidViscosity.As(

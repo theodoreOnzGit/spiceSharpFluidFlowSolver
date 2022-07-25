@@ -71,13 +71,13 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			double gz;
 			// of course g is 9.81 m/s^2
 			// we note that z = L sin \theta
-			gz = 9.81 * pipeLength.As(LengthUnit.SI) *
+			gz = 9.81 * pipeLength.As(LengthUnit.Meter) *
 				Math.Sin(_bp.inclineAngle.As(AngleUnit.Radian));
 
 			deltaP -= gz;
 
 			SpecificEnergy pressureDrop;
-			pressureDrop = new SpecificEnergy(deltaP, SpecificEnergyUnit.SI);
+			pressureDrop = new SpecificEnergy(deltaP, SpecificEnergyUnit.JoulePerKilogram);
 
             // Calculate the derivative w.r.t. one of the voltages
             var isNegative = deltaP < 0;
@@ -143,7 +143,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			massFlowRate *= Re;
 
 			double massFlowRateValue;
-			massFlowRateValue = massFlowRate.As(MassFlowUnit.SI);
+			massFlowRateValue = massFlowRate.As(MassFlowUnit.KilogramPerSecond);
 
 
 			// For basepipe, we just calculate the jacobian straightaway
