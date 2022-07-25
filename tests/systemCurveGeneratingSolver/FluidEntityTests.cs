@@ -195,7 +195,7 @@ public class fluidEntityTests : testOutputHelper
 	}
 
 
-	[Theory]
+	[Theory(Skip = "pending other unit tests")]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
 	[InlineData(-1e-2)]
@@ -375,5 +375,35 @@ public class fluidEntityTests : testOutputHelper
 				massFlowRateTestResult.As(MassFlowUnit.SI),3);
 
 		//throw new Exception();
+	}
+	// Tests to do with fluid entity,
+	//
+	// (1) Does the sum of pressure drop from one
+	// fluid entity equal that of the code
+	// outside the entity?
+	//
+	// (2) if we have just one fluid entity within a 
+	// fluid entity collection, does that equal the 
+	// pressure drop from code outside the entity?
+	//
+
+	[Fact]
+	public void WhenSingleFluidEntity_ShouldEqualPressureDropOfOneComponent(){
+	
+		// Setup
+		// First we set up our objects first to see if
+		// And we cast them to IFluidEntity
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
+		SpiceSharp.Entities.IFluidEntity testPipe 
+			= (SpiceSharp.Entities.IFluidEntity)preCastPipe;
+
+
+		// Act
+		//
+
+		// Assert
+		//
+		//
+
 	}
 }

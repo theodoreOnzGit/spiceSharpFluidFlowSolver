@@ -18,7 +18,7 @@ public class systemCurveGeneratingSolver : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
-	[Fact]
+	[Fact(Skip = "sandbox")]
 	public void sandbox_isothermalPipeSystemCurveSolver(){
 
 		double pressureDrop = 1.45;
