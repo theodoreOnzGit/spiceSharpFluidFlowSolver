@@ -26,4 +26,11 @@ The definitions are stored in the SubCircuit Parameters class.
 Subcircuit definitions in turn take in IEntityCollections in their constructor. 
 
 
+## ISubCircuitDefinition and SubCircuitDefinition
+
+Unfortunately, ISubcircuitDefinition and SubCircuitDefinition do not use
+FluidEntityCollections. They use EntityCollections by default.
+
+Hence i will need to use FluidEntityCollections in IFluidSubcircuitDefinition.
+
 

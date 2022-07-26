@@ -44,11 +44,13 @@ namespace SpiceSharp.Components
 
 		// here is where i put my implementations for FluidEntity
 
-		public override Pressure getPressureDrop(MassFlow flowrate){
+		public override Pressure getPressureDrop(
+				MassFlow flowrate){
 			throw new NotImplementedException();
 		}
 
-		public override SpecificEnergy getKinematicPressureDrop(MassFlow flowrate){
+		public override SpecificEnergy getKinematicPressureDrop(
+				MassFlow flowrate){
 			throw new NotImplementedException();
 		}
 
