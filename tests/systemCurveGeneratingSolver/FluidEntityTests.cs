@@ -206,6 +206,10 @@ public class fluidEntityTests : testOutputHelper
 	
 	[Theory]
 	[InlineData(1.45)]
+	[InlineData(-1.45)]
+	[InlineData(0.0)]
+	[InlineData(0.1)]
+	[InlineData(-0.1)]
 	public void WhenPressureDropSuppliedExpectMassFlowrateValue(
 			double kinematicPressureDropVal){
 
