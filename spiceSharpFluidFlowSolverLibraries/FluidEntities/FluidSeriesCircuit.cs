@@ -69,7 +69,7 @@ namespace SpiceSharp
 		MassFlow IFluidEntityCollection.getMassFlowRate(
 				Pressure dynamicPressureDrop){
 
-			throw new NotImplementedException();
+			return _entities.getMassFlowRate(dynamicPressureDrop);
 
 		}
 

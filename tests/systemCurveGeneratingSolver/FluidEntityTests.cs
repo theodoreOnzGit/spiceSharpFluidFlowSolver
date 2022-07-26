@@ -194,6 +194,9 @@ public class fluidEntityTests : testOutputHelper
 		//throw new Exception();
 	}
 
+
+	
+
 	// now suppose i have a pressureDrop
 	// and i wanted to solve for mass flowrate, i should be able to get it
 	// done using MathNet bisection
@@ -282,6 +285,122 @@ public class fluidEntityTests : testOutputHelper
 
 	}
 
+	// this is the same test but for dynamic pressure Drop
+	//
+	
+
+	[Theory]
+	[InlineData(1.45)]
+	[InlineData(-1.45)]
+	[InlineData(0.0)]
+	[InlineData(0.1)]
+	[InlineData(-0.1)]
+	public void WhenDynamicPressureDropSuppliedExpectMassFlowrateValue(
+			double kinematicPressureDropVal){
+
+
+		// Setup 
+
+		// First,
+		// the simulation setup
+		// 3 pipes in a row with 1/3 length compared to a normal pipe
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Connect("pumpOutlet","1");
+		testPipe.Parameters.pipeLength *= 1.0/3.0;
+		preCastPipe = new IsothermalPipe("isothermalPipe2");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Connect("1","2");
+		testPipe2.Parameters.pipeLength *= 1.0/3.0;
+		preCastPipe = new IsothermalPipe("isothermalPipe3");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Connect("2","0");
+		testPipe3.Parameters.pipeLength *= 1.0/3.0;
+
+		// Next let's get our dynamic pressure drop value,
+		// by first getting the density right
+		SpecificEnergy referenceKinematicPressure = 
+			new SpecificEnergy(kinematicPressureDropVal, 
+					SpecificEnergyUnit.JoulePerKilogram);
+
+		// we don't really have density so to speak but
+		// we have the ratio of kinematic to dynamic viscosity
+		// mu = rho * nu
+		// rho = mu/nu
+
+		DynamicViscosity fluidViscosity = 
+			testPipe.Parameters.fluidViscosity;
+
+		fluidViscosity = fluidViscosity.ToUnit(DynamicViscosityUnit.
+				PascalSecond);
+
+		KinematicViscosity fluidKinViscosity =
+			testPipe.Parameters.fluidKinViscosity;
+
+		fluidKinViscosity = fluidKinViscosity.ToUnit(KinematicViscosityUnit.
+				SquareMeterPerSecond);
+
+		Density fluidDesnity = fluidViscosity/fluidKinViscosity;
+		fluidDesnity = fluidDesnity.ToUnit(
+				DensityUnit.KilogramPerCubicMeter);
+
+		
+		
+		Pressure referencePressure = fluidDesnity * referenceKinematicPressure;
+		referencePressure = referencePressure.ToUnit(
+				PressureUnit.Pascal);
+
+		// Build the circuit
+		SpiceSharp.Entities.IFluidEntityCollection testCkt = new FluidSeriesCircuit(
+				new VoltageSource("V1", "pumpOutlet", "0", kinematicPressureDropVal),
+				testPipe,
+				testPipe2,
+				testPipe3
+				);
+
+		// now in theory, i should have a pipe 3x as long
+		// i shall call this testPipe4
+		IsothermalPipe testPipe4 = new IsothermalPipe("isothermalPipe4");
+		testPipe4.Connect("pumpOutlet","0");
+
+		SpiceSharp.Entities.IFluidEntityCollection referenceCkt = new FluidSeriesCircuit(
+				new VoltageSource("V1", "pumpOutlet", "0", kinematicPressureDropVal),
+				testPipe4
+				);
+
+		// let's run this reference circuit as usual
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(referenceCkt);
+		double massFlowRateReferenceValue;
+		massFlowRateReferenceValue = steadyStateSim.simulationResult;
+
+		// Act
+		// try to supply a pressureDrop value here and extract a mass flowrate
+		// value
+		double massFlowRateResultValue = 0.0;
+
+		MassFlow massFlowRateTestResult =
+			testCkt.getMassFlowRate(referencePressure);
+
+		massFlowRateResultValue = massFlowRateTestResult.As(
+				MassFlowUnit.KilogramPerSecond);
+
+		// Assert 
+
+		Assert.Equal(massFlowRateReferenceValue,
+				massFlowRateResultValue,3);
+
+
+
+	}
 
 
 	[Theory]

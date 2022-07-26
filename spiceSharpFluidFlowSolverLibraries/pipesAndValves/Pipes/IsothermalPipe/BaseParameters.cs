@@ -59,6 +59,31 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		public DynamicViscosity fluidViscosity { get; set; } =
 			new DynamicViscosity(1.0518, DynamicViscosityUnit.Centipoise);
 
+		public Density fluidDesnity(){
+			// i find the density here by comparing
+			// kinematic viscosity to dynamic viscosity ratios
+			// mu = rho* nu
+			// rho = mu/nu
+
+			DynamicViscosity fluidViscosity = 
+				this.fluidViscosity;
+
+			fluidViscosity = fluidViscosity.ToUnit(DynamicViscosityUnit.
+					PascalSecond);
+
+			KinematicViscosity fluidKinViscosity =
+				this.fluidKinViscosity;
+
+			fluidKinViscosity = fluidKinViscosity.ToUnit(KinematicViscosityUnit.
+					SquareMeterPerSecond);
+
+			Density fluidDesnity = fluidViscosity/fluidKinViscosity;
+			fluidDesnity = fluidDesnity.ToUnit(
+					DensityUnit.KilogramPerCubicMeter);
+
+			return fluidDesnity;
+		}
+
 		public IFrictionFactorJacobian jacobianObject =
 			new StabilisedChurchillJacobian();
 		

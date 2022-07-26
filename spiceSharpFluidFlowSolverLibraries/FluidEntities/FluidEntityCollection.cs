@@ -80,10 +80,66 @@ namespace SpiceSharp.Entities
 			// pressure drop using the density of each fluid entity
 			// However that means i need  to put a get Presusre Code in each
 			// fluid entity
+			// it's probably better to just adopt the code used in 
+			// getMassFlowrate(kinematicPressureDrop)
+			// to do the same
 			//
-			throw new NotImplementedException();
 
+			// first let me store the dynamicPressureDropValue as 
+			// a double
+
+
+			this.dynamicPressureDropValuePascal = 
+				dynamicPressureDrop.As(PressureUnit.
+						Pascal);
+
+			double pressureDropRoot(double massFlowValueKgPerS){
+
+				double dynamicPressureDropValuePascal 
+					= this.dynamicPressureDropValuePascal;
+
+				// let's do the iterated pressureDropValue
+				double iteratedPressureDropValPascal;
+
+				// so i'll have a mass flowrate
+				// and iterate a pressure drop out
+				MassFlow massFlowrate;
+				massFlowrate = new MassFlow(massFlowValueKgPerS,
+						MassFlowUnit.KilogramPerSecond);
+
+
+				Pressure pressureDrop 
+					= this.getPressureDrop(massFlowrate);
+
+				pressureDrop = pressureDrop.ToUnit(
+						PressureUnit.Pascal);
+
+				iteratedPressureDropValPascal =
+					pressureDrop.As(PressureUnit.Pascal);
+
+				double functionValue =
+					iteratedPressureDropValPascal -
+					dynamicPressureDropValuePascal;
+
+				return functionValue;
+			}
+			
+			double massFlowValueKgPerS;
+			massFlowValueKgPerS = FindRoots.OfFunction(pressureDropRoot,
+					-1e12,1e12);
+
+			MassFlow massFlowrate;
+			massFlowrate = new MassFlow(massFlowValueKgPerS,
+					MassFlowUnit.KilogramPerSecond);
+			// after i'm done, do some cleanup operations
+			this.dynamicPressureDropValuePascal = 0.0;
+
+
+			// and finally let me return the mass flowrate
+			return massFlowrate;
 		}
+
+		public double dynamicPressureDropValuePascal = 0.0;
 
 		public MassFlow getMassFlowRate(
 				SpecificEnergy kinematicPressureDrop){
