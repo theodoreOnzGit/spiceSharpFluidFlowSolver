@@ -159,7 +159,146 @@ all the standard pipeTests and we should expect no issue.
 
 But when pressureDrops are expected, i should expect a nonzero value.
 
+### FluidSeriesCircuit
 
+So far, i have done up a simple test of putting fluid Components in series,
+and thus, i will just sum up all the pressure drops within. 
+
+```csharp
+
+[Theory]
+[InlineData(1.45)]
+[InlineData(-1.45)]
+[InlineData(-1e-2)]
+[InlineData(1e-2)]
+[InlineData(0.0)]
+public void When_FluidSeriesCircuitPressureDropExpect3xPressureDrop(
+		double kinematicPressureDropVal){
+
+	// Setup the simulation and export our current
+	Component preCastPipe = new IsothermalPipe("isothermalPipe1");
+	IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+	testPipe.Connect("pumpOutlet","1");
+	preCastPipe = new IsothermalPipe("isothermalPipe2");
+	IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+	testPipe2.Connect("1","2");
+	preCastPipe = new IsothermalPipe("isothermalPipe3");
+	IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+	testPipe3.Connect("2","0");
+
+	// Build the circuit
+	SpiceSharp.Entities.IFluidEntityCollection ckt = new FluidSeriesCircuit(
+			new VoltageSource("V1", "pumpOutlet", "0", kinematicPressureDropVal),
+			testPipe,
+			testPipe2,
+			testPipe3
+			);
+
+	// first we get the Bejan number
+	// for a pipe which is 3x as long
+	//
+	// so this means that my pipeLength is 3x as long
+	// Be_L is about 3x as long in other words
+	//
+	MassFlow returnMassFlowRateValue(double kinematicPressureDropValJoulePerKg){
+
+		double Be;
+		Be = kinematicPressureDropValJoulePerKg;
+		Be *= testPipe.Parameters.pipeLength.
+			As(LengthUnit.Meter)*3.0;
+		Be *= testPipe.Parameters.pipeLength.
+			As(LengthUnit.Meter)*3.0;
+		Be /= testPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
+		Be /= testPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
+
+		double Re;
+		ChurchillFrictionFactorJacobian _jacobianObject;
+		_jacobianObject = new ChurchillFrictionFactorJacobian();
+		double roughnessRatio = testPipe.Parameters.roughnessRatio();
+		double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+		// now for 3 pipes in series, my length is actually 3 times as long
+		// so i need to multiply my L/D ratio by 3
+		lengthToDiameter *= 3.0;
+		Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+		MassFlow massFlowRate;
+		massFlowRate = testPipe.Parameters.fluidViscosity*
+			testPipe.Parameters.crossSectionalArea()/
+			testPipe.Parameters.hydraulicDiameter*
+			Re;
+
+		return massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
+	}
+
+	MassFlow massFlowRate =
+		returnMassFlowRateValue(kinematicPressureDropVal);
+
+	// Act
+	// now if i feed in this massFlowrate, i should get
+	// the pressureDrop as before
+
+	SpecificEnergy kinematicPressureDropResult;
+	kinematicPressureDropResult = ckt.getKinematicPressureDrop(
+			massFlowRate);
+
+	double kinematicPressureDropResultVal
+		= kinematicPressureDropResult.As(
+				SpecificEnergyUnit.JoulePerKilogram);
+
+	// Assert
+	Assert.Equal(kinematicPressureDropVal,
+			kinematicPressureDropResultVal,3);
+
+}
+```
+
+Basically the test here is to see if using one pipe 3x as long will produce
+the same pressureDrop as 3 pipes in series. Instead of using spiceSharp's solvers
+however, i will use the IFluidEntity Solvers.
+
+The tests were stable and performed satisfactorily in the turbulent region.
+
+### FluidParallelSubCircuit and FluidSeriesSubCircuit
+
+Now FluidSeriesCircuit would be sufficient IF, we only had pipes in series.
+
+Furthermore, we are not really using spice solvers. We are using in house solvers
+to produce a solution. A tad too good to be an initial guess but it's ok. 
+
+But now we have parallel pipes as well. We shall, for now constrain our
+solvers to forced flows. Natural convection flows can come later.
+
+Suppose i have two branches of two different pipes in parallel, how then would
+i solve it?
+
+SpiceSharp already has a structure in place called the SubCircuit which can
+represent parts of a circuit. 
+
+I can then create a FluidParallelSubCircuit class which has in it IFluidEntities
+or IFluidEntityCollections. Each of these IFluidEntities will represent one
+branch. 
+
+How then can we deal with the branches themselves? I could create a 
+FluidSeriesSubcircuit class. And within it, it will be a collection of 
+IFluidEntities in series. These will then be put into the 
+FluidParallelSubCircuit classes and then the FluidParallelSubCircuit will
+be put into the FluidSeriesCircuit.
+
+Each of these subcircuit classes would inherit from SubCircuit classes 
+in spicesharp, but again, will implment the IFluidEntityCollection interface.
+
+To begin, i can put a fluidParallelSubCircuit into the FluidSeriesCircuit
+as its only component. This is perhaps the simplest test since spiceSharp has
+no problem dealing with components in parallel configuration. 
+
+The first thing of course is to use a voltage source or fixed pressureDrop source.
+I want to check if putting 3 pipes in parallel using spiceSharp's default solvers
+would yield the same mass flowrate values as the FluidParallelSubCircuit solvers.
+
+First test of course, i need the subcircuit to work as per normal in a normal
+test.
 
 
 # issues
