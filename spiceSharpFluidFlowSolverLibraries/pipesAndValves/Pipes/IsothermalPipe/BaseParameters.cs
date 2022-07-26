@@ -95,7 +95,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// by default, isNegativeMassFlow is false
 			bool isNegativeMassFlow = false;
 
-			if (massFlowrate.As(MassFlowUnit.SI) < 0.0)
+			if (massFlowrate.As(MassFlowUnit.KilogramPerSecond) < 0.0)
 			{
 				// if mass flowrate is less than 0,
 				// change the boolean isNegativeMassFlow to true
@@ -202,8 +202,16 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 			double BejanNumber = this.getBejanNumber(massFlowrate);
 
-			Pressure pressureDrop = this.fluidKinViscosity *
-				this.fluidViscosity /
+			KinematicViscosity fluidKinViscosity;
+			fluidKinViscosity = this.fluidKinViscosity.ToUnit(
+					KinematicViscosityUnit.SquareMeterPerSecond);
+
+			DynamicViscosity fluidViscosity;
+			fluidViscosity = this.fluidViscosity.ToUnit(
+					DynamicViscosityUnit.PascalSecond);
+
+			Pressure pressureDrop = fluidKinViscosity *
+				fluidViscosity /
 				this.hydraulicDiameter /
 				this.hydraulicDiameter;
 
@@ -220,9 +228,13 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 				MassFlow massFlowrate){
 
 			double BejanNumber = this.getBejanNumber(massFlowrate);
+			
+			KinematicViscosity fluidKinViscosity;
+			fluidKinViscosity = this.fluidKinViscosity.ToUnit(
+					KinematicViscosityUnit.SquareMeterPerSecond);
 
-			SpecificEnergy pressureDrop = this.fluidKinViscosity *
-				this.fluidKinViscosity /
+			SpecificEnergy pressureDrop = fluidKinViscosity *
+				fluidKinViscosity /
 				this.hydraulicDiameter /
 				this.hydraulicDiameter;
 

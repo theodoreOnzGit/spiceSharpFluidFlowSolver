@@ -101,7 +101,7 @@ public partial class PipeWithLossCoefficients : ChurchillFrictionFactor,
 
 
 
-	public double getRe(double Be, 
+	public new double getRe(double Be, 
 			double roughnessRatio,
 			double lengthToDiameter){
 
@@ -111,9 +111,9 @@ public partial class PipeWithLossCoefficients : ChurchillFrictionFactor,
 	}
 
 
-	public double bejanNumber;
-	public double roughnessRatio;
-	public double lengthToDiameter;
+	public new double bejanNumber;
+	public new double roughnessRatio;
+	public new double lengthToDiameter;
 	public double K;
 
 

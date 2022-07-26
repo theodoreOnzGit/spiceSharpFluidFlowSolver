@@ -75,6 +75,12 @@ namespace SpiceSharp.Entities
 		public MassFlow getMassFlowRate(
 				Pressure dynamicPressureDrop){
 
+			// At first glance the solution to this algorithm is simple:
+			// convert the dynamic pressure drop to a kinematic
+			// pressure drop using the density of each fluid entity
+			// However that means i need  to put a get Presusre Code in each
+			// fluid entity
+			//
 			throw new NotImplementedException();
 
 		}
