@@ -24,7 +24,7 @@ namespace SpiceSharp.Components
 	/// And also the clone method
 	/// which returns a new MockFluidSubCircuit rather than
 	/// returning a SubCircuit
-    public partial class MockFluidSubCircuit : Entity, IParameterized<Parameters>,
+    public partial class FluidParallelSubCircuit : Entity, IParameterized<Parameters>,
         IComponent,
         IRuleSubject
     {
@@ -72,14 +72,14 @@ namespace SpiceSharp.Components
         /// <param name="definition">The subcircuit definition.</param>
         /// <param name="nodes">The nodes that the subcircuit is connected to.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> or <paramref name="definition"/> is <c>null</c>.</exception>
-        public MockFluidSubCircuit(string name, ISubcircuitDefinition definition, params string[] nodes)
+        public FluidParallelSubCircuit(string name, ISubcircuitDefinition definition, params string[] nodes)
             : base(name)
         {
             Parameters.Definition = definition.ThrowIfNull(nameof(definition));
             Connect(nodes);
         }
 
-        private MockFluidSubCircuit(string name)
+        private FluidParallelSubCircuit(string name)
             : base(name)
         {
         }
@@ -149,7 +149,7 @@ namespace SpiceSharp.Components
         /// <inheritdoc/>
         public override IEntity Clone()
         {
-            return new MockFluidSubCircuit(Name)
+            return new FluidParallelSubCircuit(Name)
             {
                 Parameters = Parameters.Clone(),
                 _connections = (string[])_connections.Clone(),
