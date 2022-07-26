@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using SpiceSharp.Components.Subcircuits;
 using System.Linq;
+using EngineeringUnits;
+using EngineeringUnits.Units;
 
 namespace SpiceSharp.Components
 {
@@ -24,9 +26,10 @@ namespace SpiceSharp.Components
 	/// And also the clone method
 	/// which returns a new MockFluidSubCircuit rather than
 	/// returning a SubCircuit
-    public partial class FluidParallelSubCircuit : Entity, IParameterized<Parameters>,
-        IComponent,
-        IRuleSubject
+    public partial class FluidParallelSubCircuit : FluidEntity, 
+	IParameterized<Parameters>,
+	IComponent,
+	IRuleSubject
     {
         private string[] _connections;
 
@@ -38,6 +41,16 @@ namespace SpiceSharp.Components
 
         /// <inheritdoc/>
         public IReadOnlyList<string> Nodes => new ReadOnlyCollection<string>(_connections);
+
+		// here is where i put my implementations for FluidEntity
+
+		public override Pressure getPressureDrop(MassFlow flowrate){
+			throw new NotImplementedException();
+		}
+
+		public override SpecificEnergy getKinematicPressureDrop(MassFlow flowrate){
+			throw new NotImplementedException();
+		}
 
         /// <summary>
         /// Gets the node map.
@@ -97,12 +110,12 @@ namespace SpiceSharp.Components
                 // Add the necessary behaviors
                 behaviors.Add(new EntitiesBehavior(context));
                 behaviors.Build(simulation, context)
-                    .AddIfNo<ITemperatureBehavior>(context => new Temperature(context))
+                    .AddIfNo<ITemperatureBehavior>(context => new SpiceSharp.Components.Subcircuits.Temperature(context))
                     .AddIfNo<IAcceptBehavior>(context => new Accept(context))
                     .AddIfNo<ITimeBehavior>(context => new Time(context))
                     .AddIfNo<IBiasingBehavior>(context => new Biasing(context))
                     .AddIfNo<IBiasingUpdateBehavior>(context => new BiasingUpdate(context))
-                    .AddIfNo<IFrequencyBehavior>(context => new Frequency(context))
+                    .AddIfNo<IFrequencyBehavior>(context => new SpiceSharp.Components.Subcircuits.Frequency(context))
                     .AddIfNo<IFrequencyUpdateBehavior>(context => new FrequencyUpdate(context))
                     .AddIfNo<INoiseBehavior>(context => new Subcircuits.Noise(context));
 
