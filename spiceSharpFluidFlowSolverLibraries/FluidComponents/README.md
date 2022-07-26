@@ -33,4 +33,17 @@ FluidEntityCollections. They use EntityCollections by default.
 
 Hence i will need to use FluidEntityCollections in IFluidSubcircuitDefinition.
 
+However, when i try to change the Entities into FluidEntities, i find that
+the code is so tightly integrated that i cannot change it freely without
+wrecking other parts of the code.
+
+Eg. when i change the Entities into IFluidEntityCollection, it will complain
+that the clone method for Entities isn't implemented. 
+
+It's almost no use to do this =/
+
+What i can do for the FluidSubcircuit is to check if each entity is castable as
+a IFluidEntity just like before, and then sum up their pressureDrops. 
+
+Or for parallel case, currents. 
 

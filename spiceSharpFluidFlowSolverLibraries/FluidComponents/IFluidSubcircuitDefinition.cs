@@ -9,7 +9,7 @@ namespace SpiceSharp.Components
     /// </summary>
     /// <seealso cref="IParameterSetCollection"/>
     public interface IFluidSubcircuitDefinition : 
-		ICloneable<ISubcircuitDefinition>
+		ICloneable<IFluidSubcircuitDefinition>
     {
         /// <summary>
         /// Gets the entities defined in the subcircuit.
@@ -17,7 +17,7 @@ namespace SpiceSharp.Components
         /// <value>
         /// The entities inside the subcircuit.
         /// </value>
-        IFluidEntityCollection Entities { get; }
+        IEntityCollection Entities { get; }
 
         /// <summary>
         /// Gets the pin names. These are the nodes that can be connected to the outside.
