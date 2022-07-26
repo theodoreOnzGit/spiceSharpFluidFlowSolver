@@ -226,7 +226,7 @@ public class fluidEntityTests : testOutputHelper
 		testPipe3.Parameters.pipeLength *= 1.0/3.0;
 
 		// Build the circuit
-		SpiceSharp.Entities.IFluidEntityCollection ckt = new FluidSeriesCircuit(
+		SpiceSharp.Entities.IFluidEntityCollection testCkt = new FluidSeriesCircuit(
 				new VoltageSource("V1", "pumpOutlet", "0", kinematicPressureDropVal),
 				testPipe,
 				testPipe2,
@@ -262,6 +262,12 @@ public class fluidEntityTests : testOutputHelper
 		// value
 		double massFlowRateResultValue = 0.0;
 
+		MassFlow massFlowRateTestResult =
+			testCkt.getMassFlowRate(new SpecificEnergy(kinematicPressureDropVal,
+						SpecificEnergyUnit.JoulePerKilogram));
+
+		massFlowRateResultValue = massFlowRateTestResult.As(
+				MassFlowUnit.KilogramPerSecond);
 
 		// Assert 
 

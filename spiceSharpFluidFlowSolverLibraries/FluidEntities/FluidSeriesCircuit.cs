@@ -38,7 +38,7 @@ namespace SpiceSharp
 				MassFlow massFlowrate){
 			Pressure totalPressureDrop;
 			totalPressureDrop = new Pressure(0.0, 
-					PressureUnit.SI);
+					PressureUnit.Pascal);
 			foreach (var fluidEntityDictEntry in _fluidEntities)
 			{
 				totalPressureDrop += fluidEntityDictEntry.Value.getPressureDrop(
@@ -52,7 +52,7 @@ namespace SpiceSharp
 				MassFlow massFlowrate){
 			SpecificEnergy totalPressureDrop;
 			totalPressureDrop = new SpecificEnergy(0.0, 
-					SpecificEnergyUnit.SI);
+					SpecificEnergyUnit.JoulePerKilogram);
 			foreach (var fluidEntityDictEntry in _fluidEntities)
 			{
 				totalPressureDrop += fluidEntityDictEntry.
@@ -76,7 +76,7 @@ namespace SpiceSharp
 		MassFlow IFluidEntityCollection.getMassFlowRate(
 				SpecificEnergy kinematicPressureDrop){
 
-			throw new NotImplementedException();
+			return _entities.getMassFlowRate(kinematicPressureDrop);
 
 		}
         /// <inheritdoc/>

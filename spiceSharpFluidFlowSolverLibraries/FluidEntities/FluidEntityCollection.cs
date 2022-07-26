@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using EngineeringUnits;
 using EngineeringUnits.Units;
+using MathNet.Numerics;
 
 // to help the FluidEntityCollection implement both 
 // IEntityCollection and ICollection<IFluidEntity>
@@ -39,11 +40,11 @@ namespace SpiceSharp.Entities
 		// return pressure drops (kinematic or otherwise)
 		//
 
-		Pressure IFluidEntityCollection.getPressureDrop(
+		public Pressure getPressureDrop(
 				MassFlow massFlowrate){
 			Pressure totalPressureDrop;
 			totalPressureDrop = new Pressure(0.0, 
-					PressureUnit.SI);
+					PressureUnit.Pascal);
 			foreach (var fluidEntityDictEntry in _fluidEntities)
 			{
 				totalPressureDrop += fluidEntityDictEntry.Value.getPressureDrop(
@@ -53,14 +54,14 @@ namespace SpiceSharp.Entities
 			return totalPressureDrop;
 		}
 
-		SpecificEnergy IFluidEntityCollection.getKinematicPressureDrop(
+		public SpecificEnergy getKinematicPressureDrop(
 				MassFlow massFlowrate){
 			SpecificEnergy totalPressureDrop;
 			totalPressureDrop = new SpecificEnergy(0.0, 
-					SpecificEnergyUnit.SI);
+					SpecificEnergyUnit.JoulePerKilogram);
 			foreach (var fluidEntityDictEntry in _fluidEntities)
 			{
-				totalPressureDrop += fluidEntityDictEntry.Value.getPressureDrop(
+				totalPressureDrop += fluidEntityDictEntry.Value.getKinematicPressureDrop(
 						massFlowrate);
 			}
 
@@ -71,19 +72,84 @@ namespace SpiceSharp.Entities
 		// here is where i can get mass flowrate values from pressure drops
 		//
 
-		MassFlow IFluidEntityCollection.getMassFlowRate(
+		public MassFlow getMassFlowRate(
 				Pressure dynamicPressureDrop){
 
 			throw new NotImplementedException();
 
 		}
 
-		MassFlow IFluidEntityCollection.getMassFlowRate(
+		public MassFlow getMassFlowRate(
 				SpecificEnergy kinematicPressureDrop){
+			// first let's define a function to help us
+			// get a double of kinematicPressureDrop from
+			// the double of massFlowrate
+			// numbers must be in double format so as to
+			// make it compatible with MathNet FindRoots.OfFunction
+			// rootfinder
+			//
+			// I think an upper value of 1e12 kg/s will suffice
+			//
+			// so this function will take in a massFlowrate
+			// and iterate till the desired kinematic pressure dorp is achieved
+			//
 
-			throw new NotImplementedException();
+			this.kinematicPressureDropValJoulePerKg =
+				kinematicPressureDrop.As(SpecificEnergyUnit.
+						JoulePerKilogram);
+
+			double pressureDropRoot(double massFlowValueKgPerS){
+
+				// so i have a reference kinematic presureDrop value
+				double kinematicPressureDropValJoulePerKg = 
+					this.kinematicPressureDropValJoulePerKg;
+
+				// and then i also have a iterated pressureDrop value
+
+				double iteratedPressureDropValJoulePerKg;
+
+				MassFlow massFlowrate;
+				massFlowrate = new MassFlow(massFlowValueKgPerS,
+						MassFlowUnit.KilogramPerSecond);
+
+
+				SpecificEnergy kinematicPressureDrop;
+				kinematicPressureDrop = 
+					this.getKinematicPressureDrop(massFlowrate);
+
+				iteratedPressureDropValJoulePerKg =
+					kinematicPressureDrop.As(SpecificEnergyUnit.
+							JoulePerKilogram);
+
+				// so this is the function, to have iterated pressure drop
+				// equal the kinematic pressure drop,
+				// set the value to zero
+				double functionValue =
+					iteratedPressureDropValJoulePerKg -
+					kinematicPressureDropValJoulePerKg;
+
+				return functionValue;
+			}
+
+			// here i use MathNet's FindRoots function to get the mass flowrate
+			double massFlowValueKgPerS;
+			massFlowValueKgPerS = FindRoots.OfFunction(pressureDropRoot,
+					-1e12,1e12);
+
+			MassFlow massFlowrate;
+			massFlowrate = new MassFlow(massFlowValueKgPerS,
+					MassFlowUnit.KilogramPerSecond);
+
+			// after i'm done, do some cleanup operations
+			this.kinematicPressureDropValJoulePerKg = 0.0;
+
+
+			// and finally let me return the mass flowrate
+			return massFlowrate;
 
 		}
+
+		public double kinematicPressureDropValJoulePerKg = 0.0;
 
         /// <summary>
         /// Occurs when an entity has been added.
