@@ -298,7 +298,28 @@ I want to check if putting 3 pipes in parallel using spiceSharp's default solver
 would yield the same mass flowrate values as the FluidParallelSubCircuit solvers.
 
 
+now i've gotten them to work in tandem no problem, but they take excessively long
+to solve a simple circuit...
 
+
+```zsh
+  Passed tests.fluidEntityTests.When_FluidSeriesCircuitwithParallelSubCkt_getMassFlowrate_
+expectCorrectFlow(pressureDrop: 0) [4 s]
+  Passed tests.fluidEntityTests.When_FluidSeriesCircuitwithParallelSubCkt_getMassFlowrate_
+expectCorrectFlow(pressureDrop: 1.45) [22 s]
+  Passed tests.fluidEntityTests.When_FluidSeriesCircuitwithParallelSubCkt_getMassFlowrate_
+expectCorrectFlow(pressureDrop: 0.45) [59 s]
+Test Run Successful.
+Total tests: 274
+     Passed: 245
+    Skipped: 29
+ Total time: 1.8588 Minutes
+```
+This is quite TOO LONG for a digitial twin. The algorithm which has nested iterative loops
+is just not suitable for the speed. There must be a way of speeding things up. 
+
+Which means that either we use this method to generate a systemCurve of approximate values,
+or we use asynchronous or parallel methods to really speed up calculations. 
 
 # issues
 
