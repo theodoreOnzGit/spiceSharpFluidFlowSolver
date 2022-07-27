@@ -163,7 +163,7 @@ namespace SpiceSharp.Entities
 		// if it is, then add it to the Dictionary
 		// if not, then do nothing
 
-		public void TryAddToFluidEntityDict(IEntity item){
+		private void TryAddToFluidEntityDict(IEntity item){
 
 			// i want to see if the item
 			// is castable as an IFluidEntity

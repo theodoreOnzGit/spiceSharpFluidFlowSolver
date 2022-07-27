@@ -25,6 +25,9 @@ namespace SpiceSharp.Entities
 
 		public abstract SpecificEnergy getKinematicPressureDrop(MassFlow flowrate);
 
+		public abstract MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop);
+
+		public abstract MassFlow getMassFlowRate(Pressure dynamicPressureDrop);
     }
 
     /// <summary>
@@ -48,5 +51,9 @@ namespace SpiceSharp.Entities
 		public abstract Pressure getPressureDrop(MassFlow flowrate);
 
 		public abstract SpecificEnergy getKinematicPressureDrop(MassFlow flowrate);
+
+		public abstract MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop);
+
+		public abstract MassFlow getMassFlowRate(Pressure dynamicPressureDrop);
     }
 }

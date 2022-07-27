@@ -59,5 +59,13 @@ namespace SpiceSharp.Components
 			return Parameters.getKinematicPressureDrop(massFlowrate);
 		}
 
+		public MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop){
+			throw new NotImplementedException();
+		}
+
+		public MassFlow getMassFlowRate(Pressure dynamicPressureDrop){
+			throw new NotImplementedException();
+		}
+
     }
 }
