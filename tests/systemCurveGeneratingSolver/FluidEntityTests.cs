@@ -531,12 +531,16 @@ public class fluidEntityTests : testOutputHelper
 					testPipe3),
 				"parallelIn", "parallelOut");
 
+		FluidParallelSubCircuit fluidSubCkt
+			= new FluidParallelSubCircuit("X1", subckt);
+		fluidSubCkt.Connect("out" , "0");
+
 
 		// Build the circuit
 		SpiceSharp.Entities.IFluidEntityCollection ckt = 
 			new FluidSeriesCircuit(
 				new VoltageSource("V1", "out", "0", pressureDrop),
-				new FluidParallelSubCircuit("X1", subckt).Connect("out" , "0")
+				fluidSubCkt
 				);
 
 		// Setup the simulation and export our current
@@ -560,7 +564,7 @@ public class fluidEntityTests : testOutputHelper
 		massFlowRateReferenceValueKgPerS = steadyStateSim.simulationResult;
 
 		MassFlow massFlowRateTestResult;
-		massFlowRateTestResult = ckt.getMassFlowRate(
+		massFlowRateTestResult = fluidSubCkt.getMassFlowRate(
 				new SpecificEnergy(pressureDrop,
 					SpecificEnergyUnit.JoulePerKilogram));
 
