@@ -10,6 +10,7 @@ using SpiceSharp.Components.Subcircuits;
 using System.Linq;
 using EngineeringUnits;
 using EngineeringUnits.Units;
+using MathNet.Numerics;
 
 namespace SpiceSharp.Components
 {
@@ -59,9 +60,65 @@ namespace SpiceSharp.Components
 		public override SpecificEnergy getKinematicPressureDrop(
 				MassFlow flowrate){
 
+			// this method guesses kinematic pressureDrop given a mass
+			// flowrate
+			// it is an implicit method
+			//
+			// 
+			//
+			this.massFlowrateValueForKinematicPressureDrop 
+				= flowrate.As(MassFlowUnit.KilogramPerSecond);
 
-			throw new NotImplementedException();
+			double massFlowRoot(double pressureDropValueJoulePerKg){
+				
+				// this is the value of the mass flowrate the 
+				// iterated mass flowrate should match
+				double massFlowValueKgPerS 
+					= this.massFlowrateValueForKinematicPressureDrop;
+
+				// this is the iterated mass flowrate value
+
+				double iteratedMassFlowrateValueKgPerS;
+
+				// and to get a value of iterated massflowrate value
+				// I use pressure drop
+				SpecificEnergy _pressureDrop;
+				_pressureDrop = new SpecificEnergy(
+						pressureDropValueJoulePerKg,
+						SpecificEnergyUnit.JoulePerKilogram);
+
+				MassFlow _massFlowRate;
+				_massFlowRate = this.getMassFlowRate(_pressureDrop);
+
+				// now i have the mass flowrate, i can change it to a double
+
+				iteratedMassFlowrateValueKgPerS =
+					_massFlowRate.As(MassFlowUnit.KilogramPerSecond);
+				
+				double functionValue =
+					iteratedMassFlowrateValueKgPerS -
+					massFlowValueKgPerS;
+
+				return functionValue;
+
+			}
+
+			double pressureDropValueJoulePerKg;
+			pressureDropValueJoulePerKg = FindRoots.OfFunction(
+					massFlowRoot, -1e12, 1e12);
+			
+			SpecificEnergy _finalPressureDropvalue
+				= new SpecificEnergy(pressureDropValueJoulePerKg,
+						SpecificEnergyUnit.JoulePerKilogram);
+
+			// after this i'll do some cleanup operations
+			this.massFlowrateValueForKinematicPressureDrop = 0.0;
+
+
+			return _finalPressureDropvalue;
 		}
+
+		public double massFlowrateValueForKinematicPressureDrop;
 
 		public override MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop){
 			// how do i get a mass flowrate from a parallel circuit
