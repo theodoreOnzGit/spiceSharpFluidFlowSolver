@@ -498,6 +498,7 @@ public class fluidEntityTests : testOutputHelper
 	//
 	[Theory]
 	[InlineData(1.45)]
+	[InlineData(0.45)]
 	[InlineData(-1.45)]
 	[InlineData(0.0)]
 	public void When_FluidParallelSubcircuit_getMassFlowrate_expectCorrectFlow(

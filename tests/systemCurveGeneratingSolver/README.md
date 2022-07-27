@@ -462,6 +462,39 @@ Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/s
 ts/systemCurveGeneratingSolver/FluidEntityTests.cs:line 382
 ```
 
+Another race condition 3:19pm 
+
+```zsh
+
+  Failed tests.systemCurveGeneratingSolver.When_parallelSetupExpect3xFlow(pressureDrop: 0)
+ [170 ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [kg/s] as expected! Your Unit is a 
+[m]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.MassFlow.op_Implicit(UnknownUnit Unit)
+   at StabilisedChurchillJacobian.dmdRe(Area crossSectionalArea, DynamicViscosity fluidVis
+cosity, Length hydraulicDiameter) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSol
+ver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictionFactor/Jacobian/Sta
+bilisedChurchillJacobian.cs:line 159
+   at SpiceSharp.Components.IsothermalPipeBehaviors.BiasingBehavior.SpiceSharp.Behaviors.I
+BiasingBehavior.Load() in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/spiceSh
+arpFluidFlowSolverLibraries/pipesAndValves/Pipes/IsothermalPipe/BiasingBehavior.cs:line 13
+9
+   at SpiceSharp.Simulations.BiasingSimulation.Load()
+   at SpiceSharp.Simulations.BiasingSimulation.Iterate(Int32 maxIterations)
+   at SpiceSharp.Simulations.BiasingSimulation.Op(Int32 maxIterations)
+   at SpiceSharp.Simulations.PrototypeSteadyStateFlowSimulation.Execute() in /home/teddy0/
+Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/simulations
+/SteadyState/PrototypeSteadyStateFlowSimulation.cs:line 39
+   at SpiceSharp.Simulations.Simulation.Run(IEntityCollection entities)
+   at tests.systemCurveGeneratingSolver.When_parallelSetupExpect3xFlow(Double pressureDrop
+) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/systemCurveGeneratingS
+olver/systemCurveUnitTest.cs:line 272
+```
+
+
 These bugs were non repeatable and when i restarted the tests, they would often
 disappear. I suspect this may be some form of race condition causing the bug.
 

@@ -296,6 +296,16 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// so this function will take in a massFlowrate
 			// and iterate till the desired kinematic pressure dorp is achieved
 			//
+		    
+			// first i'll need to see if this value is negative 
+
+			bool isNegativePressure = false;
+
+			if (kinematicPressureDrop.As(SpecificEnergyUnit.SI) < 0.0)
+			{
+				isNegativePressure = true;
+				kinematicPressureDrop *= -1.0;
+			}
 
 			this.kinematicPressureDropValJoulePerKg =
 				kinematicPressureDrop.As(SpecificEnergyUnit.
@@ -331,6 +341,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 					iteratedPressureDropValJoulePerKg -
 					kinematicPressureDropValJoulePerKg;
 
+
 				return functionValue;
 			}
 
@@ -348,6 +359,10 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 
 			// and finally let me return the mass flowrate
+				if (isNegativePressure)
+				{
+					return massFlowrate * -1.0;
+				}
 			return massFlowrate;
 
 		
