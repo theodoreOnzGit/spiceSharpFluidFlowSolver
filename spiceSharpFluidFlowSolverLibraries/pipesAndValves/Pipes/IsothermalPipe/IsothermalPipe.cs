@@ -60,11 +60,14 @@ namespace SpiceSharp.Components
 		}
 
 		public MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop){
-			throw new NotImplementedException();
+			// this supposes that a kinematicPressureDrop is supplied over this pipe
+			// and we want to get the mass flowrate straightaway.
+			
+			return Parameters.getMassFlowRate(kinematicPressureDrop);
 		}
 
 		public MassFlow getMassFlowRate(Pressure dynamicPressureDrop){
-			throw new NotImplementedException();
+			return Parameters.getMassFlowRate(dynamicPressureDrop);
 		}
 
     }
