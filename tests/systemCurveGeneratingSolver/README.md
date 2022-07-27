@@ -328,6 +328,93 @@ When i unit tested this code, i often came across conditions like so:
 esUnitTest.cs:line 411
 ```
 
+Here's one on 1206 pm 27 jul 2022:
+
+```zsh
+  Failed tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(pressureDrop: 0) [193
+ ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [J/kg] as expected! Your Unit is a 
+[gm/cms]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.SpecificEnergy.op_Implicit(UnknownUnit Unit)
+   at StabilisedChurchillJacobian.dDeltaP_dRe(Double Re, Double roughnessRatio, Double len
+gthToDiameter, Length lengthScale, KinematicViscosity nu) in /home/teddy0/Documents/youTub
+e/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFri
+ctionFactor/Jacobian/StabilisedChurchillJacobian.cs:line 141
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, Double Re, Double roughnessRatio, Length pipeLength, Ki
+nematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowS
+olver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictionFactor/Jacobian/S
+tabilisedChurchillJacobian.cs:line 221
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, SpecificEnergy pressureDrop, Double roughnessRatio, Len
+gth pipeLength, KinematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube/sp
+iceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictio
+nFactor/Jacobian/StabilisedChurchillJacobian.cs:line 291
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, SpecificEnergy pressureDrop, Length absoluteRoughness, 
+Length pipeLength, KinematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube
+/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFric
+tionFactor/Jacobian/StabilisedChurchillJacobian.cs:line 348
+   at SpiceSharp.Components.IsothermalPipeBehaviors.BiasingBehavior.SpiceSharp.Behaviors.I
+BiasingBehavior.Load() in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/spiceSh
+arpFluidFlowSolverLibraries/pipesAndValves/Pipes/IsothermalPipe/BiasingBehavior.cs:line 15
+7
+   at SpiceSharp.Simulations.BiasingSimulation.Load()
+   at SpiceSharp.Simulations.BiasingSimulation.Iterate(Int32 maxIterations)
+   at SpiceSharp.Simulations.BiasingSimulation.Op(Int32 maxIterations)
+   at SpiceSharp.Simulations.PrototypeSteadyStateFlowSimulation.Execute() in /home/teddy0/
+Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/simulations
+/SteadyState/PrototypeSteadyStateFlowSimulation.cs:line 39
+   at SpiceSharp.Simulations.Simulation.Run(IEntityCollection entities)
+   at tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(Double pressureDrop) in 
+/home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/pipesAndValves/pipesAndValv
+esUnitTest.cs:line 425
+  Failed tests.systemCurveGeneratingSolver.When_parallelSetupExpect3xFlow(pressureDrop: 0)
+ [193 ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [J/kg] as expected! Your Unit is a 
+[gm/cms]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.SpecificEnergy.op_Implicit(UnknownUnit Unit)
+   at StabilisedChurchillJacobian.dDeltaP_dRe(Double Re, Double roughnessRatio, Double len
+gthToDiameter, Length lengthScale, KinematicViscosity nu) in /home/teddy0/Documents/youTub
+e/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFri
+ctionFactor/Jacobian/StabilisedChurchillJacobian.cs:line 141
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, Double Re, Double roughnessRatio, Length pipeLength, Ki
+nematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowS
+olver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictionFactor/Jacobian/S
+tabilisedChurchillJacobian.cs:line 221
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, SpecificEnergy pressureDrop, Double roughnessRatio, Len
+gth pipeLength, KinematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube/sp
+iceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictio
+nFactor/Jacobian/StabilisedChurchillJacobian.cs:line 291
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, SpecificEnergy pressureDrop, Length absoluteRoughness, 
+Length pipeLength, KinematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube
+/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFric
+tionFactor/Jacobian/StabilisedChurchillJacobian.cs:line 348
+   at SpiceSharp.Components.IsothermalPipeBehaviors.BiasingBehavior.SpiceSharp.Behaviors.I
+BiasingBehavior.Load() in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/spiceSh
+arpFluidFlowSolverLibraries/pipesAndValves/Pipes/IsothermalPipe/BiasingBehavior.cs:line 15
+7
+   at SpiceSharp.Simulations.BiasingSimulation.Load()
+   at SpiceSharp.Simulations.BiasingSimulation.Iterate(Int32 maxIterations)
+   at SpiceSharp.Simulations.BiasingSimulation.Op(Int32 maxIterations)
+   at SpiceSharp.Simulations.PrototypeSteadyStateFlowSimulation.Execute() in /home/teddy0/
+Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/simulations
+/SteadyState/PrototypeSteadyStateFlowSimulation.cs:line 39
+   at SpiceSharp.Simulations.Simulation.Run(IEntityCollection entities)
+   at tests.systemCurveGeneratingSolver.When_parallelSetupExpect3xFlow(Double pressureDrop
+) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/systemCurveGeneratingS
+olver/systemCurveUnitTest.cs:line 272
+```
+
 These bugs were non repeatable and when i restarted the tests, they would often
 disappear. I suspect this may be some form of race condition causing the bug.
 
