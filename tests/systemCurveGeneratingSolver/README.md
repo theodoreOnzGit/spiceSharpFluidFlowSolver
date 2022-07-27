@@ -302,8 +302,32 @@ would yield the same mass flowrate values as the FluidParallelSubCircuit solvers
 
 # issues
 
+## can't read mass flowrate from resistor or pipe
+
 Now when i put pipes in parallel, i seem to get a reading of 0.0 mass flowrate
 through them. Which is quite curious and frankly nonsensical. 
 
 I'll probably deal with this later.
+
+## possible race conditions
+
+When i unit tested this code, i often came across conditions like so:
+
+```zsh
+
+  Failed tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(pressureDrop: 0) [117
+ ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [kg/s] as expected! Your Unit is a 
+[gm²/cms]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.MassFlow.op_Implicit(UnknownUnit Unit)
+   at tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(Double pressureDrop) in 
+/home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/pipesAndValves/pipesAndValv
+esUnitTest.cs:line 411
+```
+
+These bugs were non repeatable and when i restarted the tests, they would often
+disappear. I suspect this may be some form of race condition causing the bug.
 

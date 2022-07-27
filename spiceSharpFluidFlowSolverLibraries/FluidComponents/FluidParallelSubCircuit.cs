@@ -46,13 +46,30 @@ namespace SpiceSharp.Components
 
 		public override Pressure getPressureDrop(
 				MassFlow flowrate){
+
+			// first is that we get the definition object
+			IEntityCollection entityCollection =
+				this.Parameters.Definition.Entities;
+			// i'll then like to check if these entities are okay 
+			// to be in a fluidEntityList
+
 			throw new NotImplementedException();
 		}
 
 		public override SpecificEnergy getKinematicPressureDrop(
 				MassFlow flowrate){
+
+			// first is that we get the definition object
+			IEntityCollection entityCollection =
+				this.Parameters.Definition.Entities;
+
+			// then i want to check whether the fluid 
+
 			throw new NotImplementedException();
 		}
+
+
+
 
         /// <summary>
         /// Gets the node map.
