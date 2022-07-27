@@ -48,7 +48,8 @@ namespace SpiceSharp.Components
 
 		// these two additional methods fulfil the IFluidEntity 
 		// interface
-		//
+		// Warning: none of these methods are thread safe. 
+		// only one method should be used at one time per instance
 
 		public Pressure getPressureDrop(MassFlow massFlowrate){
 			return Parameters.getPressureDrop(massFlowrate);

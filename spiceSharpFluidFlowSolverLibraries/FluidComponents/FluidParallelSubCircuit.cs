@@ -63,23 +63,106 @@ namespace SpiceSharp.Components
 			// apply a pressure drop across all of them to get the
 			// mass flowrate,
 			// then sum them up altogether.
+			// first is that we get the definition object
+			IFluidEntityCollection _fluidEntityCollection = 
+				this.getFluidEntityCollection(this.Parameters.Definition.
+						Entities);
+			// i'm only reading the Entities, not writing to it
+			// so should be thread safe unless i set it.
+			// Now i want to check  all the fluidEntities within the
+			// fluidEntityCollection
+
+			List<MassFlow> massFlowList = new List<MassFlow>();
+
+			foreach (var keyValuePair in _fluidEntityCollection._fluidEntities)
+			{
+				// the fluidEntities contain key value pairs of fluid entities
+				// and strings. I extract the fluid entity first
+				IFluidEntity _fluidEntity = 
+					keyValuePair.Value;
+
+				// i take the massflow object
+				MassFlow _massFlowForOneEntity =
+					_fluidEntity.getMassFlowRate(kinematicPressureDrop);
+
+				// convert it to kg/s just to be sure
+
+				_massFlowForOneEntity = _massFlowForOneEntity.ToUnit(
+						MassFlowUnit.KilogramPerSecond);
+
+				// lastly i add it to the massFlowList
+				massFlowList.Add(_massFlowForOneEntity);
+
+			}
+
+			// once i'm done adding the massflow list i can sum up all the values
+			MassFlow _totalMassFlowrate = new MassFlow(0.0, 
+					MassFlowUnit.KilogramPerSecond);
+			foreach (MassFlow _massFlowRate in massFlowList)
+			{
+				_totalMassFlowrate += _massFlowRate;
+			}
+
+			// then i want to check whether the fluid 
 
 
-			return new MassFlow(0.0, MassFlowUnit.KilogramPerSecond);
+			return _totalMassFlowrate;
 		}
 
 		public override MassFlow getMassFlowRate(Pressure dynamicPressureDrop){
-			return new MassFlow(0.0, MassFlowUnit.KilogramPerSecond);
+			// I'll probbably need to get a FluidEntityCollection,
+			// apply a pressure drop across all of them to get the
+			// mass flowrate,
+			// then sum them up altogether.
+			// first is that we get the definition object
+			IFluidEntityCollection _fluidEntityCollection = 
+				this.getFluidEntityCollection(this.Parameters.Definition.
+						Entities);
+			// i'm only reading the Entities, not writing to it
+			// so should be thread safe unless i set it.
+			// Now i want to check  all the fluidEntities within the
+			// fluidEntityCollection
+
+			List<MassFlow> massFlowList = new List<MassFlow>();
+
+			foreach (var keyValuePair in _fluidEntityCollection._fluidEntities)
+			{
+				// the fluidEntities contain key value pairs of fluid entities
+				// and strings. I extract the fluid entity first
+				IFluidEntity _fluidEntity = 
+					keyValuePair.Value;
+
+				// i take the massflow object
+				MassFlow _massFlowForOneEntity =
+					_fluidEntity.getMassFlowRate(dynamicPressureDrop);
+
+				// convert it to kg/s just to be sure
+
+				_massFlowForOneEntity = _massFlowForOneEntity.ToUnit(
+						MassFlowUnit.KilogramPerSecond);
+
+				// lastly i add it to the massFlowList
+				massFlowList.Add(_massFlowForOneEntity);
+
+			}
+
+			// once i'm done adding the massflow list i can sum up all the values
+			MassFlow _totalMassFlowrate = new MassFlow(0.0, 
+					MassFlowUnit.KilogramPerSecond);
+			foreach (MassFlow _massFlowRate in massFlowList)
+			{
+				_totalMassFlowrate += _massFlowRate;
+			}
+
+			// then i want to check whether the fluid 
+
+
+			return _totalMassFlowrate;
 		}
 
 		public override SpecificEnergy getKinematicPressureDrop(
 				MassFlow flowrate){
 
-			// first is that we get the definition object
-			IEntityCollection entityCollection =
-				this.Parameters.Definition.Entities;
-
-			// then i want to check whether the fluid 
 
 			throw new NotImplementedException();
 		}
