@@ -306,6 +306,12 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 				isNegativePressure = true;
 				kinematicPressureDrop *= -1.0;
 			}
+			// next i want to see if pressure drop is zero
+			// i will automatically just return mass flowrate of zero
+
+			if (kinematicPressureDrop.As(SpecificEnergyUnit.SI) == 0.0){
+				return new MassFlow(0.0, MassFlowUnit.KilogramPerSecond);
+			}
 
 			this.kinematicPressureDropValJoulePerKg =
 				kinematicPressureDrop.As(SpecificEnergyUnit.
@@ -371,6 +377,22 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		public double kinematicPressureDropValJoulePerKg = 0.0;
 
 		public MassFlow getMassFlowRate(Pressure dynamicPressureDrop){
+			// first let's check for negative pressure values
+			// ie reverse direction
+			bool isNegativePressure = false;
+
+			if (dynamicPressureDrop.As(PressureUnit.SI) < 0.0)
+			{
+				isNegativePressure = true;
+				dynamicPressureDrop *= -1.0;
+			}
+
+			// next i want to see if pressure drop is zero
+			// i will automatically just return mass flowrate of zero
+
+			if (dynamicPressureDrop.As(PressureUnit.SI) == 0.0){
+				return new MassFlow(0.0, MassFlowUnit.KilogramPerSecond);
+			}
 
 			this.dynamicPressureDropValuePascal = 
 				dynamicPressureDrop.As(PressureUnit.
@@ -419,6 +441,10 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 
 			// and finally let me return the mass flowrate
+				if (isNegativePressure)
+				{
+					return massFlowrate * -1.0;
+				}
 			return massFlowrate;
 		}
 

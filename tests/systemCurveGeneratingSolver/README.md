@@ -494,6 +494,36 @@ Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/s
 olver/systemCurveUnitTest.cs:line 272
 ```
 
+Another race condition at 3:28pm
+```zsh
+
+  Failed tests.therminolDowthermTests.WhenFM40InSeries3x_Expect3xPressureDropSlowFlow(pres
+sureDrop: 1) [184 ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [kg/s] as expected! Your Unit is a 
+[m]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.MassFlow.op_Implicit(UnknownUnit Unit)
+   at flowmeterFM40Jacobian.dmdRe(Area crossSectionalArea, DynamicViscosity fluidViscosity
+, Length hydraulicDiameter) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/sp
+iceSharpFluidFlowSolverLibraries/pipesAndValves/Math/MixedComponentsFrictionFactor/Jacobia
+n/flowmeterFM40Jacobian.cs:line 62
+   at SpiceSharp.Components.FM40Behaviors.BiasingBehavior.SpiceSharp.Behaviors.IBiasingBeh
+avior.Load() in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFl
+owSolverLibraries/pipesAndValves/ValvesAndComponents/FM40/BiasingBehavior.cs:line 113
+   at SpiceSharp.Simulations.BiasingSimulation.Load()
+   at SpiceSharp.Simulations.BiasingSimulation.Iterate(Int32 maxIterations)
+   at SpiceSharp.Simulations.BiasingSimulation.IterateSourceStepping(Int32 maxIterations, 
+Int32 steps)
+   at SpiceSharp.Simulations.PrototypeSteadyStateFlowSimulation.Execute() in /home/teddy0/
+Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/simulations
+/SteadyState/PrototypeSteadyStateFlowSimulation.cs:line 45
+   at SpiceSharp.Simulations.Simulation.Run(IEntityCollection entities)
+   at tests.therminolDowthermTests.WhenFM40InSeries3x_Expect3xPressureDropSlowFlow(Double 
+pressureDrop) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/experiment
+alValidation/isothermalFlow/CIET_v1.0/therminolDowthermTests.cs:line 197
+```
 
 These bugs were non repeatable and when i restarted the tests, they would often
 disappear. I suspect this may be some form of race condition causing the bug.
