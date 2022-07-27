@@ -297,8 +297,7 @@ The first thing of course is to use a voltage source or fixed pressureDrop sourc
 I want to check if putting 3 pipes in parallel using spiceSharp's default solvers
 would yield the same mass flowrate values as the FluidParallelSubCircuit solvers.
 
-First test of course, i need the subcircuit to work as per normal in a normal
-test.
+
 
 
 # issues
