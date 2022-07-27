@@ -490,6 +490,96 @@ public class fluidEntityTests : testOutputHelper
 				kinematicPressureDropResultVal,3);
 
 	}
+
+
+	// here we test if the FluidParallelSubCircuit
+	// will function with the fluidSeriesCircuit in giving us the correct 
+	// flowrate
+	//
+	[Theory]
+	[InlineData(1.45)]
+	[InlineData(-1.45)]
+	[InlineData(0.0)]
+	public void When_FluidParallelSubcircuit_getMassFlowrate_expectCorrectFlow(
+			double pressureDrop){
+
+		// for this test i'm going to have 3 pipes in parallel with the
+		// same pressure drop across all of them (no pump curve here
+		// or anything)
+		// for the same pressure drop across all three pipes, i
+		// should expect 3x the mass flowrate
+		//
+		// this basically ensures that FluidParalleSubCircuit functions
+		// like subcircuit if given the same parameters
+
+		// this step is needed to cast the testPipe as the
+		// correct type
+		//
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipe("isothermalPipe2","out","0");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipe("isothermalPipe3","out","0");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Connect("parallelIn","parallelOut");
+
+		var subckt = new SubcircuitDefinition(new Circuit(
+					testPipe,
+					testPipe2,
+					testPipe3),
+				"parallelIn", "parallelOut");
+
+
+		// Build the circuit
+		SpiceSharp.Entities.IFluidEntityCollection ckt = 
+			new FluidSeriesCircuit(
+				new VoltageSource("V1", "out", "0", pressureDrop),
+				new FluidParallelSubCircuit("X1", subckt).Connect("out" , "0")
+				);
+
+		// Setup the simulation and export our current
+
+
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(ckt);
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+		//
+		double massFlowRateReferenceValueKgPerS;
+		massFlowRateReferenceValueKgPerS = steadyStateSim.simulationResult;
+
+		MassFlow massFlowRateTestResult;
+		massFlowRateTestResult = ckt.getMassFlowRate(
+				new SpecificEnergy(pressureDrop,
+					SpecificEnergyUnit.JoulePerKilogram));
+
+		//this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
+		//		massFlowRateTestResult.ToString());
+
+		// Assert
+		// 
+		// Note that the Math.Abs is there because some massflowrates
+		// are negative.
+		// And also the massFlowRateTestResult are both
+		// MassFlow objects, ie. dimensioned units
+		// so i need to convert them to double using the .As()
+		// method
+		Assert.Equal(massFlowRateReferenceValueKgPerS,
+				massFlowRateTestResult.As(MassFlowUnit.KilogramPerSecond),3);
+
+		//throw new Exception();
+	}
 	// here we test fluidParallelCircuit
 	
 	[Theory]

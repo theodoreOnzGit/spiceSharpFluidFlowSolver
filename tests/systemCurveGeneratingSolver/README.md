@@ -415,6 +415,53 @@ Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/s
 olver/systemCurveUnitTest.cs:line 272
 ```
 
+Another one at 1:37pm 27 Jul 2022
+
+```zsh
+
+  Failed tests.fluidEntityTests.WhenDynamicPressureDropSuppliedExpectMassFlowrateValue(kin
+ematicPressureDropVal: 0) [74 ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [J/kg] as expected! Your Unit is a 
+[gm/cms]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.SpecificEnergy.op_Implicit(UnknownUnit Unit)
+   at StabilisedChurchillJacobian.dDeltaP_dRe(Double Re, Double roughnessRatio, Double len
+gthToDiameter, Length lengthScale, KinematicViscosity nu) in /home/teddy0/Documents/youTub
+e/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFri
+ctionFactor/Jacobian/StabilisedChurchillJacobian.cs:line 141
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, Double Re, Double roughnessRatio, Length pipeLength, Ki
+nematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowS
+olver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictionFactor/Jacobian/S
+tabilisedChurchillJacobian.cs:line 221
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, SpecificEnergy pressureDrop, Double roughnessRatio, Len
+gth pipeLength, KinematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube/sp
+iceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictio
+nFactor/Jacobian/StabilisedChurchillJacobian.cs:line 291
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, SpecificEnergy pressureDrop, Length absoluteRoughness, 
+Length pipeLength, KinematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube
+/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFric
+tionFactor/Jacobian/StabilisedChurchillJacobian.cs:line 348
+   at SpiceSharp.Components.IsothermalPipeBehaviors.BiasingBehavior.SpiceSharp.Behaviors.I
+BiasingBehavior.Load() in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/spiceSh
+arpFluidFlowSolverLibraries/pipesAndValves/Pipes/IsothermalPipe/BiasingBehavior.cs:line 15
+7
+   at SpiceSharp.Simulations.BiasingSimulation.Load()
+   at SpiceSharp.Simulations.BiasingSimulation.Iterate(Int32 maxIterations)
+   at SpiceSharp.Simulations.BiasingSimulation.Op(Int32 maxIterations)
+   at SpiceSharp.Simulations.PrototypeSteadyStateFlowSimulation.Execute() in /home/teddy0/
+Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/simulations
+/SteadyState/PrototypeSteadyStateFlowSimulation.cs:line 39
+   at SpiceSharp.Simulations.Simulation.Run(IEntityCollection entities)
+   at tests.fluidEntityTests.WhenDynamicPressureDropSuppliedExpectMassFlowrateValue(Double
+ kinematicPressureDropVal) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tes
+ts/systemCurveGeneratingSolver/FluidEntityTests.cs:line 382
+```
+
 These bugs were non repeatable and when i restarted the tests, they would often
 disappear. I suspect this may be some form of race condition causing the bug.
 
