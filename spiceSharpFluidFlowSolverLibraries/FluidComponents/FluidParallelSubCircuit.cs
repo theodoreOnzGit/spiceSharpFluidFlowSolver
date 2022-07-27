@@ -48,21 +48,6 @@ namespace SpiceSharp.Components
 				MassFlow flowrate){
 
 			// first is that we get the definition object
-			IEntityCollection _entityCollection =
-				this.Parameters.Definition.Entities;
-			// i'll then like to check if these entities are okay 
-			// to be in a fluidEntityList
-			// but IFluidEntityCollection already has such a thing,
-			// so i may as well use what's already there
-			//
-
-			IFluidEntityCollection _fluidEntityCollection;
-			_fluidEntityCollection = new FluidEntityCollection();
-
-			foreach (IEntity item in _entityCollection)
-			{
-				_fluidEntityCollection.Add(item);
-			}
 			// now i have a fluid entity collection, i can
 			// now obtain massflowrates by setting a pressure drop value
 			//
@@ -78,6 +63,8 @@ namespace SpiceSharp.Components
 			// apply a pressure drop across all of them to get the
 			// mass flowrate,
 			// then sum them up altogether.
+
+
 			return new MassFlow(0.0, MassFlowUnit.KilogramPerSecond);
 		}
 
@@ -98,6 +85,25 @@ namespace SpiceSharp.Components
 		}
 
 
+		public IFluidEntityCollection getFluidEntityCollection(
+				IEntityCollection _entityCollection){
+
+			// i'll then like to check if these entities are okay 
+			// to be in a fluidEntityList
+			// but IFluidEntityCollection already has such a thing,
+			// so i may as well use what's already there
+			//
+
+			IFluidEntityCollection _fluidEntityCollection;
+			_fluidEntityCollection = new FluidEntityCollection();
+
+			foreach (IEntity item in _entityCollection)
+			{
+				_fluidEntityCollection.Add(item);
+			}
+
+			return _fluidEntityCollection;
+		}
 
 
         /// <summary>

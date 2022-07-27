@@ -84,7 +84,8 @@ namespace SpiceSharp
 			// first let me store the dynamicPressureDropValue as 
 			// a double
 
-
+			//note, not thread safe here, as the variable within
+			//this class is set by this part of the code
 			this.dynamicPressureDropValuePascal = 
 				dynamicPressureDrop.As(PressureUnit.
 						Pascal);
