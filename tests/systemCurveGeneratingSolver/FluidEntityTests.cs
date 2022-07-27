@@ -195,6 +195,7 @@ public class fluidEntityTests : testOutputHelper
 	}
 
 
+
 	
 
 	// now suppose i have a pressureDrop
@@ -487,6 +488,135 @@ public class fluidEntityTests : testOutputHelper
 		// Assert
 		Assert.Equal(kinematicPressureDropVal,
 				kinematicPressureDropResultVal,3);
+
+	}
+	// here we test fluidParallelCircuit
+	
+	[Theory]
+	[InlineData(1.45)]
+	[InlineData(-1.45)]
+	[InlineData(0.0)]
+	public void When_FluidSeriesCircuitParallelSubcircuitSetupExpect3xFlow(
+			double pressureDrop){
+
+		// for this test i'm going to have 3 pipes in parallel with the
+		// same pressure drop across all of them (no pump curve here
+		// or anything)
+		// for the same pressure drop across all three pipes, i
+		// should expect 3x the mass flowrate
+		//
+		// this basically ensures that FluidParalleSubCircuit functions
+		// like subcircuit if given the same parameters
+
+		// this step is needed to cast the testPipe as the
+		// correct type
+		//
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipe("isothermalPipe2","out","0");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipe("isothermalPipe3","out","0");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Connect("parallelIn","parallelOut");
+
+		var subckt = new SubcircuitDefinition(new Circuit(
+					testPipe,
+					testPipe2,
+					testPipe3),
+				"parallelIn", "parallelOut");
+
+
+		// Build the circuit
+		SpiceSharp.Entities.IFluidEntityCollection ckt = 
+			new FluidSeriesCircuit(
+				new VoltageSource("V1", "out", "0", pressureDrop),
+				new FluidParallelSubCircuit("X1", subckt).Connect("out" , "0")
+				);
+
+		// Setup the simulation and export our current
+
+		double Be;
+		Be = pressureDrop;
+		Be *= testPipe.Parameters.pipeLength.
+			As(LengthUnit.Meter);
+		Be *= testPipe.Parameters.pipeLength.
+			As(LengthUnit.Meter);
+		Be /= testPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
+		Be /= testPipe.Parameters.fluidKinViscosity.
+			As(KinematicViscosityUnit.SquareMeterPerSecond);
+
+		double Re;
+		ChurchillFrictionFactorJacobian _jacobianObject;
+		_jacobianObject = new ChurchillFrictionFactorJacobian();
+		double roughnessRatio = testPipe.Parameters.roughnessRatio();
+		double lengthToDiameter = testPipe.Parameters.lengthToDiameter();
+		Re = _jacobianObject.getRe(Be,roughnessRatio,lengthToDiameter);
+
+		MassFlow massFlowRate;
+		massFlowRate = testPipe.Parameters.fluidViscosity*
+			testPipe.Parameters.crossSectionalArea()/
+			testPipe.Parameters.hydraulicDiameter*
+			Re;
+		// now i multiply the flowrate by 3 so my expected flowrate
+		// is 3x
+		massFlowRate *= 3.0;
+
+		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
+
+
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(ckt);
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+
+		double massFlowRateTestValue;
+		massFlowRateTestValue = steadyStateSim.simulationResult;
+		MassFlow massFlowRateTestResult;
+		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
+				MassFlowUnit.KilogramPerSecond);
+
+		//this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
+		//		massFlowRateTestResult.ToString());
+
+		// Assert
+		// 
+		// Note that the Math.Abs is there because some massflowrates
+		// are negative.
+		// And also the massFlowRateTestResult are both
+		// MassFlow objects, ie. dimensioned units
+		// so i need to convert them to double using the .As()
+		// method
+		Assert.Equal(massFlowRate.As(MassFlowUnit.KilogramPerSecond),
+				massFlowRateTestResult.As(MassFlowUnit.KilogramPerSecond),3);
+
+		//throw new Exception();
+	}
+
+
+	[Fact(Skip = "not mean to be tested, reference code")]
+	public void subcircuitReferenceCode(){
+		// Define the subcircuit
+		var subckt = new SubcircuitDefinition(new Circuit(
+					new Resistor("R1", "a", "b", 1e3),
+					new Resistor("R2", "b", "0", 1e3)),
+				"a", "b");
+
+		// Define the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "in", "0", 5.0),
+				new Subcircuit("X1", subckt).Connect("in", "out"));
 
 	}
 

@@ -55,6 +55,14 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
+
+		public override SpecificEnergy getKinematicPressureDrop(
+				MassFlow flowrate){
+
+
+			throw new NotImplementedException();
+		}
+
 		public override MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop){
 			// how do i get a mass flowrate from a parallel circuit
 			// (assuming all FluidEntities are in parallel?)
@@ -159,14 +167,6 @@ namespace SpiceSharp.Components
 
 			return _totalMassFlowrate;
 		}
-
-		public override SpecificEnergy getKinematicPressureDrop(
-				MassFlow flowrate){
-
-
-			throw new NotImplementedException();
-		}
-
 
 		public IFluidEntityCollection getFluidEntityCollection(
 				IEntityCollection _entityCollection){
