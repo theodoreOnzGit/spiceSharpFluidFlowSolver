@@ -1140,4 +1140,69 @@ public class fluidEntityTests : testOutputHelper
 				kinematicPressureDropResultVal,8);
 
 	}
+	
+
+	// in this test i want to ensure that FluidEntities can deal with
+	// hydrostatic pressure gradients
+	[Theory]
+	[InlineData(1.45, 0.846910353)]
+	[InlineData(0.0, -0.846910353)]
+	[InlineData(1.45, 180-0.846910353)]
+	[InlineData(0.0, 180+0.846910353)]
+	public void WhenFluidEntityInclinedToZeroPressureDrop_ExpectNoFlow(
+			double pressureDropValueJoulePerKg,
+			double inclineAngleDegrees){
+
+		// Setup
+
+
+		// for 10m long pipe, angle of incline for zero pressure drop
+		// is about 0.84691 degrees
+		Angle inclinedAngle = new Angle(inclineAngleDegrees, AngleUnit.Degree);
+		// this step is needed to cast the mockPipe as the
+		// correct type
+		Component preCasePipe = new IsothermalPipe("isothermalPipe1","out","0");
+		IsothermalPipe testPipe = (IsothermalPipe)preCasePipe;
+		testPipe.Connect("out","0");
+		testPipe.Parameters.inclineAngle = inclinedAngle;
+
+		// Build the circuit
+		var ckt = new Circuit(
+				new VoltageSource("V1", "out", "0", pressureDropValueJoulePerKg),
+				testPipe
+				);
+
+		// build simulation
+		ISteadyStateFlowSimulation steadyStateSim = 
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+
+		steadyStateSim.Run(ckt);
+		double expectedFlowrateKgPerSecond = steadyStateSim.simulationResult;
+		
+		// now let me prepare the results
+		double actualMassFlowRateValueKgPerSecond;
+
+		SpecificEnergy pressureDrop = 
+			new SpecificEnergy(pressureDropValueJoulePerKg,
+					SpecificEnergyUnit.JoulePerKilogram);
+		// Act
+
+		MassFlow actualFlowRate = 
+			testPipe.getMassFlowRate(pressureDrop);
+		actualMassFlowRateValueKgPerSecond =
+			actualFlowRate.As(MassFlowUnit.KilogramPerSecond);
+
+		// Assert
+		
+		Assert.Equal(expectedFlowrateKgPerSecond, 
+				actualMassFlowRateValueKgPerSecond,2);
+	}
 }
