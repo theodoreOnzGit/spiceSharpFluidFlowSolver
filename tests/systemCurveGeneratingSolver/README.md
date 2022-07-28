@@ -599,6 +599,65 @@ These bugs were non repeatable and when i restarted the tests, they would often
 disappear. I suspect this may be some form of race condition causing the bug.
 
 
-One observation for these errors so far: they all seem to come from the biasing SImulation run
-especially when i try to get my stabilised Jacobian dDeltaP_dRe and dm_dRe.
+One observation for these errors so far: they all seem to come from the biasing 
+SImulation run especially when i try to get my stabilised Jacobian dDeltaP_dRe 
+and dm_dRe.
 
+Here is the attempted solution (tried on 27 jul 2022 5:25pm):
+previously my code was
+```zsh
+	public IFrictionFactorJacobian jacobianObject = 
+	new StabilisedChurchillJacobian();
+```
+
+Which basically means one instance of this jacobian object would be instantiated
+per baseparameter object. And this was subsequently used once per instance
+in BiasingBehavior. 
+
+So if multiple instances of BiasingBehavior were run, then we would be using this
+same shared jacobian object for all the solving. This is inviting race conditions
+to come in.
+
+I'd rather instantiate new instances of jacobian object when this method is called
+so that i don't shared the object.
+
+I may hog ram and slow the program down slightly, but that's better than a 
+race condition.
+
+```csharp
+public IFrictionFactorJacobian jacobianObject(){
+	return new StabilisedChurchillJacobian();
+}
+```
+
+Same thing goes for BiasingBehavior, when the jacobian object is accessed,
+i want this to create new instances of the ChurchillJacobianObjects.
+
+```csharp
+
+private IFrictionFactorJacobian _jacobianObject(){
+	return this._bp.jacobianObject();
+```
+
+Only when the Load() method is used, then i'll store the object 
+to save memory.
+
+```csharp
+
+IFrictionFactorJacobian _jacobianObject =
+this._jacobianObject();
+
+bejanNumber = _jacobianObject.getBejanNumber(
+		pressureDrop,
+		fluidKinViscosity,
+		pipeLength);
+```
+
+If this is not effective at preventing race conditions, i'll change all the
+jacobian object method accessing steps like so:
+```zsh
+bejanNumber = _jacobianObject().getBejanNumber(
+		pressureDrop,
+		fluidKinViscosity,
+		pipeLength);
+```

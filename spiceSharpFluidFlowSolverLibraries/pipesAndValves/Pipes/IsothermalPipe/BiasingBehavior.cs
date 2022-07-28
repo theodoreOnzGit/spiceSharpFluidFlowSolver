@@ -16,7 +16,9 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
         private readonly ElementSet<double> _elements;
         private readonly BaseParameters _bp;
         private readonly BiasingParameters _baseConfig;
-		private IFrictionFactorJacobian _jacobianObject;
+		private IFrictionFactorJacobian _jacobianObject(){
+			return this._bp.jacobianObject();
+		}
 
         /// <summary>
         /// Creates a new instance of the <see cref="BiasingBehavior"/> class.
@@ -33,8 +35,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
             // Get the simulation parameters (we want to use Gmin)
             _baseConfig = context.GetSimulationParameterSet<BiasingParameters>();
 
-			// Construct the IFrictionFactorJacobian object
-			_jacobianObject = _bp.jacobianObject();
 
             // Request the node variables
             var state = context.GetState<IBiasingSimulationState>();
@@ -98,6 +98,11 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// defined for the churchill correlation.
 			// i will arbitrarily add 1000 to the bejan number
 			// if it is zero so that we can continue simulation
+
+			// let's instantiate our jacobian object first
+			IFrictionFactorJacobian _jacobianObject =
+				this._jacobianObject();
+
 			bejanNumber = _jacobianObject.getBejanNumber(
 					pressureDrop,
 					fluidKinViscosity,
