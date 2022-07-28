@@ -34,7 +34,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
             _baseConfig = context.GetSimulationParameterSet<BiasingParameters>();
 
 			// Construct the IFrictionFactorJacobian object
-			_jacobianObject = _bp.jacobianObject;
+			_jacobianObject = _bp.jacobianObject();
 
             // Request the node variables
             var state = context.GetState<IBiasingSimulationState>();

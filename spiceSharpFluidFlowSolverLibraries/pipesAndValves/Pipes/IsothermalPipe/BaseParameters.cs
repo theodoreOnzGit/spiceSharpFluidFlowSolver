@@ -21,9 +21,60 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			new Length(10.0,LengthUnit.Meter);
 
 		// next we also have angles as well
+		// this is mainly to calculate hydrostatic pressure increase or
+		// decrease
 
 		public Angle inclineAngle { get; set; } =
 			new Angle(0.0, AngleUnit.Degree);
+
+		public Pressure hydrostaticPressureChange(){
+
+			// this is the change in hydrostatic pressure 
+			// ie pressure of pipe exit - pressure of pipe entrance
+			Pressure hydrostaticPressureChange;
+
+
+			hydrostaticPressureChange = 
+				this.hydrostaticKinematicPressureChange()*
+				this.fluidDesnity();
+
+			hydrostaticPressureChange = 
+				hydrostaticPressureChange.ToUnit(
+						PressureUnit.Pascal);
+
+			return hydrostaticPressureChange;
+		}
+
+		public SpecificEnergy hydrostaticKinematicPressureChange(){
+
+			// this is the change in hydrostatic pressure 
+			// ie pressure of pipe exit - pressure of pipe entrance
+			SpecificEnergy hydrostaticKinematicPressureChange;
+
+			Length heightChange =
+				this.pipeLength * Math.Sin(this.inclineAngle.As(
+							AngleUnit.Radian));
+
+			// for gravity let me initiate a constants class
+
+			Acceleration _standardGravity =
+				EngineeringUnits.Constants.StandardGravity.ToUnit(
+						AccelerationUnit.MeterPerSecondSquared);
+
+			// now kinematic pressure change is just gz
+
+			hydrostaticKinematicPressureChange = 
+				heightChange * _standardGravity;
+
+			hydrostaticKinematicPressureChange = 
+				hydrostaticKinematicPressureChange.ToUnit(
+						SpecificEnergyUnit.JoulePerKilogram);
+
+			return hydrostaticKinematicPressureChange;
+
+
+		}
+		
 
 		// carbon steel surface roughness used as default
 		public Length absoluteRoughness { get; set; } =
@@ -84,8 +135,12 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			return fluidDesnity;
 		}
 
-		public IFrictionFactorJacobian jacobianObject =
-			new StabilisedChurchillJacobian();
+		// i have changed this to a function returning new instances
+		// of StabilisedChurchillJacobian in order to avoid race
+		// conditions
+		public IFrictionFactorJacobian jacobianObject(){
+			return new StabilisedChurchillJacobian();
+		}
 		
 		// we can get dynamic pressure drop from mass flowrate as follows
 		// (1) convert mass flowrate to Reynolds number
@@ -189,7 +244,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 			if (Re > transitionPoint)
 			{
-				double fanningReSq = jacobianObject.fanning(
+				double fanningReSq = jacobianObject().fanning(
 						Re, this.roughnessRatio())*
 					Math.Pow(Re,2.0);
 
@@ -206,7 +261,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			xValues.Add(transitionPoint);
 
 			yValues.Add(0.0);
-			yValues.Add(jacobianObject.fanning(transitionPoint,
+			yValues.Add(jacobianObject().fanning(transitionPoint,
 						this.roughnessRatio())*
 					Math.Pow(transitionPoint,2.0));
 
@@ -244,6 +299,10 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			pressureDrop = pressureDrop.ToUnit(
 					PressureUnit.Pascal);
 
+			// last but not least, i must also include hydrostatic
+			// pressure adjustments
+			pressureDrop -= this.hydrostaticPressureChange();
+
 			return pressureDrop;
 			
 
@@ -266,6 +325,8 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			pressureDrop *= BejanNumber;
 			pressureDrop = pressureDrop.ToUnit(
 					SpecificEnergyUnit.JoulePerKilogram);
+
+			pressureDrop -= this.hydrostaticKinematicPressureChange();
 
 			return pressureDrop;
 			
