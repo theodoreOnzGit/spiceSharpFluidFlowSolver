@@ -3,6 +3,8 @@ using SpiceSharp.Components;
 using SpiceSharp.Simulations;
 using EngineeringUnits;
 using EngineeringUnits.Units;
+using MathNet.Numerics;
+using MathNet.Numerics.Interpolation;
 
 using spiceSharpFluidFlowSolverLibraries;
 
@@ -18,72 +20,179 @@ public class systemCurveGeneratingSolver : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
-	[Fact(Skip = "sandbox")]
-	public void sandbox_isothermalPipeSystemCurveSolver(){
 
-		double pressureDrop = 1.45;
-
-		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
-		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
-		testPipe.Connect("out","0");
-		preCastPipe = new IsothermalPipe("isothermalPipe2","out","0");
-		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
-		testPipe2.Connect("out","0");
-		preCastPipe = new IsothermalPipe("isothermalPipe3","out","0");
-		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
-		testPipe3.Connect("out","0");
-
-		// Build the circuit
-		var ckt = new Circuit(
-				new VoltageSource("V1", "out", "0", pressureDrop),
-				testPipe,
-				testPipe2,
-				testPipe3
-				);
+	[Theory]
+	[InlineData(0.005)]
+	[InlineData(0.0005)]
+	[InlineData(0.00005)]
+	[InlineData(0.000005)]
+	[InlineData(0.0000005)]
+	public void sandbox_isothermalPipeSystemCurveSolver(double 
+			pressureDropValueJoulePerKg){
 
 
+		IList<double> ReValues = new List<double>();
+		IList<double> BeValues = new List<double>();
 
-		ISystemCurveSimulator steadyStateSim = 
-			new systemCurveSimulator(
-				"systemCurveSimulator");
-		var currentExport1 = new RealPropertyExport(steadyStateSim, 
-				"IsothermalPipe1", "i");
-		var currentExport2 = new RealPropertyExport(steadyStateSim, 
-				"IsothermalPipe2", "i");
-		var currentExport3 = new RealPropertyExport(steadyStateSim, 
-				"IsothermalPipe3", "i");
-		steadyStateSim.ExportSimulationData += (sender, args) =>
-		{
-			var current1 = -currentExport1.Value;
-			var current2 = -currentExport2.Value;
-			var current3 = -currentExport3.Value;
-			steadyStateSim.simulationResult.Add(current1);
-			steadyStateSim.simulationResult.Add(current2);
-			steadyStateSim.simulationResult.Add(current3);
+		// i'll be using these functions repeatedly
+		double getBejanFromKinematicPressureDrop(SpecificEnergy 
+				kinematicPressureDrop, IsothermalPipe 
+				pipe){
+			// Be_D = kinPressureDrop * D^2/nu^2
+			// D = hydraulicDiameter
+			// nu = kinematicViscosity
+			double Be_D;
 
-			Assert.Equal(2.1,current1);
+			double nuSqared = Math.Pow(pipe.Parameters.fluidKinViscosity.As( 
+						KinematicViscosityUnit.SquareMeterPerSecond)
+					,2.0);
 
-		};
-		steadyStateSim.Run(ckt);
+			double Dsquared = Math.Pow(pipe.Parameters.hydraulicDiameter.As(
+						LengthUnit.Meter)
+					,2.0);
 
-		currentExport1.Destroy();
-		currentExport2.Destroy();
-		currentExport3.Destroy();
-		// </example_customcomponent_nonlinearresistor_test>
 
-		double massFlowRateTestValue = 0.0;
-		foreach (double entry in steadyStateSim.simulationResult)
-		{
-			massFlowRateTestValue += entry;
+			Be_D = kinematicPressureDrop.As(SpecificEnergyUnit.
+					JoulePerKilogram) * Dsquared / nuSqared;
+
+			return Be_D;
+
 		}
-		MassFlow massFlowRateTestResult;
-		massFlowRateTestResult = new MassFlow(massFlowRateTestValue,
-				MassFlowUnit.SI);
+
+		MassFlow massFlowrateFromRe(double Re,
+				IsothermalPipe pipe){
+
+			// Re = massflow/
+			MassFlow flowrate =
+				pipe.Parameters.crossSectionalArea()/
+				pipe.Parameters.hydraulicDiameter*
+				pipe.Parameters.fluidViscosity*
+				Re;
+
+			return flowrate.ToUnit(MassFlowUnit.
+					KilogramPerSecond);
+
+		}
+
+		// let's start with a Re spacing value of 100
+		for (int i = 0; i < 1000; i++)
+		{
+			double ReSpacing = 100.0;
+			double ReValue = ReSpacing * i;
+			ReValues.Add(ReValue);
+
+			// now i create a new isothermalPipe
+			IsothermalPipe testPipe = new IsothermalPipe(
+					"isothermalPipe1","out","0");
+			// then i obtain pressureDropValues
 
 
-		// Assert
+			MassFlow flowrate = massFlowrateFromRe(ReValue,
+					testPipe);
+			
+			// once i have the massflowrate, i can then obtain pressureDrops
 
-		Assert.Equal(2.1, massFlowRateTestValue);
+			SpecificEnergy kinematicPressureDrop =
+				testPipe.getKinematicPressureDrop(flowrate).ToUnit(
+						SpecificEnergyUnit.JoulePerKilogram);
+
+
+
+			// with that i can now get a Bejan Number
+
+
+			// from this Bejan number let's put this into the BeValues list
+			//
+			double bejanNumber;
+			bejanNumber = getBejanFromKinematicPressureDrop(kinematicPressureDrop,
+					testPipe);
+			BeValues.Add(bejanNumber);
+		}
+		// end of for loop
+
+		// now that we finished our data generation,
+		// we can then start interpolation
+		IInterpolation _linear;
+		_linear = Interpolate.Linear(BeValues,ReValues);
+
+
+		// with this we can make a function to guess massFlowrate 
+		// using Pressure Drop
+		//
+		SpecificEnergy testKinematicPressureDrop = 
+			new SpecificEnergy(pressureDropValueJoulePerKg, 
+					SpecificEnergyUnit.JoulePerKilogram);
+		// i can use this testKinematicPressureDrop to test the value of 
+		// mass flowrate using the testPipe
+
+
+		IsothermalPipe testPipe2 = new IsothermalPipe(
+				"isothermalPipe2","out","0");
+
+		MassFlow _referenceMassFlow = testPipe2.getMassFlowRate(
+				testKinematicPressureDrop);
+
+		double Be = getBejanFromKinematicPressureDrop(testKinematicPressureDrop,
+				testPipe2);
+		double Re = _linear.Interpolate(Be);
+
+		// now i've got my Reynold's number, i can get my mass flowrate
+
+
+
+		// Act
+		MassFlow _resultInterpolatedMassFlow =
+			massFlowrateFromRe(Re, testPipe2);
+
+		
+
+		// Assert 
+		// I want to check how equal these two results are
+
+		if(Re<2300.0){
+			string errorMsg = Re.ToString();
+			errorMsg += " laminar Re here \n";
+			errorMsg += " result massflow: \n";
+			errorMsg += _resultInterpolatedMassFlow.ToString();
+			errorMsg += "\n";
+			errorMsg += " expected massflow: \n";
+			errorMsg += _referenceMassFlow.ToString();
+			errorMsg += "\n";
+			
+			Assert.Equal(_referenceMassFlow.As(MassFlowUnit.KilogramPerSecond),
+					_resultInterpolatedMassFlow.As(MassFlowUnit.KilogramPerSecond),
+					2);
+			throw new Exception(errorMsg);
+		}
+		if(Re<4000.0){
+			string errorMsg = Re.ToString();
+			errorMsg += " transition Re here";
+			errorMsg += " result massflow: \n";
+			errorMsg += _resultInterpolatedMassFlow.ToString();
+			errorMsg += "\n";
+			errorMsg += " expected massflow: \n";
+			errorMsg += _referenceMassFlow.ToString();
+			errorMsg += "\n";
+			Assert.Equal(_referenceMassFlow.As(MassFlowUnit.KilogramPerSecond),
+					_resultInterpolatedMassFlow.As(MassFlowUnit.KilogramPerSecond),
+					2);
+			throw new Exception(errorMsg);
+		}
+		if(Re>4000.0){
+			string errorMsg = Re.ToString();
+			errorMsg += " turbulent Re here";
+			errorMsg += " result massflow: \n";
+			errorMsg += _resultInterpolatedMassFlow.ToString();
+			errorMsg += "\n";
+			errorMsg += " expected massflow: \n";
+			errorMsg += _referenceMassFlow.ToString();
+			errorMsg += "\n";
+			throw new Exception(errorMsg);
+		}
+		Assert.Equal(_referenceMassFlow.As(MassFlowUnit.KilogramPerSecond),
+				_resultInterpolatedMassFlow.As(MassFlowUnit.KilogramPerSecond),
+				2);
+
 	}
 
 	[Theory(Skip = "unstable, use other solver")]

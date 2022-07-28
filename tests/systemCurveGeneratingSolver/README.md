@@ -321,6 +321,67 @@ is just not suitable for the speed. There must be a way of speeding things up.
 Which means that either we use this method to generate a systemCurve of approximate values,
 or we use asynchronous or parallel methods to really speed up calculations. 
 
+### solutions to help speed up calculations.
+
+Mostly, the issue here has to deal with iterative calculations. That means
+for pipes in general, to get my mass flowrate given a pressure drop,
+
+one has to use MathNet Numerics methods to obtain pressuredrop by guessing 
+flowrate, closer and closer until convergence is reached.
+
+The other way to do it is to use a systemcurve sort of method, which means
+i obtain a nondimensional graph of nondimensionalised pressure drop (Be_D)
+against Re for the given L/D ratio and obtain an interpolated graph.
+
+One question is what is the appropriate Re spacing for interpolation?
+
+For linear interpolation, the interpolation spacing is linear for linear
+systems.
+
+If y=5x, then one could use two points and interpolate between them
+as much as you wanted.
+
+This is the case for laminar region where Bejan number and Reynold's number
+are linearly related.
+
+For $y=5x^2$, then we have a different issue.
+
+We could also use linear interpolation, however, instead of interpolating between
+x and y, we can interpolate between $x^2$ and y. Thus we only need two points.
+
+It saves us a lot of RAM if we don't have to do linear interpolation over several
+points.
+
+This is good for the fully turbulent region or where K, the loss term, is the 
+biggest. 
+
+Here is where we have a $Be = k Re^2$ correlation.
+
+This template is good for fLDK type components. 
+
+$$Be_D = 0.5 Re^2 (f \frac{L}{D} + K)$$
+
+However, for interpolations to be quick, one has to have a single dataset of
+Be vs Re. Or a function. 
+
+I need to have a function of Re explicit in Be.
+
+I think three different interpolation schemes can be used. 
+
+For linear regions, if we interpolate Re against Be, only two points need be
+used. This is for pipes.
+
+Yet in the space of all Reynold's numbers, it seems that a logarithm type 
+interpolation would be more fitting.
+
+But let's start simple and see if it suffices. Just apply a linear interpolation
+and sample maybe at intervals of Re=100.
+
+
+
+
+
+
 
 
 # issues
@@ -786,3 +847,115 @@ public SpecificEnergy dDeltaP_dRe(double Re, double roughnessRatio,
 
 This way the code is neater, and we won't have implicit conversions 
 or anything of this sort. I'll keep looking for race condition errors...
+
+3:02pm 28 jul 2022, another race condition
+
+```zsh
+
+  Failed tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(pressureDrop: 0) [105
+ ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [kg/s] as expected! Your Unit is a 
+[gm²/cms]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.MassFlow.op_Implicit(UnknownUnit Unit)
+   at tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(Double pressureDrop) in 
+/home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/pipesAndValves/pipesAndValv
+esUnitTest.cs:line 411
+
+```
+
+
+3:13 pm 28 jul 2022
+
+```zsh
+
+  Failed tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(pressureDrop: 0) [101
+ ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [kg/s] as expected! Your Unit is a 
+[m²]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.MassFlow.op_Implicit(UnknownUnit Unit)
+   at tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(Double pressureDrop) in 
+/home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/pipesAndValves/pipesAndValv
+esUnitTest.cs:line 405
+```
+
+
+```zsh
+
+  Failed tests.therminolDowthermTests.WhenFM40InSeries3x_Expect3xPressureDropSlowFlow(pres
+sureDrop: 1) [181 ms]
+  Error Message:
+   System.DivideByZeroException : 1 shall be divided by zero.
+  Stack Trace:
+     at Fractions.Fraction.Divide(Fraction divisor)
+   at Fractions.Fraction.op_Division(Fraction a, Fraction b)
+   at EngineeringUnits.UnitSystem.ConvertionFactor(UnitSystem To)
+   at EngineeringUnits.BaseUnit.GetValueAs(UnitSystem To)
+   at EngineeringUnits.BaseUnit.GetValueAsDouble(UnitSystem To)
+   at EngineeringUnits.Angle.As(AngleUnit ReturnInThisUnit)
+   at SpiceSharp.Components.FM40Behaviors.BiasingBehavior.SpiceSharp.Behaviors.IBiasingBeh
+avior.Load() in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFl
+owSolverLibraries/pipesAndValves/ValvesAndComponents/FM40/BiasingBehavior.cs:line 73
+   at SpiceSharp.Simulations.BiasingSimulation.Load()
+   at SpiceSharp.Simulations.BiasingSimulation.Iterate(Int32 maxIterations)
+   at SpiceSharp.Simulations.BiasingSimulation.IterateSourceStepping(Int32 maxIterations, 
+Int32 steps)
+   at SpiceSharp.Simulations.PrototypeSteadyStateFlowSimulation.Execute() in /home/teddy0/
+Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/simulations
+/SteadyState/PrototypeSteadyStateFlowSimulation.cs:line 45
+   at SpiceSharp.Simulations.Simulation.Run(IEntityCollection entities)
+   at tests.therminolDowthermTests.WhenFM40InSeries3x_Expect3xPressureDropSlowFlow(Double 
+pressureDrop) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/experiment
+alValidation/isothermalFlow/CIET_v1.0/therminolDowthermTests.cs:line 197
+```
+
+
+another one 28 jul 2022 3:40pm
+
+```zsh
+
+   EngineeringUnits.WrongUnitException : This is NOT a [J/kg] as expected! Your Unit is a 
+[gm²/cms]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.SpecificEnergy.op_Implicit(UnknownUnit Unit)
+   at StabilisedChurchillJacobian.dDeltaP_dRe(Double Re, Double roughnessRatio, Double len
+gthToDiameter, Length lengthScale, KinematicViscosity nu) in /home/teddy0/Documents/youTub
+e/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFri
+ctionFactor/Jacobian/StabilisedChurchillJacobian.cs:line 133
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, Double Re, Double roughnessRatio, Length pipeLength, Ki
+nematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowS
+olver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictionFactor/Jacobian/S
+tabilisedChurchillJacobian.cs:line 221
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, SpecificEnergy pressureDrop, Double roughnessRatio, Len
+gth pipeLength, KinematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube/sp
+iceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFrictio
+nFactor/Jacobian/StabilisedChurchillJacobian.cs:line 291
+   at StabilisedChurchillJacobian.dm_dPA(Area crossSectionalArea, DynamicViscosity fluidVi
+scosity, Length hydraulicDiameter, SpecificEnergy pressureDrop, Length absoluteRoughness, 
+Length pipeLength, KinematicViscosity fluidKinViscosity) in /home/teddy0/Documents/youTube
+/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/pipesAndValves/Math/PipeFric
+tionFactor/Jacobian/StabilisedChurchillJacobian.cs:line 348
+   at SpiceSharp.Components.IsothermalPipeBehaviors.BiasingBehavior.SpiceSharp.Behaviors.I
+BiasingBehavior.Load() in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/spiceSh
+arpFluidFlowSolverLibraries/pipesAndValves/Pipes/IsothermalPipe/BiasingBehavior.cs:line 16
+2
+   at SpiceSharp.Simulations.BiasingSimulation.Load()
+   at SpiceSharp.Simulations.BiasingSimulation.Iterate(Int32 maxIterations)
+   at SpiceSharp.Simulations.BiasingSimulation.Op(Int32 maxIterations)
+   at SpiceSharp.Simulations.PrototypeSteadyStateFlowSimulation.Execute() in /home/teddy0/
+Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/simulations
+/SteadyState/PrototypeSteadyStateFlowSimulation.cs:line 39
+   at SpiceSharp.Simulations.Simulation.Run(IEntityCollection entities)
+   at tests.fluidEntityTests.WhenDynamicPressureDropSuppliedExpectMassFlowrateValue(Double
+ kinematicPressureDropVal) in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tes
+ts/systemCurveGeneratingSolver/FluidEntityTests.cs:line 382
+
+```
