@@ -20,14 +20,16 @@ public class systemCurveGeneratingSolver : testOutputHelper
 		//' dotnet watch test --logger "console;verbosity=detailed"
 	}
 
+	[Fact]
+	public void sandbox_isothermalPipeSystemCurveSolver(){
+	}
 
 	[Theory]
-	[InlineData(0.005)]
 	[InlineData(0.0005)]
 	[InlineData(0.00005)]
 	[InlineData(0.000005)]
 	[InlineData(0.0000005)]
-	public void sandbox_isothermalPipeSystemCurveSolver(double 
+	public void whenLinearInterpolationExpectCorrectMassFlow_upToRe100000(double 
 			pressureDropValueJoulePerKg){
 
 
@@ -149,46 +151,10 @@ public class systemCurveGeneratingSolver : testOutputHelper
 		// Assert 
 		// I want to check how equal these two results are
 
-		if(Re<2300.0){
-			string errorMsg = Re.ToString();
-			errorMsg += " laminar Re here \n";
-			errorMsg += " result massflow: \n";
-			errorMsg += _resultInterpolatedMassFlow.ToString();
-			errorMsg += "\n";
-			errorMsg += " expected massflow: \n";
-			errorMsg += _referenceMassFlow.ToString();
-			errorMsg += "\n";
-			
-			Assert.Equal(_referenceMassFlow.As(MassFlowUnit.KilogramPerSecond),
-					_resultInterpolatedMassFlow.As(MassFlowUnit.KilogramPerSecond),
-					2);
-			throw new Exception(errorMsg);
+		if(Re > 100000){
+			throw new Exception("Re is out of interpolation range!");
 		}
-		if(Re<4000.0){
-			string errorMsg = Re.ToString();
-			errorMsg += " transition Re here";
-			errorMsg += " result massflow: \n";
-			errorMsg += _resultInterpolatedMassFlow.ToString();
-			errorMsg += "\n";
-			errorMsg += " expected massflow: \n";
-			errorMsg += _referenceMassFlow.ToString();
-			errorMsg += "\n";
-			Assert.Equal(_referenceMassFlow.As(MassFlowUnit.KilogramPerSecond),
-					_resultInterpolatedMassFlow.As(MassFlowUnit.KilogramPerSecond),
-					2);
-			throw new Exception(errorMsg);
-		}
-		if(Re>4000.0){
-			string errorMsg = Re.ToString();
-			errorMsg += " turbulent Re here";
-			errorMsg += " result massflow: \n";
-			errorMsg += _resultInterpolatedMassFlow.ToString();
-			errorMsg += "\n";
-			errorMsg += " expected massflow: \n";
-			errorMsg += _referenceMassFlow.ToString();
-			errorMsg += "\n";
-			throw new Exception(errorMsg);
-		}
+
 		Assert.Equal(_referenceMassFlow.As(MassFlowUnit.KilogramPerSecond),
 				_resultInterpolatedMassFlow.As(MassFlowUnit.KilogramPerSecond),
 				2);

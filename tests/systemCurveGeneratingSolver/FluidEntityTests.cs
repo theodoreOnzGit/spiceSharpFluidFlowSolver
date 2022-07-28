@@ -495,7 +495,8 @@ public class fluidEntityTests : testOutputHelper
 	// will function with the fluidSeriesCircuit in giving us the correct 
 	// flowrate
 	
-	[Theory(Skip = "temporary skip for fast debug")]
+	//[Theory(Skip = "temporary skip for fast debug")]
+	[Theory]
 	[InlineData(1.45)]
 	[InlineData(0.45)]
 	[InlineData(-1.45)]
