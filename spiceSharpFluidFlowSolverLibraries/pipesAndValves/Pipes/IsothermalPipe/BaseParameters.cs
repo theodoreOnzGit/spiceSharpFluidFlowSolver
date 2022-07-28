@@ -58,8 +58,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			// for gravity let me initiate a constants class
 
 			Acceleration _standardGravity =
-				EngineeringUnits.Constants.StandardGravity.ToUnit(
-						AccelerationUnit.MeterPerSecondSquared);
+				new Acceleration(9.81, AccelerationUnit.MeterPerSecondSquared);
 
 			// now kinematic pressure change is just gz
 

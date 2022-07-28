@@ -71,7 +71,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			double gz;
 			// of course g is 9.81 m/s^2
 			// we note that z = L sin \theta
-			gz = 9.80665 * pipeLength.As(LengthUnit.Meter) *
+			gz = 9.81 * pipeLength.As(LengthUnit.Meter) *
 				Math.Sin(_bp.inclineAngle.As(AngleUnit.Radian));
 
 			deltaP -= gz;
