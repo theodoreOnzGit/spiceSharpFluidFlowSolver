@@ -5,7 +5,7 @@ using System;
 using EngineeringUnits;
 using EngineeringUnits.Units;
 
-namespace SpiceSharp.Components.IsothermalPipeBehaviors
+namespace SpiceSharp.Components.IsothermalPipeSlowIterationBehaviors
 {
     /// <summary>
     /// Load behavior for a <see cref="NonlinearResistor"/>

@@ -495,7 +495,7 @@ public class fluidEntityTests : testOutputHelper
 	// will function with the fluidSeriesCircuit in giving us the correct 
 	// flowrate
 	
-	[Theory]
+	[Theory(Skip = "temporary skip for speedier debug")]
 	[InlineData(1.45)]
 	[InlineData(0.45)]
 	[InlineData(-1.45)]
@@ -1206,4 +1206,5 @@ public class fluidEntityTests : testOutputHelper
 				actualMassFlowRateValueKgPerSecond,2);
 		// test failed as of 27 jul 2022 1800 hrs
 	}
+
 }

@@ -5,7 +5,7 @@ using EngineeringUnits.Units;
 using MathNet.Numerics;
 using MathNet.Numerics.Interpolation;
 
-namespace SpiceSharp.Components.IsothermalPipeBehaviors
+namespace SpiceSharp.Components.IsothermalPipeSlowIterationBehaviors
 {
     public partial class BaseParameters : 
 		ParameterSet<BaseParameters>

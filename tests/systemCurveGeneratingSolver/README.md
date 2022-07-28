@@ -661,3 +661,128 @@ bejanNumber = _jacobianObject().getBejanNumber(
 		fluidKinViscosity,
 		pipeLength);
 ```
+
+
+12:32pm 28 jul 2022, have another race condition:
+
+```zsh
+
+  Failed tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(pressureDrop: 0) [152
+ ms]
+  Error Message:
+   EngineeringUnits.WrongUnitException : This is NOT a [kg/s] as expected! Your Unit is a 
+[gm²/cms]
+  Stack Trace:
+     at EngineeringUnits.BaseUnit.UnitCheck(IUnitSystem a, IUnitSystem b)
+   at EngineeringUnits.MassFlow.op_Implicit(UnknownUnit Unit)
+   at SpiceSharp.Components.IsothermalPipeBehaviors.BiasingBehavior.SpiceSharp.Behaviors.I
+BiasingBehavior.Load() in /home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/spiceSh
+arpFluidFlowSolverLibraries/pipesAndValves/Pipes/IsothermalPipe/BiasingBehavior.cs:line 14
+8
+   at SpiceSharp.Simulations.BiasingSimulation.Load()
+   at SpiceSharp.Simulations.BiasingSimulation.Iterate(Int32 maxIterations)
+   at SpiceSharp.Simulations.BiasingSimulation.Op(Int32 maxIterations)
+   at SpiceSharp.Simulations.PrototypeSteadyStateFlowSimulation.Execute() in /home/teddy0/
+Documents/youTube/spiceSharpFluidFlowSolver/spiceSharpFluidFlowSolverLibraries/simulations
+/SteadyState/PrototypeSteadyStateFlowSimulation.cs:line 39
+   at SpiceSharp.Simulations.Simulation.Run(IEntityCollection entities)
+   at tests.pipesAndValvesUnitTest.When_parallelSetupExpect3xFlow(Double pressureDrop) in 
+/home/teddy0/Documents/youTube/spiceSharpFluidFlowSolver/tests/pipesAndValves/pipesAndValv
+esUnitTest.cs:line 425
+  Failed tests.therminolDowthermTests.WhenFM40InSeries3x_Expect3xPressureDropSlowFlow(pres
+```
+
+To prevent this, i removed the intermediate unit in the dmdRe code:
+
+```csharp
+
+public MassFlow dmdRe(Area crossSectionalArea,
+	DynamicViscosity fluidViscosity,
+	Length hydraulicDiameter){
+
+crossSectionalArea = crossSectionalArea.ToUnit(AreaUnit.SquareMeter);
+fluidViscosity = fluidViscosity.ToUnit(DynamicViscosityUnit.PascalSecond);
+hydraulicDiameter = hydraulicDiameter.ToUnit(LengthUnit.Meter);
+
+var intermediateUnitResult = crossSectionalArea
+*fluidViscosity
+/hydraulicDiameter;
+
+MassFlow derivativeResult;
+derivativeResult = (MassFlow)intermediateUnitResult;
+
+return derivativeResult;
+
+}
+public SpecificEnergy dDeltaP_dRe(double Re, double roughnessRatio,
+		double lengthToDiameter,
+		Length lengthScale,
+		KinematicViscosity nu){
+
+	lengthScale = lengthScale.ToUnit(LengthUnit.Meter);
+	nu = nu.ToUnit(KinematicViscosityUnit.SquareMeterPerSecond);
+	// dDeltaP_dRe will be in specific energy
+	// SI unit is: m^2/s^2 
+	// this is the same unit as kinematic pressure
+	SpecificEnergy derivativeResult;
+
+	// the type will be unknown unit
+	var intermediateUnitResult = nu.Pow(2)/lengthScale.Pow(2);
+	intermediateUnitResult *= this.dB_dRe(Re,roughnessRatio,
+			lengthToDiameter);
+
+	// after which we transform it to a base unit
+	derivativeResult = (SpecificEnergy)intermediateUnitResult;
+
+	return derivativeResult;
+}
+```
+
+It appears this unit casting thing is possibly not thread safe, i got rid of all the unit casting:
+
+```csharp
+
+public MassFlow dmdRe(Area crossSectionalArea,
+		DynamicViscosity fluidViscosity,
+		Length hydraulicDiameter){
+
+	crossSectionalArea = crossSectionalArea.ToUnit(
+			AreaUnit.SquareMeter);
+
+	fluidViscosity = fluidViscosity.ToUnit(
+			DynamicViscosityUnit.PascalSecond);
+
+	hydraulicDiameter = hydraulicDiameter.ToUnit(
+			LengthUnit.Meter);
+
+	MassFlow derivativeResult = crossSectionalArea
+		*fluidViscosity
+		/hydraulicDiameter;
+
+	derivativeResult = derivativeResult.ToUnit(
+			MassFlowUnit.KilogramPerSecond);
+
+	return derivativeResult;
+
+}
+
+public SpecificEnergy dDeltaP_dRe(double Re, double roughnessRatio,
+		double lengthToDiameter,
+		Length lengthScale,
+		KinematicViscosity nu){
+
+	lengthScale = lengthScale.ToUnit(LengthUnit.Meter);
+	nu = nu.ToUnit(KinematicViscosityUnit.SquareMeterPerSecond);
+	// dDeltaP_dRe will be in specific energy
+	// SI unit is: m^2/s^2 
+	// this is the same unit as kinematic pressure
+	SpecificEnergy derivativeResult = nu.Pow(2)
+		/lengthScale.Pow(2)
+		*this.dB_dRe(Re,roughnessRatio, lengthToDiameter);
+
+	return derivativeResult;
+}
+```
+
+This way the code is neater, and we won't have implicit conversions 
+or anything of this sort. I'll keep looking for race condition errors...

@@ -125,20 +125,14 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 			Length lengthScale,
 			KinematicViscosity nu){
 
-		lengthScale = lengthScale.ToUnit(LengthUnit.SI);
-		nu = nu.ToUnit(KinematicViscosityUnit.SI);
+		lengthScale = lengthScale.ToUnit(LengthUnit.Meter);
+		nu = nu.ToUnit(KinematicViscosityUnit.SquareMeterPerSecond);
 		// dDeltaP_dRe will be in specific energy
 		// SI unit is: m^2/s^2 
 		// this is the same unit as kinematic pressure
-		SpecificEnergy derivativeResult;
-
-		// the type will be unknown unit
-		var intermediateUnitResult = nu.Pow(2)/lengthScale.Pow(2);
-		intermediateUnitResult *= this.dB_dRe(Re,roughnessRatio,
-				lengthToDiameter);
-
-		// after which we transform it to a base unit
-		derivativeResult = (SpecificEnergy)intermediateUnitResult;
+		SpecificEnergy derivativeResult = nu.Pow(2)
+			/lengthScale.Pow(2)
+			*this.dB_dRe(Re,roughnessRatio, lengthToDiameter);
 
 		return derivativeResult;
 	}
@@ -147,16 +141,21 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 			DynamicViscosity fluidViscosity,
 			Length hydraulicDiameter){
 
-		crossSectionalArea = crossSectionalArea.ToUnit(AreaUnit.SI);
-		fluidViscosity = fluidViscosity.ToUnit(DynamicViscosityUnit.SI);
-		hydraulicDiameter = hydraulicDiameter.ToUnit(LengthUnit.SI);
+		crossSectionalArea = crossSectionalArea.ToUnit(
+				AreaUnit.SquareMeter);
 
-		var intermediateUnitResult = crossSectionalArea
+		fluidViscosity = fluidViscosity.ToUnit(
+				DynamicViscosityUnit.PascalSecond);
+
+		hydraulicDiameter = hydraulicDiameter.ToUnit(
+				LengthUnit.Meter);
+
+		MassFlow derivativeResult = crossSectionalArea
 			*fluidViscosity
 			/hydraulicDiameter;
 
-		MassFlow derivativeResult;
-		derivativeResult = (MassFlow)intermediateUnitResult;
+		derivativeResult = derivativeResult.ToUnit(
+				MassFlowUnit.KilogramPerSecond);
 
 		return derivativeResult;
 
@@ -174,22 +173,23 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 			KinematicViscosity fluidKinViscosity,
 			Length pipeLength){
 
-		pressureDrop = pressureDrop.ToUnit(SpecificEnergyUnit.SI);
-		fluidKinViscosity = fluidKinViscosity.ToUnit(KinematicViscosityUnit.SI);
-		pipeLength = pipeLength.ToUnit(LengthUnit.SI);
+		pressureDrop = pressureDrop.ToUnit(SpecificEnergyUnit.JoulePerKilogram);
+		fluidKinViscosity = fluidKinViscosity.ToUnit(
+				KinematicViscosityUnit.SquareMeterPerSecond);
+		pipeLength = pipeLength.ToUnit(LengthUnit.Meter);
 
 
 		double finalValue;
 
-		finalValue = pressureDrop.As(SpecificEnergyUnit.SI);
+		finalValue = pressureDrop.As(SpecificEnergyUnit.JoulePerKilogram);
 		finalValue *= Math.Pow(
 				pipeLength.As(
-					LengthUnit.SI)
+					LengthUnit.Meter)
 				,2.0);
 
 		finalValue /= Math.Pow(
 				fluidKinViscosity.As(
-					KinematicViscosityUnit.SI)
+					KinematicViscosityUnit.SquareMeterPerSecond)
 				,2.0);
 
 		return finalValue;
@@ -215,8 +215,8 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 				hydraulicDiameter);
 
 		double lengthToDiameter;
-		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
+		lengthToDiameter = pipeLength.As(LengthUnit.Meter)/
+			hydraulicDiameter.As(LengthUnit.Meter);
 
 		SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
 				roughnessRatio,
@@ -224,8 +224,8 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 				pipeLength,
 				fluidKinViscosity);
 
-		derivativeResult *= dmdRe.As(MassFlowUnit.SI);
-		derivativeResult /= dDeltaP_dRe.As(MassFlowUnit.SI);
+		derivativeResult *= dmdRe.As(MassFlowUnit.KilogramPerSecond);
+		derivativeResult /= dDeltaP_dRe.As(MassFlowUnit.KilogramPerSecond);
 
 		return derivativeResult;
 	}
@@ -246,8 +246,8 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 				hydraulicDiameter);
 
 		double lengthToDiameter;
-		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
+		lengthToDiameter = pipeLength.As(LengthUnit.Meter)/
+			hydraulicDiameter.As(LengthUnit.Meter);
 
 		SpecificEnergy dDeltaP_dRe = this.dDeltaP_dRe(Re, 
 				roughnessRatio,
@@ -255,8 +255,8 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 				pipeLength,
 				fluidKinViscosity);
 
-		derivativeResult *= dmdRe.As(MassFlowUnit.SI);
-		derivativeResult /= dDeltaP_dRe.As(MassFlowUnit.SI);
+		derivativeResult *= dmdRe.As(MassFlowUnit.KilogramPerSecond);
+		derivativeResult /= dDeltaP_dRe.As(MassFlowUnit.KilogramPerSecond);
 
 		return derivativeResult;
 	}
@@ -281,8 +281,8 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 				pipeLength);
 
 		double lengthToDiameter;
-		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
+		lengthToDiameter = pipeLength.As(LengthUnit.Meter)/
+			hydraulicDiameter.As(LengthUnit.Meter);
 
 		double Re = this.getRe(Be,roughnessRatio,
 				lengthToDiameter);
@@ -312,8 +312,8 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 				pipeLength);
 
 		double lengthToDiameter;
-		lengthToDiameter = pipeLength.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
+		lengthToDiameter = pipeLength.As(LengthUnit.Meter)/
+			hydraulicDiameter.As(LengthUnit.Meter);
 
 		double Re = this.getRe(Be,roughnessRatio,
 				lengthToDiameter);
@@ -341,8 +341,8 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 
 		double roughnessRatio;
 
-		roughnessRatio = absoluteRoughness.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
+		roughnessRatio = absoluteRoughness.As(LengthUnit.Meter)/
+			hydraulicDiameter.As(LengthUnit.Meter);
 
 		double derivativeResult;
 		derivativeResult = this.dm_dPA(crossSectionalArea,
@@ -365,8 +365,8 @@ public class StabilisedChurchillJacobian : ChurchillMathNetDerivative,
 
 		double roughnessRatio;
 
-		roughnessRatio = absoluteRoughness.As(LengthUnit.SI)/
-			hydraulicDiameter.As(LengthUnit.SI);
+		roughnessRatio = absoluteRoughness.As(LengthUnit.Meter)/
+			hydraulicDiameter.As(LengthUnit.Meter);
 
 		double derivativeResult;
 		derivativeResult = this.dm_dPB(crossSectionalArea,
