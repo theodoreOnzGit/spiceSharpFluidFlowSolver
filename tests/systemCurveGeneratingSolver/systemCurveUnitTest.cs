@@ -24,6 +24,149 @@ public class systemCurveGeneratingSolver : testOutputHelper
 	public void sandbox_isothermalPipeSystemCurveSolver(){
 	}
 
+	// This following test tests the spline method with logarithmically
+	// spaced points
+	[Theory]
+	[InlineData(1.5)]
+	[InlineData(0.5)]
+	[InlineData(0.05)]
+	[InlineData(0.005)]
+	[InlineData(0.0005)]
+	[InlineData(0.00005)]
+	[InlineData(0.000005)]
+	[InlineData(0.0000005)]
+	public void whenLogCubicSplineInterpolationExpectCorrectMassFlow_upToRe1e12(double 
+			pressureDropValueJoulePerKg){
+
+
+		IList<double> ReValues = new List<double>();
+		IList<double> BeValues = new List<double>();
+
+		// i'll be using these functions repeatedly
+		double getBejanFromKinematicPressureDrop(SpecificEnergy 
+				kinematicPressureDrop, IsothermalPipe 
+				pipe){
+			// Be_D = kinPressureDrop * D^2/nu^2
+			// D = hydraulicDiameter
+			// nu = kinematicViscosity
+			double Be_D;
+
+			double nuSqared = Math.Pow(pipe.Parameters.fluidKinViscosity.As( 
+						KinematicViscosityUnit.SquareMeterPerSecond)
+					,2.0);
+
+			double Dsquared = Math.Pow(pipe.Parameters.hydraulicDiameter.As(
+						LengthUnit.Meter)
+					,2.0);
+
+
+			Be_D = kinematicPressureDrop.As(SpecificEnergyUnit.
+					JoulePerKilogram) * Dsquared / nuSqared;
+
+			return Be_D;
+
+		}
+
+		MassFlow massFlowrateFromRe(double Re,
+				IsothermalPipe pipe){
+
+			// Re = massflow/
+			MassFlow flowrate =
+				pipe.Parameters.crossSectionalArea()/
+				pipe.Parameters.hydraulicDiameter*
+				pipe.Parameters.fluidViscosity*
+				Re;
+
+			return flowrate.ToUnit(MassFlowUnit.
+					KilogramPerSecond);
+
+		}
+
+		// let's start with a Re spacing value of 100
+		for (int i = 0; i < 500; i++)
+		{
+			double ReLogSpacing = 0.02;
+			double ReValue = Math.Pow(10,ReLogSpacing * i);
+			ReValues.Add(ReValue);
+
+			// now i create a new isothermalPipe
+			IsothermalPipe testPipe = new IsothermalPipe(
+					"isothermalPipe1","out","0");
+			// then i obtain pressureDropValues
+
+
+			MassFlow flowrate = massFlowrateFromRe(ReValue,
+					testPipe);
+			
+			// once i have the massflowrate, i can then obtain pressureDrops
+
+			SpecificEnergy kinematicPressureDrop =
+				testPipe.getKinematicPressureDrop(flowrate).ToUnit(
+						SpecificEnergyUnit.JoulePerKilogram);
+
+
+
+			// with that i can now get a Bejan Number
+
+
+			// from this Bejan number let's put this into the BeValues list
+			//
+			double bejanNumber;
+			bejanNumber = getBejanFromKinematicPressureDrop(kinematicPressureDrop,
+					testPipe);
+			BeValues.Add(bejanNumber);
+		}
+		// end of for loop
+
+		// now that we finished our data generation,
+		// we can then start interpolation
+		IInterpolation _linear;
+		_linear = Interpolate.CubicSpline(BeValues,ReValues);
+
+
+		// with this we can make a function to guess massFlowrate 
+		// using Pressure Drop
+		//
+		SpecificEnergy testKinematicPressureDrop = 
+			new SpecificEnergy(pressureDropValueJoulePerKg, 
+					SpecificEnergyUnit.JoulePerKilogram);
+		// i can use this testKinematicPressureDrop to test the value of 
+		// mass flowrate using the testPipe
+
+
+		IsothermalPipe testPipe2 = new IsothermalPipe(
+				"isothermalPipe2","out","0");
+
+		MassFlow _referenceMassFlow = testPipe2.getMassFlowRate(
+				testKinematicPressureDrop);
+
+		double Be = getBejanFromKinematicPressureDrop(testKinematicPressureDrop,
+				testPipe2);
+		double Re = _linear.Interpolate(Be);
+
+		// now i've got my Reynold's number, i can get my mass flowrate
+
+
+
+		// Act
+		MassFlow _resultInterpolatedMassFlow =
+			massFlowrateFromRe(Re, testPipe2);
+
+		
+
+		// Assert 
+		// I want to check how equal these two results are
+
+		if(Re > 1e12){
+			throw new Exception("Re is out of interpolation range!");
+		}
+
+		Assert.Equal(_referenceMassFlow.As(MassFlowUnit.KilogramPerSecond),
+				_resultInterpolatedMassFlow.As(MassFlowUnit.KilogramPerSecond),
+				2);
+
+	}
+
 	[Theory]
 	[InlineData(0.0005)]
 	[InlineData(0.00005)]

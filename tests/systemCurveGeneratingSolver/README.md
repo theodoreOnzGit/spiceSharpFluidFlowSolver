@@ -403,10 +403,45 @@ So an upper interpolation limit of maybe 1000-2000 points will be used.
 And better to have an IDisposable interface to make sure that things get disposed
 of to clear memory. 
 
+If we are stuck at 1000 points,
 
+then linear interpolation won't necessarily do for high Re.
 
+For example, for Re at 1e12, you need 1e10 interpolation points. Not ideal.
 
+Instead we can note that towards highly turbulent region, the resistance
+is like 
 
+$$Be = K * Re^2$$
+
+Because at that point, the friction factor is kind of constant. If a quadratic
+correlation is used, we can pretty much use a polynomial to interpolate this.
+
+In other words, use spline interpolation (piecewise polyonomial), 
+but have the points logarithmically spaced. Perhaps about 30-50 points for each
+order of magnitude. This is because in the transition region we want to pay
+attention to the curves and all.
+
+Given 12 orders of magnitude from 1e0 to 1e12, we would need about 600 points
+in total.
+
+The first point of course being (0,0).
+
+However, we can perhaps take log10 of the number, and split evenly.
+So log10(1e12) = 12, and split evenly we have about 12/600 = 0.02.
+
+so the next point is
+
+$$Re = 10^(0.02) $$
+Then we sample Be there.
+
+The following point is
+
+$$Re = 10^(0.04)$$
+
+The generalised nth point then is:
+
+$$Re = 10^(0.02n)$$
 
 
 
