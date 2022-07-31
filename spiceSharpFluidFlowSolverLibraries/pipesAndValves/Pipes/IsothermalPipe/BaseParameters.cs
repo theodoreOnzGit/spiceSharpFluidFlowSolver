@@ -134,6 +134,54 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			return fluidDesnity;
 		}
 
+		// constructors
+		//
+
+		public BaseParameters(){
+			// this constructor is here to construct interpolation objects
+			this.constructInterpolateReFromBe();
+		}
+
+
+		IInterpolation _interpolateReFromBe;
+
+		public void constructInterpolateReFromBe(){
+			// first let me get a set of about 1000 values
+			//
+
+			IList<double> ReValues = new List<double>();
+			IList<double> BeValues = new List<double>();
+			for (int i = 0; i < 1000; i++)
+			{
+				// first i decide on a number of values to give
+				double ReSpacing = 100.0;
+				double ReValue = ReSpacing * i;
+				ReValues.Add(ReValue);
+
+				// then i decide that okay, let me get my Bejan numbers
+				// from Re
+				// Be_D = 0.5 * (f_darcy * L/D + K) Re^2
+				// here, we don't exactly consider K just yet
+				// so we just use
+				//
+				// Be_D = 0.5* (f_darcy* L/D) Re^2,
+				// what we need here though is L/D and roughness ratio
+				// besides Re
+				double bejanNumber;
+				double darcyFrictionFactorReSq =
+					this.constantRoughnessFanningReSq(ReValue)
+					*4.0;
+				bejanNumber = 0.5* darcyFrictionFactorReSq *
+					this.lengthToDiameter();
+				BeValues.Add(bejanNumber);
+			}
+
+			this._interpolateReFromBe = Interpolate.Linear(
+					BeValues,ReValues);
+
+		}
+
+		//
 		// i have changed this to a function returning new instances
 		// of StabilisedChurchillJacobian in order to avoid race
 		// conditions
@@ -370,6 +418,62 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 			if (kinematicPressureDrop.As(SpecificEnergyUnit.SI) == 0.0){
 				return new MassFlow(0.0, MassFlowUnit.KilogramPerSecond);
+			}
+			// now if the Bejan number is low enough, we can just use
+			// interpolation done from the constructor objects
+			// let's get Bejan number first
+
+
+			double getBejanFromKinematicPressureDrop(SpecificEnergy 
+					kinematicPressureDrop){
+				// Be_D = kinPressureDrop * D^2/nu^2
+				// D = hydraulicDiameter
+				// nu = kinematicViscosity
+				double Be_D;
+
+				double nuSqared = Math.Pow(this.fluidKinViscosity.As( 
+							KinematicViscosityUnit.SquareMeterPerSecond)
+						,2.0);
+
+				double Dsquared = Math.Pow(this.hydraulicDiameter.As(
+							LengthUnit.Meter)
+						,2.0);
+
+
+				Be_D = kinematicPressureDrop.As(SpecificEnergyUnit.
+						JoulePerKilogram) * Dsquared / nuSqared;
+
+				return Be_D;
+
+			}
+
+			double Be_D;
+			Be_D = getBejanFromKinematicPressureDrop(kinematicPressureDrop);
+
+			if(Be_D < 100000){
+				// if Be_D is sufficiently small, within linear range,
+				// we can interpolate it rather than go about iterating our
+				// way to an answer
+				double Re;
+				Re = this._interpolateReFromBe.Interpolate(Be_D);
+
+
+				MassFlow massFlowrateFromRe(double Re){
+
+					// Re = massflow/
+					MassFlow flowrate =
+						this.crossSectionalArea()/
+						this.hydraulicDiameter*
+						this.fluidViscosity*
+						Re;
+
+					return flowrate.ToUnit(MassFlowUnit.
+							KilogramPerSecond);
+
+				}
+
+				return massFlowrateFromRe(Re);
+				
 			}
 
 			this.kinematicPressureDropValJoulePerKg =

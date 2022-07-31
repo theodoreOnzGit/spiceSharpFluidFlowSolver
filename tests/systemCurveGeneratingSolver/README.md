@@ -377,6 +377,34 @@ interpolation would be more fitting.
 But let's start simple and see if it suffices. Just apply a linear interpolation
 and sample maybe at intervals of Re=100.
 
+#### interpolation strategies
+
+The most straightforward interpolation strategy is linear interpolation.
+
+This works great for any region provided one has enough datapoints. 
+
+Nevertheless, that's also where things can become challenging, because in
+nonlinear regions, we may need many many many points to interpolate properly.
+
+I tried out linear interpolation and it seemed to work well.
+
+I suppose this linear interpolation class should be abstracted to its own
+class since it will be used a lot regardless of component type.
+
+Also how many data points do we want to have? 1000? 10000? I'll cap it at
+1000 for now. Because for CFD, 1 million points usually needs about 1-3GB
+of RAM to solve. And i guess for this, 1000 points would need 1-3MB.
+
+Multiply that by 100 components, we may need around 100-300 MB of RAM. If
+we have 10,000 points, then 1-3GB of RAM may be needed. Depending on the system,
+it may freeze up the computer. 
+
+So an upper interpolation limit of maybe 1000-2000 points will be used.
+And better to have an IDisposable interface to make sure that things get disposed
+of to clear memory. 
+
+
+
 
 
 
