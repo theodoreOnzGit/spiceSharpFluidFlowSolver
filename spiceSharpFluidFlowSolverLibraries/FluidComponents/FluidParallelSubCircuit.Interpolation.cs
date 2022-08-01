@@ -116,11 +116,58 @@ namespace SpiceSharp.Components
 			// next we prepare a list of lengths
 			List<Length> branchLengthList = new List<Length>();
 
-			return new Length(0.0, LengthUnit.Meter);
+			// i also prepare the number of branches within this 
+			// fluidEntityCollection
+			//
+			int numberOfBranches = 0;
+
+			foreach (var keyValuePair in _fluidEntityCollection._fluidEntities)
+			{
+				// the fluidEntities contain key value pairs of fluid entities
+				// and strings. I extract the fluid entity first
+				IFluidEntity _fluidEntity = 
+					keyValuePair.Value;
+
+				// i take the length object
+				//
+
+				Length componentLength = 
+					_fluidEntity.getComponentLength();
+
+				// i add it to the list
+
+				branchLengthList.Add(componentLength);
+
+				// last step is to increase number of branches by 1
+
+				numberOfBranches += 1;
+			}
+
+			if (numberOfBranches < 1)
+			{
+
+				string errorMsg = "you didn't add any branches to \n";
+				errorMsg += "the FluidParallelSubCircuit \n";
+				throw new InvalidOperationException(errorMsg);
+			}
+
+			Length _totalBranchLengths = new Length(0.0, LengthUnit.Meter);
+
+			foreach (var _branchLength in branchLengthList)
+			{
+				_totalBranchLengths += _branchLength;
+			}
+
+			
+			Length _averageBranchLength = _totalBranchLengths / 
+				numberOfBranches;
+
+			return _averageBranchLength;
 		}
 
 		public override Length getHydraulicDiameter(){
 			return new Length(0.0, LengthUnit.Meter);
 		}
+
     }
 }
