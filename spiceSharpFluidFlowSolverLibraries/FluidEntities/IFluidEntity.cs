@@ -18,5 +18,9 @@ namespace SpiceSharp.Entities
 		MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop);
 
 		MassFlow getMassFlowRate(Pressure dynamicPressureDrop);
+
+		Length getComponentLength();
+
+		Length getHydraulicDiameter();
     }
 }

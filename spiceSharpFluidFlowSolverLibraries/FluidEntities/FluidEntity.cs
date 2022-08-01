@@ -28,6 +28,10 @@ namespace SpiceSharp.Entities
 		public abstract MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop);
 
 		public abstract MassFlow getMassFlowRate(Pressure dynamicPressureDrop);
+
+		public abstract Length getComponentLength();
+
+		public abstract Length getHydraulicDiameter();
     }
 
     /// <summary>
@@ -55,5 +59,9 @@ namespace SpiceSharp.Entities
 		public abstract MassFlow getMassFlowRate(SpecificEnergy kinematicPressureDrop);
 
 		public abstract MassFlow getMassFlowRate(Pressure dynamicPressureDrop);
+
+		public abstract Length getComponentLength();
+
+		public abstract Length getHydraulicDiameter();
     }
 }

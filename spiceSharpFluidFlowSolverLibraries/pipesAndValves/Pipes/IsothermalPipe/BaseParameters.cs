@@ -185,7 +185,12 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 			IList<double> ReValues = new List<double>();
 			IList<double> BeValues = new List<double>();
-			for (int i = 0; i < 1000; i++)
+			// at Re = 0, Be also = 0
+			// this is the first point
+
+			ReValues.Add(0.0);
+			BeValues.Add(0.0);
+			for (int i = 0; i < 500; i++)
 			{
 				// first i decide on a number of values to give
 				double ReLogSpacing = 0.02;

@@ -471,6 +471,101 @@ Both entities here, seem to give the correct values. Now I want to do the same
 for each parallel entity so that it doesn't require the same level of 
 iteration.
 
+Now i'm only doing this for kinematic pressure drop. Not dynamic pressure dorp
+yet.
+
+Probably do that part later.
+
+#### interpolation for parallel and series subcircuits
+
+Now while that sped up time, i'll probably want to do the same for series and
+parallel circuits. Trouble is that for parallel circuits, there are multiple
+entrances and multiple exits.
+
+How then do i use the characteristic length scale to describe this system?
+
+Note that for fLDK and pipe components, the equation is:
+
+$$2 Be_D = (f_{darcy} \frac{L}{D} +K ) Re^2$$
+$$2 Be_D = (f_{fanning} \frac{4L}{D} +K ) Re^2$$
+
+Both of these are equivalent.
+
+It is only that $Be_D$ and Re use a hydraulic diameter type of length scale
+to scale the calculations. And once we move on to generic components, 
+the friction factor and L/D ratio becomes harder to define.
+
+However, i will then make assumptions here: 
+1. the relationship between Be and Re doesn't change with Re or Be,
+2. For thermal systems, relationship between Be and Re don't 
+change with temperature
+
+With this in mind, i can simply set D as the sum of all hydraulic diameters
+for pipes in the entrance region. While the cross sectional area would be the
+sum of all cross sectional areas of the pipes in the entrance region.
+
+
+Bearing in mind that the typical transtion region is from Re 2300 to 4000 for
+typical pipes and after that a quadratic relation exists between pressure
+drop and velocity, we can get a feel of how the pipe reynold's number translates
+to a parallel circuit reynold's number.
+
+And of course the mass flowrate is the total massflowrate entering the parallel
+circuit.
+
+For a typical pipe
+$$Re = \frac{flowrate}{A_{XS}} \frac{D_H}{\mu}$$
+
+For a two identical pipes in a parallel circuit, using the above definitions,
+
+$$Re = \frac{2 flowrate}{2 A_{XS}} \frac{2 D_H}{\mu}$$
+$$Re = \frac{ flowrate}{ A_{XS}} \frac{2 D_H}{\mu}$$
+
+Now for this case, the reynold's numbers for the parallel circuit would
+be twice as high as the Reynold's number for the single pipe. Thus the
+transition region would be from 4600 to 8000. This means either a new 
+interpolation scheme should be used, or to keep the transition region
+in a similar Re range, then we can define the hydraulic diameter as
+the average hydraulic diameter of both pipes.
+
+$$Re = \frac{ flowrate}{ A_{XS}} \frac{D_H}{\mu}$$
+
+Doing so, we have a better change that similar pipes in parallel would
+yield a similar parallel circuit Reynold's number to a pipe Reynold's 
+number.
+
+Now suppose then we have two different pipes, one ten times the diameter of
+the other.
+
+The average hydraulic diameter is then 0.55D. Where D is the hydraulic
+diameter of the larger pipe.
+
+The cross sectional area is 1.01 $A_{XS}$ where $A_{XS}$ is the area of the
+larger pipe. We can now see most of the flow goes through the pipe of higher
+hydraulic diameter. This is by virtue of the larger pipe having so little flow
+resistance. And i assume the pipe are of equal length.
+
+Given that the smaller pipe adds a negligible amount of flowrate to the setup,
+we can then see
+
+$$Re \approx \frac{ flowrate}{ A_{XS}} \frac{0.55 D_H}{\mu}$$
+
+Now in this case we see that the transition region might take place in 
+Re about 1200-1300 to about 2200. This is just estimation.
+
+Now is this a concern? If we use logarithmically spaced interpolation points,
+we know that lower Reynold's numbers tend to contain more points of interpolation.
+
+This is actually okay with the logarithimcally spaced sampling points.
+
+Now provided we don't have too many arrays, eg. 10 pipes in parallel. This should
+be okay. But even then, if the transition region is at Re=120, we note that the
+sampling in that region is also at more or less the same density due to 
+logarithmically spaced points.
+
+So in fact, this logarithmic method of sampling Re for Be is quite appropriate.
+And then we can have spline interpolation between the points.
+
 
 
 

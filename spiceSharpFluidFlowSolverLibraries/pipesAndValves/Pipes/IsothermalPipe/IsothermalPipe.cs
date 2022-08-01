@@ -71,5 +71,12 @@ namespace SpiceSharp.Components
 			return Parameters.getMassFlowRate(dynamicPressureDrop);
 		}
 
+		public Length getComponentLength(){
+			return Parameters.pipeLength;
+		}
+
+		public Length getHydraulicDiameter(){
+			return Parameters.hydraulicDiameter;
+		}
     }
 }
