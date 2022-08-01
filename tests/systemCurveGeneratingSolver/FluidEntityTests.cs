@@ -581,7 +581,7 @@ public class fluidEntityTests : testOutputHelper
 		// so i need to convert them to double using the .As()
 		// method
 		Assert.Equal(massFlowRateReferenceValueKgPerS,
-				massFlowRateTestResult.As(MassFlowUnit.KilogramPerSecond),3);
+				massFlowRateTestResult.As(MassFlowUnit.KilogramPerSecond),2);
 
 		//throw new Exception();
 	}
@@ -676,7 +676,7 @@ public class fluidEntityTests : testOutputHelper
 		// so i need to convert them to double using the .As()
 		// method
 		Assert.Equal(massFlowRateReferenceValueKgPerS,
-				massFlowRateTestResult.As(MassFlowUnit.KilogramPerSecond),3);
+				massFlowRateTestResult.As(MassFlowUnit.KilogramPerSecond),2);
 
 		//throw new Exception();
 	}

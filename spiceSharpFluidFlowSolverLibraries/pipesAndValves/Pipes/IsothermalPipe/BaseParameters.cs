@@ -154,8 +154,8 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			for (int i = 0; i < 1000; i++)
 			{
 				// first i decide on a number of values to give
-				double ReSpacing = 100.0;
-				double ReValue = ReSpacing * i;
+				double ReLogSpacing = 0.02;
+				double ReValue = Math.Pow(10,ReLogSpacing * i);
 				ReValues.Add(ReValue);
 
 				// then i decide that okay, let me get my Bejan numbers
@@ -176,7 +176,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 				BeValues.Add(bejanNumber);
 			}
 
-			this._interpolateReFromBe = Interpolate.Linear(
+			this._interpolateReFromBe = Interpolate.CubicSpline(
 					BeValues,ReValues);
 
 		}
@@ -450,7 +450,7 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			double Be_D;
 			Be_D = getBejanFromKinematicPressureDrop(kinematicPressureDrop);
 
-			if(Be_D < 100000){
+			if(Be_D < 1e12){
 				// if Be_D is sufficiently small, within linear range,
 				// we can interpolate it rather than go about iterating our
 				// way to an answer

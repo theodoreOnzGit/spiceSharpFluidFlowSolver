@@ -443,6 +443,33 @@ The generalised nth point then is:
 
 $$Re = 10^(0.02n)$$
 
+This linear interpolation method has already borne fruit:
+
+```zsh
+
+  Passed tests.fluidEntityTests.When_FluidSeriesCircuitwithParallelSubCkt_getMassFlowrate_
+expectCorrectFlow(pressureDrop: 1.45) [16 s]
+
+  Failed tests.fluidEntityTests.When_FluidSeriesCircuitwithParallelSubCkt_getMassFlowrate_
+expectCorrectFlow(pressureDrop: 0.45) [56 s]
+  Error Message:
+   Assert.Equal() Failure
+Expected: 6063.245 (rounded from 6063.2452983508965)
+Actual:   6063.246 (rounded from 6063.24624547323)
+```
+This is quite a significant shave off of time, from 22s before to 16s now,
+and for the 0.45 pressureDrop tests, we have a shave off from 59s to 53s.
+
+Obviously still some improvement, but shaving any amount of time off is a big boon
+in itself.
+
+Now this may not be as precise as the methods before. However, the interpolation
+is so close and can cover the entire Re range without going kaput. I think
+it's a reasonable tradeoff.
+
+Both entities here, seem to give the correct values. Now I want to do the same
+for each parallel entity so that it doesn't require the same level of 
+iteration.
 
 
 
