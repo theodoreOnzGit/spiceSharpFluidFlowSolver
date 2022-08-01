@@ -89,6 +89,8 @@ namespace SpiceSharp.Components
 				// any variation due to K, what i'm watching out for
 				// more importantly is modelling the transition region
 				// or interpolating it with sufficient points
+				// to get L/D ratio, we need the average branch lengths
+				// and average hydraulic diameters
 
 				double bejanNumber = 1.0;
 
@@ -166,7 +168,64 @@ namespace SpiceSharp.Components
 		}
 
 		public override Length getHydraulicDiameter(){
-			return new Length(0.0, LengthUnit.Meter);
+			// this method returns the average hydraulic diameter of the branches
+
+			// first is that we get the definition object
+			IFluidEntityCollection _fluidEntityCollection = 
+				this.getFluidEntityCollection(this.Parameters.Definition.
+						Entities);
+
+			// next we prepare a list of hydraulic Diameters
+			List<Length> hydraulicDiameterList = new List<Length>();
+
+			// i also prepare the number of branches within this 
+			// fluidEntityCollection
+			//
+			int numberOfBranches = 0;
+
+			foreach (var keyValuePair in _fluidEntityCollection._fluidEntities)
+			{
+				// the fluidEntities contain key value pairs of fluid entities
+				// and strings. I extract the fluid entity first
+				IFluidEntity _fluidEntity = 
+					keyValuePair.Value;
+
+				// i take the length object
+				//
+
+				Length hydraulicDiameter = 
+					_fluidEntity.getHydraulicDiameter();
+
+				// i add it to the list
+
+				hydraulicDiameterList.Add(hydraulicDiameter);
+
+				// last step is to increase number of branches by 1
+
+				numberOfBranches += 1;
+			}
+
+			if (numberOfBranches < 1)
+			{
+
+				string errorMsg = "you didn't add any branches to \n";
+				errorMsg += "the FluidParallelSubCircuit \n";
+				throw new InvalidOperationException(errorMsg);
+			}
+
+			Length _totalBranchHydraulicDiameters = 
+				new Length(0.0, LengthUnit.Meter);
+
+			foreach (var _branchHydraulicDiameter in hydraulicDiameterList)
+			{
+				_totalBranchHydraulicDiameters += _branchHydraulicDiameter;
+			}
+
+			
+			Length _averageHydraulicDiameter = _totalBranchHydraulicDiameters / 
+				numberOfBranches;
+
+			return _averageHydraulicDiameter;
 		}
 
     }
