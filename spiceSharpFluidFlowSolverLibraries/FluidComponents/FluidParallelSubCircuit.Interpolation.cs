@@ -87,18 +87,49 @@ namespace SpiceSharp.Components
 				//
 				// I assume the cubic spline would take care of 
 				// any variation due to K, what i'm watching out for
+				// so i assume K = 0
+				//
 				// more importantly is modelling the transition region
 				// or interpolating it with sufficient points
 				// to get L/D ratio, we need the average branch lengths
 				// and average hydraulic diameters
 
 				double bejanNumber = 1.0;
+				double lengthToDiameter = this.getComponentLength().
+					As(LengthUnit.Meter) / 
+					this.getHydraulicDiameter().
+					As(LengthUnit.Meter);
 
+				// my roughness ratio here is guessed based on 
+				// assuming cast iron pipes, just a guestimation
+				// so not so important
+
+				Length absoluteRoughness = new Length(
+						0.15, LengthUnit.Millimeter);
+
+
+				double roughnessRatio = absoluteRoughness.As(LengthUnit.Meter)/ 
+					this.getHydraulicDiameter().As(LengthUnit.Meter);
+
+
+				double darcyFrictionFactor = _frictionFactorObj.
+					darcy(ReGuessValue, roughnessRatio);
+
+				// i shall now shove these values in to obtain my Bejan number
+				// Be_d = 0.5*Re(guess)^2 *f * L/D
+				double BejanNumber = 0.5 * 
+					Math.Pow(ReGuessValue,2.0) *
+					lengthToDiameter *
+					darcyFrictionFactor;
+				// once we have this we can add the bejan number
 				BeValues.Add(bejanNumber);
+
+				// after this we can get a mass flowrate from this bejan
+				// number
 			}
 
 			this._interpolateBeFromRe = Interpolate.CubicSpline(
-					BeValues,ReValues);
+					ReValues,BeValues);
 
 		}
 
