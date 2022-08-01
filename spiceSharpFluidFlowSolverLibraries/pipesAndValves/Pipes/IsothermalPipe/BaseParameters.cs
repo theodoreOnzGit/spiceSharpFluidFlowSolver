@@ -14,11 +14,36 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		// now we have the dimensioned units for pipe
 		// this is assumed to be circular
 
-		public Length hydraulicDiameter { get; set; } = 
-			new Length(1.0,LengthUnit.Meter);
+		
+		// now i want to make it such that the interpolation is redone
+		// anytime the L/D changes, K changes 
+		// or surface roughness changes
+		private Length _hydraulicDiameter = new Length(1.0,LengthUnit.Meter);
 
-		public Length pipeLength { get; set; } = 
-			new Length(10.0,LengthUnit.Meter);
+		public Length hydraulicDiameter { 
+		   get {
+			   return this._hydraulicDiameter;
+		   }	   
+		   set{ 
+			  this._hydraulicDiameter = value;
+			 this.constructInterpolateReFromBe(); 
+		   }
+		}  
+
+		// now i want to make it such that the interpolation is redone
+		// anytime the L/D changes, K changes 
+		// or surface roughness changes
+
+		private Length _pipeLength = new Length(10.0,LengthUnit.Meter);
+		public Length pipeLength { 
+			get {
+				return this._pipeLength;
+			}
+			set {
+				this._pipeLength = value; 
+				this.constructInterpolateReFromBe();
+			}
+		} 
 
 		// next we also have angles as well
 		// this is mainly to calculate hydrostatic pressure increase or
@@ -76,8 +101,17 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		
 
 		// carbon steel surface roughness used as default
-		public Length absoluteRoughness { get; set; } =
+		public Length _absoluteRoughness = 
 			new Length (0.15, LengthUnit.Millimeter);
+		public Length absoluteRoughness { 
+			get{
+				return this._absoluteRoughness;
+			}
+			set{
+				this._absoluteRoughness = value;
+				this.constructInterpolateReFromBe();
+			}
+		} 
 
 		// derived quantites and ratios
 
