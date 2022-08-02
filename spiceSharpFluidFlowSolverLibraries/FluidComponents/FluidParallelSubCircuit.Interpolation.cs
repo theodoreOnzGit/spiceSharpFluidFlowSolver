@@ -326,8 +326,90 @@ namespace SpiceSharp.Components
 		}
 
 		public override Density getFluidDensity(){
-			throw new NotImplementedException();
+			// to get fluid density, it is not simply an ensemble
+			// average but the area weighted square root average
+			//
+			// let's first get the total area on standby
+
+			Area _totalArea = this.getXSArea().ToUnit(AreaUnit.SquareMeter);
+
+
+			// then let's get the fluidEntityCollection
+			IFluidEntityCollection _fluidEntityCollection = 
+				this.getFluidEntityCollection(this.Parameters.Definition.
+						Entities);
+
+			// then i have a areaWeightedSquareRootDensityList
+			List<double> areaWeightedSquareRootDensityList = 
+				new List<double>();
+
+			// let's start getting the areaWeightedSquareRootDensityList
+			// by checking out each entity
+			foreach (var keyValuePair in _fluidEntityCollection._fluidEntities)
+			{
+				// the fluidEntities contain key value pairs of fluid entities
+				// and strings. I extract the fluid entity first
+				IFluidEntity _fluidEntity = 
+					keyValuePair.Value;
+
+				// i take the area object
+				Area _AreaForOneEntity =
+					_fluidEntity.getXSArea().ToUnit(
+							AreaUnit.SquareMeter);
+				
+				// i also take the density object
+
+				Density _DensityforOneEntity = 
+					_fluidEntity.getFluidDensity().ToUnit(
+							DensityUnit.KilogramPerCubicMeter);
+
+				// so here im taking the density unit,
+				// converting it into a double, and sqrt
+				// times area of the entity
+				// divide by total area
+				double _areaWeightedSqrtDensity = 
+					Math.Pow(_DensityforOneEntity.
+							As(DensityUnit.KilogramPerCubicMeter),0.5)*
+					_AreaForOneEntity.As(AreaUnit.SquareMeter)/ 
+					_totalArea.As(AreaUnit.SquareMeter);
+
+
+				areaWeightedSquareRootDensityList.Add(
+						_areaWeightedSqrtDensity);
+			}
+			// after i have them added to a list, i need to
+			// find the total,
+			// so what i do is i just convert them all to double
+			// and start adding them up
+			//
+			// the unit will be rather strange
+			//
+			// kg^0.5 / m^1.5
+			// so i will call it, kg half per meter threehalves
+			//
+			// because variables don't like point or whatever
+
+
+			double _areaWeightedSqrtDensityTotalKg_half_perMeterThreeHalves =
+				0.0;
+
+			foreach (double _areaWeightedSqrtDensity 
+					in areaWeightedSquareRootDensityList)
+			{
+				_areaWeightedSqrtDensityTotalKg_half_perMeterThreeHalves +=
+					_areaWeightedSqrtDensity;
+			}
+
+			// now that i've totalled summed the square root,
+			// i can just create a new density unit to the environment
+
+			double densityValue = 
+				Math.Pow(_areaWeightedSqrtDensityTotalKg_half_perMeterThreeHalves,
+						2.0);
+			
+			return new Density(densityValue, DensityUnit.KilogramPerCubicMeter);
 		}
+
 
 		public override KinematicViscosity getFluidKinematicViscosity(){
 			// for parallel circuit setup, kinematic viscosity is 
