@@ -32,6 +32,12 @@ namespace SpiceSharp.Entities
 		public abstract Length getComponentLength();
 
 		public abstract Length getHydraulicDiameter();
+
+		public abstract Area getXSArea();
+
+		public abstract Density getFluidDensity();
+
+		public abstract KinematicViscosity getFluidKinematicViscosity();
     }
 
     /// <summary>
@@ -63,5 +69,11 @@ namespace SpiceSharp.Entities
 		public abstract Length getComponentLength();
 
 		public abstract Length getHydraulicDiameter();
+
+		public abstract Area getXSArea();
+
+		public abstract Density getFluidDensity();
+
+		public abstract KinematicViscosity getFluidKinematicViscosity();
     }
 }

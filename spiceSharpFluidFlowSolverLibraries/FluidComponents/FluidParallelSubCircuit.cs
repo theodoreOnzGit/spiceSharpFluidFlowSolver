@@ -219,11 +219,14 @@ namespace SpiceSharp.Components
 				_totalMassFlowrate += _massFlowRate;
 			}
 
-			// then i want to check whether the fluid 
+			// then i want to check whether the fluid  (i can't really rmb
+			// what i was doing here)
 
 
 			return _totalMassFlowrate;
 		}
+		
+
 
 		public IFluidEntityCollection getFluidEntityCollection(
 				IEntityCollection _entityCollection){

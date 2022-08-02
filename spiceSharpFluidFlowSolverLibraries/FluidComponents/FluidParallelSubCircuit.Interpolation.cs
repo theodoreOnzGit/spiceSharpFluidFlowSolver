@@ -279,5 +279,107 @@ namespace SpiceSharp.Components
 			return _averageHydraulicDiameter;
 		}
 
+		public override Area getXSArea(){
+			// for cross-sectional area of the parallelSubcircuit
+			// i will need to return a sum of all areas
+			IFluidEntityCollection _fluidEntityCollection = 
+				this.getFluidEntityCollection(this.Parameters.Definition.
+						Entities);
+			// i'm only reading the Entities, not writing to it
+			// so should be thread safe unless i set it.
+			// Now i want to check  all the fluidEntities within the
+			// fluidEntityCollection
+
+			List<Area> areaList = new List<Area>();
+
+			foreach (var keyValuePair in _fluidEntityCollection._fluidEntities)
+			{
+				// the fluidEntities contain key value pairs of fluid entities
+				// and strings. I extract the fluid entity first
+				IFluidEntity _fluidEntity = 
+					keyValuePair.Value;
+
+				// i take the area object
+				Area _AreaForOneEntity =
+					_fluidEntity.getXSArea();
+
+				// convert it to m^2 just to be sure
+
+				_AreaForOneEntity = _AreaForOneEntity.ToUnit(
+						AreaUnit.SquareMeter);
+
+				// lastly i add it to the areaListk
+				areaList.Add(_AreaForOneEntity);
+
+			}
+
+			// once i'm done adding the areaList i can sum up all the values
+			Area _totalArea = new Area(0.0, 
+					AreaUnit.SquareMeter);
+			foreach (Area _area in areaList)
+			{
+				_totalArea += _area;
+			}
+
+
+			return _totalArea;
+		}
+
+		public override Density getFluidDensity(){
+			throw new NotImplementedException();
+		}
+
+		public override KinematicViscosity getFluidKinematicViscosity(){
+			// for parallel circuit setup, kinematic viscosity is 
+			// averaged using ensemble average.
+			// first i get the fluid entity collection
+			IFluidEntityCollection _fluidEntityCollection = 
+				this.getFluidEntityCollection(this.Parameters.Definition.
+						Entities);
+			// i'm only reading the Entities, not writing to it
+			// so should be thread safe unless i set it.
+			// Now i want to check  all the fluidEntities within the
+			// fluidEntityCollection
+
+			List<KinematicViscosity> KinematicViscosityList =
+			   new List<KinematicViscosity>();
+
+			int numberOfBranches = 0;
+
+			foreach (var keyValuePair in _fluidEntityCollection._fluidEntities)
+			{
+				// the fluidEntities contain key value pairs of fluid entities
+				// and strings. I extract the fluid entity first
+				IFluidEntity _fluidEntity = 
+					keyValuePair.Value;
+
+				// i take the kinematicViscosityObject
+				KinematicViscosity _kinematicViscosityForOneEntity =
+					_fluidEntity.getFluidKinematicViscosity();
+
+				// convert it to m^2/s to  be sure
+
+				_kinematicViscosityForOneEntity = _kinematicViscosityForOneEntity.
+					ToUnit(KinematicViscosityUnit.SquareMeterPerSecond);
+
+				// lastly i add it to the areaListk
+				KinematicViscosityList.Add(_kinematicViscosityForOneEntity);
+
+				numberOfBranches += 1;
+			}
+
+			// once i'm done adding the areaList i can sum up all the values
+			KinematicViscosity _totalKinematicViscosity = 
+				new KinematicViscosity(0.0, 
+						KinematicViscosityUnit.SquareMeterPerSecond);
+			foreach (KinematicViscosity _kinematicViscosityForOneEntity 
+					in KinematicViscosityList)
+			{
+				_totalKinematicViscosity += _kinematicViscosityForOneEntity;
+			}
+
+
+			return _totalKinematicViscosity/numberOfBranches;
+		}
     }
 }

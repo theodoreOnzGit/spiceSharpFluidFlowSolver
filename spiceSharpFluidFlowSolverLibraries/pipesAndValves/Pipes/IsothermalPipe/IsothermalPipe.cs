@@ -78,5 +78,17 @@ namespace SpiceSharp.Components
 		public Length getHydraulicDiameter(){
 			return Parameters.hydraulicDiameter;
 		}
+
+		public Area getXSArea(){
+			return Parameters.crossSectionalArea();
+		}
+
+		public Density getFluidDensity(){
+			return Parameters.fluidDesnity();
+		}
+
+		public KinematicViscosity getFluidKinematicViscosity(){
+			return Parameters.fluidKinViscosity;
+		}
     }
 }

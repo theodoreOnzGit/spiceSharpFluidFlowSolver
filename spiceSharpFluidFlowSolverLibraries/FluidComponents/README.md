@@ -400,11 +400,15 @@ this assumption to find a suitable average viscosity for parallel setup.
 
 
 $$\frac{\dot{m}}{A_{xs}}  \frac{D_H}{\mu}
-= \frac{1}{2k_1} (-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})$$
+= \frac{1}{2k_1} (-k_2 + \sqrt{k_2^2 + 4(k_1)(Be_D)})$$
 
 
 $$\dot{m} = \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
-(-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})$$
+(-k_2 + \sqrt{k_2^2 + 4(k_1)(Be_D)})$$
+
+As a sanity check, we can note that when Be=0, $-k_2+ \sqrt{k_2^2} = 0$ and thus
+the mass flowrate should be zero at zero pressure drop. This is the correct
+expression.
 
 Now this is for a single pipe so to speak. For two identical pipes, we can
 express the total mass flow as:
@@ -419,11 +423,15 @@ Assuming they are at different temperature due to the different viscosities,
 we can assign $\mu_1$ and $\mu_2$ to describe the differing viscosities of each
 pipe.
 
+Note that this equation is simply a mass balance type equation across
+the parallel branches. Ie, total mass flowrate across the parallel branches
+is the sum of flow between each branch.
+
 
 $$\dot{m} = \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
-(-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})
+(-k_2 + \sqrt{k_2^2 + 4(k_1)(Be_D)})
 + \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
-(-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})
+(-k_2 + \sqrt{k_2^2 + 4(k_1)(Be_D)})
 $$
 
 in terms of units, so we can cancel the dimensionless terms out,
@@ -437,7 +445,9 @@ We already decided that for the area scaling, the sum of areas will be the
 representative cross sectional area of the parallel setup, and the 
 ensemble average hydraulic diameter will be the representative hydraulic diameter
 of the mass flowrates. Then perhaps to keep Re in the same order of magnitude,
-as individual pipe Re, i will use the ensemble 
+as individual pipe Re, i will use the ensemble average.
+
+
 
 $$ \frac{A_{xsTotal} \mu_{avg}}{D_{Havg}} \sqrt{Be_avg}
 ~ \frac{A_{xs}\mu}{D_H} \sqrt{Be_D}
@@ -456,42 +466,63 @@ It seems that, if we just use simple ensemble average for kinematic
 viscosity, that would work since most of the terms cancel out anyhow.
 
 $$ \frac{A_{xsTotal} \rho_{avg}}{1} \sqrt{\Delta p}
-~ \frac{A_{xs}\rho}{1} \sqrt{\Delta p}
-+ \frac{A_{xs}\rho}{1} \sqrt{\Delta p}
+~ \frac{A_{xs}\rho1}{1} \sqrt{\Delta p}
++ \frac{A_{xs}\rho2j}{1} \sqrt{\Delta p}
 $$
 
 Now for parallel setups, i believe the dynamic pressures across each branch
 will be the same
 
-$$ \frac{A_{xsTotal} }{\sqrt{\rho_{avg}}} \sqrt{\Delta P}
-~ \frac{A_{xs}}{\sqrt{\rho}} \sqrt{\Delta P}
-+ \frac{A_{xs}}{\sqrt{\rho}} \sqrt{\Delta P}
+$$ A_{xsTotal} \sqrt{\rho_{avg}} \sqrt{\Delta P}
+~ A_{xs}\sqrt{\rho1} \sqrt{\Delta P}
++ A_{xs}\sqrt{\rho2} \sqrt{\Delta P}
 $$
 
 For this to hold, such that the Be and Re numbers are of a similar order of 
 magnitude, we have this such equation for parallel setup:
 
-$$ \frac{A_{xsTotal} }{\sqrt{\rho_{avg}}} 
-= \frac{A_{xs1}}{\sqrt{\rho}} 
-+ \frac{A_{xs2}}{\sqrt{\rho}} 
+$$ A_{xsTotal} \sqrt{\rho_{avg}}
+= A_{xs1}\sqrt{\rho1} 
++ A_{xs2}\sqrt{\rho2} 
 $$
 
-$$ \frac{A_{xs1}+A_{xs2}}{\sqrt{\rho_{avg}}} 
-= \frac{A_{xs1}}{\sqrt{\rho}} 
-+ \frac{A_{xs2}}{\sqrt{\rho}} 
+$$  \sqrt{\rho_{avg}}
+= \frac{1}{A_{xsTotal}} (A_{xs1}\sqrt{\rho1} 
++ A_{xs2}\sqrt{\rho2} )
 $$
 
-we have just found a way of weighting our average density.
+we have just found a way of weighting our average density. At least for
+the more turbulent type regime. For laminar regimes, the square root
+kind of disappears, so that we have a density weighted by areas.
 
-$$ \frac{A_{xs1}+A_{xs2}}{\frac{A_{xs1}}{\sqrt{\rho}} 
-+ \frac{A_{xs2}}{\sqrt{\rho}}} 
-=  \sqrt{\rho_{avg}}
-$$
+Either way, we shouldn't be that far off.
 
-so the square root of the average density is the total area divided by
-the total sum of area to squareRoot of density ratios. 
+
 
 Square the result and we should get our average density.
 
 This will keep the average Re and hopefully Be as well to be in the same
 order of magnitude.
+
+With these scaling parameters, we should be able to get our pressure drops pretty
+decently well. 
+
+
+The area of the parallel setup is the sum of areas of each branch,
+the mass flowrate is the sum  of mass flowrates of each branch,
+hydraulic diameter is the ensemble average of hydraulic diameter of each branch,
+kinematic viscosity is the ensemble average of kinematic viscosity of each branch,
+finally, the density is weighted by area of each respective branch.
+
+Therefore we need a way to return the areas, and densities of each pipe branch
+or each fluid entity. So that the averaging can occur.
+
+Also kinematic viscosity too.
+
+I'll probably want to do a series of tests to confirm if the paralleSubCircuit
+is obtaining the quantities as shown above. 
+
+
+
+
+

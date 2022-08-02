@@ -22,5 +22,11 @@ namespace SpiceSharp.Entities
 		Length getComponentLength();
 
 		Length getHydraulicDiameter();
+
+		Area getXSArea();
+
+		Density getFluidDensity();
+
+		KinematicViscosity getFluidKinematicViscosity();
     }
 }
