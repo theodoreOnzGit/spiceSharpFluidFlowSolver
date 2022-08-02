@@ -34,9 +34,10 @@ namespace SpiceSharp.Components
 	IRuleSubject
     {
 
+
 		IInterpolation _interpolateBeFromRe;
 
-		public void constructInterpolateReFromBe(){
+		public void constructInterpolateBeFromRe(){
 			// first let me get a set of about 500 values
 			// ranging from Re = 0 to Re = 1e12
 
@@ -94,7 +95,6 @@ namespace SpiceSharp.Components
 				// to get L/D ratio, we need the average branch lengths
 				// and average hydraulic diameters
 
-				double bejanNumber = 1.0;
 				double lengthToDiameter = this.getComponentLength().
 					As(LengthUnit.Meter) / 
 					this.getHydraulicDiameter().
@@ -117,7 +117,7 @@ namespace SpiceSharp.Components
 
 				// i shall now shove these values in to obtain my Bejan number
 				// Be_d = 0.5*Re(guess)^2 *f * L/D
-				double BejanNumber = 0.5 * 
+				double bejanNumber = 0.5 * 
 					Math.Pow(ReGuessValue,2.0) *
 					lengthToDiameter *
 					darcyFrictionFactor;
@@ -125,7 +125,27 @@ namespace SpiceSharp.Components
 				BeValues.Add(bejanNumber);
 
 				// after this we can get a mass flowrate from this bejan
-				// number
+				// number, Now this requires dimensionalising,
+				// we need fluid kinematic viscosity or dynamic viscosity
+				// or both!
+				//
+				// For a first iteration, kinematic viscosity will do
+				// but it's likely we will need a representative value
+				// of kinematic viscosity with which to scale it
+				// ideally speaking this will be the kinematic viscosity of
+				// the component before the 
+				//
+				// Neverthless, suppose that kinematic viscosity changes
+				// throughout the pipe, how shall that be accounted for?
+				// a kinematic viscosity that doesn't take into account
+				// whatever is in the pipe may not make sense for the 
+				// scaling kinematic viscosity
+				//
+				//
+
+				double ReynoldsNumberResult;
+				ReynoldsNumberResult = 0.0;
+				ReValues.Add(ReynoldsNumberResult);
 			}
 
 			this._interpolateBeFromRe = Interpolate.CubicSpline(

@@ -240,5 +240,258 @@ Regardless, i think for a first iteration, it should do okay. There can be futur
 work done to adapt this for other systems. But for CIET, where flow is mostly
 laminar, and we have pipes, this should be fine.
 
+### estimation methods for Be
+
+upon writing the code, i know i have a simple way for finding evenly spaced
+Reynold's number points. However, i don't know a simple way for finding evenly
+spaced Bejan number points... 
+
+Bejan number is usually the dependent variable, not independent variable. So
+there aren't usually Bejan number ranges i can think off the top of my head.
+
+However, i know for pipes, there are bejan numbers corresponding to Reynold's
+numbers. And i can assume the system behaves like a pipe in terms of distribution.
+
+I will use the log spaced Reynold's numbers to guess the corresponding Bejan
+numbers, and will use the Bejan numbers as guess points to get the corresponding
+Reynold's numbers.
+
+```csharp
 
 
+for (int i = 0; i < 500; i++)
+{
+	// first i decide on a number of values to give
+	double ReLogSpacing = 0.02;
+	double ReGuessValue = Math.Pow(10,ReLogSpacing * i);
+
+	// once we have a suitable Re, we need to get a Be
+	// value,
+	// so we convert Re into mass flowrate
+	//
+	// Now unfortunately, for the first round of iteration,
+	// we cannot guess Re from Be non iteratively.
+	// We have to guess Be first, and then from that get Re.
+	//
+	// Problem is i don't know what a typical Be range should be!
+	// Nor where the transtion region should be for any typical
+	// graph.
+	//
+	// Well one method we can try is this:
+	//
+	// we have a guess Reynold's number value, which we then
+	// feed into a pipe equation like churchill
+	// from that, we can guess a Bejan number to go with
+	// And from this Bejan number, we can guess the actual
+	// Reynold's number value
+
+	IFrictionFactor _frictionFactorObj = 
+		new ChurchillFrictionFactor();
+
+	// so bejan number is:
+	// Be = 0.5 *Re^2 (f L/D  + K)
+	//
+	// Now herein lines a problem,
+	// if we were to  use this method to guess,
+	// we need a proper L/D ratio too.
+	// To keep it once more in a similar order of
+	// magnitude, i would rather have L be the average
+	// of both branch lengths
+	//
+	// I assume the cubic spline would take care of 
+	// any variation due to K, what i'm watching out for
+	// so i assume K = 0
+	//
+	// more importantly is modelling the transition region
+	// or interpolating it with sufficient points
+	// to get L/D ratio, we need the average branch lengths
+	// and average hydraulic diameters
+
+	double lengthToDiameter = this.getComponentLength().
+		As(LengthUnit.Meter) / 
+		this.getHydraulicDiameter().
+		As(LengthUnit.Meter);
+
+	// my roughness ratio here is guessed based on 
+	// assuming cast iron pipes, just a guestimation
+	// so not so important
+
+	Length absoluteRoughness = new Length(
+			0.15, LengthUnit.Millimeter);
+
+
+	double roughnessRatio = absoluteRoughness.As(LengthUnit.Meter)/ 
+		this.getHydraulicDiameter().As(LengthUnit.Meter);
+
+
+	double darcyFrictionFactor = _frictionFactorObj.
+		darcy(ReGuessValue, roughnessRatio);
+
+	// i shall now shove these values in to obtain my Bejan number
+	// Be_d = 0.5*Re(guess)^2 *f * L/D
+	double bejanNumber = 0.5 * 
+		Math.Pow(ReGuessValue,2.0) *
+		lengthToDiameter *
+		darcyFrictionFactor;
+	// once we have this we can add the bejan number
+	BeValues.Add(bejanNumber);
+
+}
+```
+
+So this is how i will gues bejan number.
+
+### Guessing Pressure Drop from Bejan number (parallel case)
+
+Now we have a bejan number, we will need to apply a pressure drop across
+this parallel array. So we will need an average kinematic viscosity so to speak
+from this array of pipes and components.
+
+If the pipes were isothermal, great, we only have one kinematic viscosity
+with which to weight our Bejan numbers.
+
+$$Be_D = \frac{\Delta p D^2}{\nu^2}$$
+
+To understand how we got here, we should visit the underlying equations
+This is for the pipe:
+
+$$Be_D = 0.5 (\frac{L}{D} f_{darcy} + K} Re^2$$
+
+$$Be_D = 0.5 (\frac{L}{D} f_{darcy} + K} Re^2$$
+
+$$ \frac{\Delta p D^2}{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K} Re^2$$
+
+$$ \frac{\Delta p D^2}{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K} 
+\frac{\dot{m}^2}{A_{xs}^2} \frac{D_H^2}{\mu^2}$$
+
+$$ \frac{\Delta p }{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K} 
+\frac{\dot{m}^2}{A_{xs}^2} \frac{1}{\mu^2}$$
+
+$$ \frac{\Delta p }{1} = 0.5 (\frac{L}{D} f_{darcy} + K} 
+\frac{\dot{m}^2}{A_{xs}^2} \frac{1}{\rho^2}$$
+
+For this case, we can see when it comes to viscosity, as long as the terms
+can cancel out like this, it doesn't matter.
+
+If the components were in series, we would simply sum up pressre drops across
+all of them. However, we cannot since they are in parallel.
+
+Instead, a single bejan number would give rise to multiple mass flowrates.
+
+Now suppose we have two fLDK type components in parallel, which follow this
+correlation:
+
+$$Be_D = k_1 Re + k_2 Re^2$$
+$$k_1 Re^2 + k_2  Re - Be_D = 0$$
+
+If we were to use the quadratic formula
+
+$$Re = \frac{1}{2k_1} (-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})$$
+
+Since we expect Re to be positive (mostly), or rather, take the same sign
+as $Be_D$, that when $Be_D$ is positive, Re is positive, and vice versa,
+we shall just assume both of them are positive.
+
+$$Re = \frac{1}{2k_1} (-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})$$
+
+Now we see in this case, Re scales as the square root of (Be_D), at least
+in terms of units, that is the case. For simplicity's sake, we shall use
+this assumption to find a suitable average viscosity for parallel setup.
+
+
+$$\frac{\dot{m}}{A_{xs}}  \frac{D_H}{\mu}
+= \frac{1}{2k_1} (-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})$$
+
+
+$$\dot{m} = \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
+(-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})$$
+
+Now this is for a single pipe so to speak. For two identical pipes, we can
+express the total mass flow as:
+
+$$\dot{m} = \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
+(-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})
++ \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
+(-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})
+$$
+
+Assuming they are at different temperature due to the different viscosities,
+we can assign $\mu_1$ and $\mu_2$ to describe the differing viscosities of each
+pipe.
+
+
+$$\dot{m} = \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
+(-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})
++ \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
+(-k_2 \pm \sqrt{k_2^2 + 4(k_1)(Be_D)})
+$$
+
+in terms of units, so we can cancel the dimensionless terms out,
+
+$$\dot{m} ~ \frac{A_{xs}\mu}{D_H} \sqrt{Be_D})
++ \frac{A_{xs}\mu}{D_H}\frac{1}{2k_1} 
+(\sqrt{Be_D})
+$$
+
+We already decided that for the area scaling, the sum of areas will be the
+representative cross sectional area of the parallel setup, and the 
+ensemble average hydraulic diameter will be the representative hydraulic diameter
+of the mass flowrates. Then perhaps to keep Re in the same order of magnitude,
+as individual pipe Re, i will use the ensemble 
+
+$$ \frac{A_{xsTotal} \mu_{avg}}{D_{Havg}} \sqrt{Be_avg}
+~ \frac{A_{xs}\mu}{D_H} \sqrt{Be_D}
++ \frac{A_{xs}\mu}{D_H} \sqrt{Be_D}
+$$
+
+Note here that as we bring out the kinematic viscosity terms $Be_D$
+
+
+$$ \frac{A_{xsTotal} \mu_{avg}}{D_{Havg}} \sqrt{Be_avg}
+~ \frac{A_{xs}\rho}{1} \sqrt{\Delta p}
++ \frac{A_{xs}\rho}{1} \sqrt{\Delta p}
+$$
+
+It seems that, if we just use simple ensemble average for kinematic
+viscosity, that would work since most of the terms cancel out anyhow.
+
+$$ \frac{A_{xsTotal} \rho_{avg}}{1} \sqrt{\Delta p}
+~ \frac{A_{xs}\rho}{1} \sqrt{\Delta p}
++ \frac{A_{xs}\rho}{1} \sqrt{\Delta p}
+$$
+
+Now for parallel setups, i believe the dynamic pressures across each branch
+will be the same
+
+$$ \frac{A_{xsTotal} }{\sqrt{\rho_{avg}}} \sqrt{\Delta P}
+~ \frac{A_{xs}}{\sqrt{\rho}} \sqrt{\Delta P}
++ \frac{A_{xs}}{\sqrt{\rho}} \sqrt{\Delta P}
+$$
+
+For this to hold, such that the Be and Re numbers are of a similar order of 
+magnitude, we have this such equation for parallel setup:
+
+$$ \frac{A_{xsTotal} }{\sqrt{\rho_{avg}}} 
+= \frac{A_{xs1}}{\sqrt{\rho}} 
++ \frac{A_{xs2}}{\sqrt{\rho}} 
+$$
+
+$$ \frac{A_{xs1}+A_{xs2}}{\sqrt{\rho_{avg}}} 
+= \frac{A_{xs1}}{\sqrt{\rho}} 
++ \frac{A_{xs2}}{\sqrt{\rho}} 
+$$
+
+we have just found a way of weighting our average density.
+
+$$ \frac{A_{xs1}+A_{xs2}}{\frac{A_{xs1}}{\sqrt{\rho}} 
++ \frac{A_{xs2}}{\sqrt{\rho}}} 
+=  \sqrt{\rho_{avg}}
+$$
+
+so the square root of the average density is the total area divided by
+the total sum of area to squareRoot of density ratios. 
+
+Square the result and we should get our average density.
+
+This will keep the average Re and hopefully Be as well to be in the same
+order of magnitude.

@@ -283,12 +283,14 @@ namespace SpiceSharp.Components
             : base(name)
         {
             Parameters.Definition = definition.ThrowIfNull(nameof(definition));
+			this.constructInterpolateBeFromRe();
             Connect(nodes);
         }
 
         private FluidParallelSubCircuit(string name)
             : base(name)
         {
+			this.constructInterpolateBeFromRe();
         }
 
         /// <inheritdoc/>
