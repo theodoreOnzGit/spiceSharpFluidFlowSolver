@@ -143,9 +143,17 @@ namespace SpiceSharp.Components
 				//
 				//
 				// let me use the Bejan number to obtain a pressure drop
+				Pressure samplePressureDrop = 
+					this.getDynamicPressureDropFromBe(bejanNumber);
+
+				MassFlow sampleMassFlow = 
+					this.getMassFlowRate(samplePressureDrop);
+
+				// now that we have mass flowrate, we can convert it into
+				// a Reynold's number
 
 				double ReynoldsNumberResult;
-				ReynoldsNumberResult = 0.0;
+				ReynoldsNumberResult = this.ReFromMassFlowrate(sampleMassFlow);
 				ReValues.Add(ReynoldsNumberResult);
 			}
 
@@ -156,8 +164,42 @@ namespace SpiceSharp.Components
 
 		public MassFlow massFlowrateFromRe(double Re){
 
-			// let's first get the cross 
-			return new MassFlow(0.0, MassFlowUnit.KilogramPerSecond);
+			// Re = flowrate/A_XS * D_H/mu
+			//
+			// flowrate = Re * mu * A_XS /D_H
+
+			MassFlow flowrate =
+				this.getFluidKinematicViscosity() *
+				this.getFluidDensity() *
+				this.getXSArea() /
+				this.getHydraulicDiameter();
+			return flowrate;
+		}
+
+		public double ReFromMassFlowrate(MassFlow flowrate){
+
+			// Re = flowrate/A_XS * D_H/mu
+			//
+
+			double Re = flowrate.As(MassFlowUnit.KilogramPerSecond) /
+				this.getXSArea().As(AreaUnit.SquareMeter) *
+				this.getHydraulicDiameter().As(LengthUnit.Meter) / 
+				this.getFluidDynamicViscosity().
+				As(DynamicViscosityUnit.PascalSecond);
+
+			return Re;
+		}
+
+		public Pressure getDynamicPressureDropFromBe(double Be){
+			// Be_D = \DeltaP D^2 / (mu * nu)
+			// Delta P = Be_D *mu * nu / D^2
+			
+			Pressure resultPressure = 
+				this.getFluidKinematicViscosity().Pow(2) *
+				this.getFluidDensity() / 
+				this.getHydraulicDiameter().Pow(2) *
+				Be;
+			return resultPressure;
 		}
 
 
@@ -463,6 +505,10 @@ namespace SpiceSharp.Components
 
 
 			return _totalKinematicViscosity/numberOfBranches;
+		}
+
+		public DynamicViscosity getFluidDynamicViscosity(){
+			return this.getFluidKinematicViscosity() * this.getFluidDensity();
 		}
     }
 }
