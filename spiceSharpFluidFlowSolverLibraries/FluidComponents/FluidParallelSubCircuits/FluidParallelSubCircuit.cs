@@ -53,7 +53,30 @@ namespace SpiceSharp.Components
 			// now obtain massflowrates by setting a pressure drop value
 			//
 
-			throw new NotImplementedException();
+			// this method guesses kinematic pressureDrop given a mass
+			// flowrate
+			// using our inhouse database
+			//
+			// 
+			// first let's get our mass flowrate, convert it into a reynold's
+			// number
+
+			double Re = this.ReFromMassFlowrate(flowrate);
+
+			// then let me interpolate Be from Re
+			//
+
+			double Be = this._interpolateBeFromRe.Interpolate(Re);
+
+			// then convert this into a kinematic pressure drop value
+			// 
+			// we'll use the in house function
+
+			Pressure _finalPressureDropvalue =
+				this.getDynamicPressureDropFromBe(Be);
+			// finally let's return this
+
+			return _finalPressureDropvalue;
 		}
 
 
@@ -62,58 +85,28 @@ namespace SpiceSharp.Components
 
 			// this method guesses kinematic pressureDrop given a mass
 			// flowrate
-			// it is an implicit method
+			// using our inhouse database
 			//
 			// 
+			// first let's get our mass flowrate, convert it into a reynold's
+			// number
+
+			double Re = this.ReFromMassFlowrate(flowrate);
+
+			// then let me interpolate Be from Re
 			//
-			this.massFlowrateValueForKinematicPressureDrop 
-				= flowrate.As(MassFlowUnit.KilogramPerSecond);
 
-			double massFlowRoot(double pressureDropValueJoulePerKg){
-				
-				// this is the value of the mass flowrate the 
-				// iterated mass flowrate should match
-				double massFlowValueKgPerS 
-					= this.massFlowrateValueForKinematicPressureDrop;
+			double Be = this._interpolateBeFromRe.Interpolate(Re);
 
-				// this is the iterated mass flowrate value
+			// then convert this into a kinematic pressure drop value
+			// 
+			// we'll use the in house function
 
-				double iteratedMassFlowrateValueKgPerS;
+			SpecificEnergy _finalPressureDropvalue =
+				this.getDynamicPressureDropFromBe(Be) /
+				this.getFluidDensity();
 
-				// and to get a value of iterated massflowrate value
-				// I use pressure drop
-				SpecificEnergy _pressureDrop;
-				_pressureDrop = new SpecificEnergy(
-						pressureDropValueJoulePerKg,
-						SpecificEnergyUnit.JoulePerKilogram);
-
-				MassFlow _massFlowRate;
-				_massFlowRate = this.getMassFlowRate(_pressureDrop);
-
-				// now i have the mass flowrate, i can change it to a double
-
-				iteratedMassFlowrateValueKgPerS =
-					_massFlowRate.As(MassFlowUnit.KilogramPerSecond);
-				
-				double functionValue =
-					iteratedMassFlowrateValueKgPerS -
-					massFlowValueKgPerS;
-
-				return functionValue;
-
-			}
-
-			double pressureDropValueJoulePerKg;
-			pressureDropValueJoulePerKg = FindRoots.OfFunction(
-					massFlowRoot, -1e12, 1e12);
-			
-			SpecificEnergy _finalPressureDropvalue
-				= new SpecificEnergy(pressureDropValueJoulePerKg,
-						SpecificEnergyUnit.JoulePerKilogram);
-
-			// after this i'll do some cleanup operations
-			this.massFlowrateValueForKinematicPressureDrop = 0.0;
-
+			// finally let's return this
 
 			return _finalPressureDropvalue;
 		}

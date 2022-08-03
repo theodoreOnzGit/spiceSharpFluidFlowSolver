@@ -35,7 +35,7 @@ namespace SpiceSharp.Components
     {
 
 
-		IInterpolation _interpolateBeFromRe;
+		public IInterpolation _interpolateBeFromRe;
 
 		public void constructInterpolateBeFromRe(){
 			// first let me get a set of about 500 values

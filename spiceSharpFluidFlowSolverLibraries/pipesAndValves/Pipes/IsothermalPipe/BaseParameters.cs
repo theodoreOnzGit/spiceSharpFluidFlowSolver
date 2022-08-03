@@ -25,8 +25,8 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			   return this._hydraulicDiameter;
 		   }	   
 		   set{ 
-			   this._hydraulicDiameter = value;
-			   this.constructInterpolateReFromBe(); 
+			  this._hydraulicDiameter = value;
+			 this.constructInterpolateReFromBe(); 
 		   }
 		}  
 
@@ -366,10 +366,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		// Be_D = Delta P * D^2 / (mu*nu)
 		// we don't include hydrostatic pressure changes here
 		public Pressure getPressureDrop(MassFlow massFlowrate){
-			
-			// in this calculation, i ONLY consider pressure drop
-			// due to losses
-			// and not hydrostatic pressure
 
 			double BejanNumber = this.getBejanNumber(massFlowrate);
 
@@ -398,9 +394,6 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 
 		public SpecificEnergy getKinematicPressureDrop(
 				MassFlow massFlowrate){
-			// in this calculation, i ONLY consider pressure drop
-			// due to losses
-			// and not hydrostatic pressure
 
 			double BejanNumber = this.getBejanNumber(massFlowrate);
 			
@@ -586,6 +579,21 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 		public double kinematicPressureDropValJoulePerKg = 0.0;
 
 		public MassFlow getMassFlowRate(Pressure dynamicPressureDrop){
+			// i'm just going to recycle the kinematic pressure drop
+			// code
+			// by turning converting dynamic pressure drop into
+			// kinematic pressure drop first
+
+			SpecificEnergy kinematicPressureDrop = 
+				dynamicPressureDrop/this.fluidDesnity();
+
+			return this.getMassFlowRate(kinematicPressureDrop);
+
+
+		}
+
+		public MassFlow getMassFlowRateUsingIteration(Pressure dynamicPressureDrop)
+		{
 			// before we start anything
 			// we adjust for hydrostatic pressure
 
