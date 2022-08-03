@@ -522,6 +522,124 @@ Also kinematic viscosity too.
 I'll probably want to do a series of tests to confirm if the paralleSubCircuit
 is obtaining the quantities as shown above. 
 
+okay tests complete, here's one such example:
+
+
+```csharp
+[Theory]
+[InlineData(0.5,0.1,0.3, 1.5,1.0,0.5)]
+[InlineData(0.4,0.2,0.3, 0.9,0.88,1.3)]
+public void WhenParallelSubCkt_getDensity_expectAreaWeightedSum(
+		double diameter1,
+		double diameter2,
+		double diameter3,
+		double kinVis1,
+		double kinVis2,
+		double kinVis3){
+
+
+	// Setup
+	//
+	// First let's get the lengths and kinematic Viscosities
+	//
+	// Because my testpipe obtains density by finding ratios of 
+	// kinematicViscosity to dynamic Viscosity
+	// i will just randomly switch up the kinematic viscosity up
+
+	Length hydraulicDiameter1 = new Length(diameter1, LengthUnit.Meter);
+	Length hydraulicDiameter2 = new Length(diameter2, LengthUnit.Meter);
+	Length hydraulicDiameter3 = new Length(diameter3, LengthUnit.Meter);
+
+	KinematicViscosity kinViscosity1 = 
+		new KinematicViscosity(kinVis1, 
+				KinematicViscosityUnit.Centistokes);
+	KinematicViscosity kinViscosity2 = 
+		new KinematicViscosity(kinVis2, 
+				KinematicViscosityUnit.Centistokes);
+	KinematicViscosity kinViscosity3 = 
+		new KinematicViscosity(kinVis3, 
+				KinematicViscosityUnit.Centistokes);
+
+
+	// next let's setup the pipes
+
+	Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
+	IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+	testPipe.Parameters.hydraulicDiameter = hydraulicDiameter1;
+	testPipe.Parameters.fluidKinViscosity = kinViscosity1;
+	testPipe.Connect("parallelIn","parallelOut");
+
+	preCastPipe = new IsothermalPipe("isothermalPipe2","out","0");
+	IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+	testPipe2.Parameters.hydraulicDiameter = hydraulicDiameter2;
+	testPipe2.Parameters.fluidKinViscosity = kinViscosity2;
+	testPipe2.Connect("parallelIn","parallelOut");
+
+	preCastPipe = new IsothermalPipe("isothermalPipe3","out","0");
+	IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+	testPipe3.Parameters.hydraulicDiameter = hydraulicDiameter3;
+	testPipe3.Parameters.fluidKinViscosity = kinViscosity3;
+	testPipe3.Connect("parallelIn","parallelOut");
+
+	// let me get my total area from these pipes
+	Area expectedTotalArea =
+		(testPipe.getXSArea() + 
+		 testPipe2.getXSArea() + 
+		 testPipe3.getXSArea());
+
+	// the above area will help me weight my densities
+	// now let's get the expected density
+	// were
+	// sqrt(rho_avg) = 1/totalArea * (area1*sqrt(rho1) +
+	// area2*sqrt(rho2) + area3*sqrt(rho3))
+
+	Density _expectedAverageDensity;
+
+	{
+		double sqrtDensity;
+		sqrtDensity = 
+			testPipe.getXSArea().As(AreaUnit.SI) *
+			Math.Pow(testPipe.getFluidDensity().As(DensityUnit.SI),0.5) +
+			testPipe2.getXSArea().As(AreaUnit.SI) *
+			Math.Pow(testPipe2.getFluidDensity().As(DensityUnit.SI),0.5) +
+			testPipe3.getXSArea().As(AreaUnit.SI) *
+			Math.Pow(testPipe3.getFluidDensity().As(DensityUnit.SI),0.5);
+
+		sqrtDensity /= expectedTotalArea.As(AreaUnit.SI);
+		double densityValue = 
+			Math.Pow(sqrtDensity,2.0);
+
+		_expectedAverageDensity = new Density(
+				densityValue, DensityUnit.KilogramPerCubicMeter);
+	}
+
+
+
+	var subckt = new SubcircuitDefinition(new Circuit(
+				testPipe,
+				testPipe2,
+				testPipe3),
+			"parallelIn", "parallelOut");
+
+	FluidParallelSubCircuit fluidSubCkt
+		= new FluidParallelSubCircuit("X1", subckt);
+	fluidSubCkt.Connect("out" , "0");
+
+	//Act
+	//
+	Density _actualAverageDensity = 
+		fluidSubCkt.getFluidDensity();
+
+
+	// Assert
+
+	Assert.Equal(_expectedAverageDensity.As(DensityUnit.SI),
+			_actualAverageDensity.As(DensityUnit.SI),1
+			);
+
+}
+
+```
 
 
 
