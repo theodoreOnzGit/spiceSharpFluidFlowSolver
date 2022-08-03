@@ -36,6 +36,7 @@ namespace SpiceSharp.Components
 
 
 		public IInterpolation _interpolateBeFromRe;
+		public IInterpolation _interpolateNegativeBeFromNegativeRe;
 
 		public void constructInterpolateBeFromRe(){
 			// first let me get a set of about 500 values
@@ -156,9 +157,39 @@ namespace SpiceSharp.Components
 				ReynoldsNumberResult = this.ReFromMassFlowrate(sampleMassFlow);
 				ReValues.Add(ReynoldsNumberResult);
 			}
+			
+			// note then that the curve so far only covers the positive Re and 
+			// Be region
+			// we also need to add the negative values too
+
+			IList<double> NegativeBeValues = new List<double>();
+			IList<double> NegativeReValues = new List<double>();
+
+			foreach (double bejanNumber in BeValues)
+			{
+				NegativeBeValues.Add(-bejanNumber);
+				Pressure samplePressureDrop = 
+					this.getDynamicPressureDropFromBe(-bejanNumber);
+
+				MassFlow sampleMassFlow = 
+					this.getMassFlowRate(samplePressureDrop);
+
+				// now that we have mass flowrate, we can convert it into
+				// a Reynold's number
+
+				double ReynoldsNumberResult;
+				ReynoldsNumberResult = this.ReFromMassFlowrate(sampleMassFlow);
+				NegativeReValues.Add(ReynoldsNumberResult);
+			}
+			// so now i have two separate arrays, one Be list, one Re list
+			// one negative Re List and one negative Be list
+			// i'm going to merge the NegativeBeValues into the BeValues List
+
 
 			this._interpolateBeFromRe = Interpolate.CubicSpline(
 					ReValues,BeValues);
+			this._interpolateNegativeBeFromNegativeRe = Interpolate.CubicSpline(
+					NegativeReValues,NegativeBeValues);
 
 		}
 

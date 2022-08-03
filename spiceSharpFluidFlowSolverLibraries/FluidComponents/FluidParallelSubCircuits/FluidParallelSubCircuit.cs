@@ -90,19 +90,40 @@ namespace SpiceSharp.Components
 			// 
 			// first let's get our mass flowrate, convert it into a reynold's
 			// number
-
 			double Re = this.ReFromMassFlowrate(flowrate);
+
+			// now let's see if Re < 0 , we will use the negative Interpolation
+			double Be;
+			SpecificEnergy _finalPressureDropvalue;
+
+			if(Re < 0){
+
+				Be = this._interpolateNegativeBeFromNegativeRe.
+					Interpolate(Re);
+
+				// then convert this into a kinematic pressure drop value
+				// 
+				// we'll use the in house function
+
+				_finalPressureDropvalue =
+					this.getDynamicPressureDropFromBe(Be) /
+					this.getFluidDensity();
+
+				// finally let's return this
+
+				return _finalPressureDropvalue;
+			}
 
 			// then let me interpolate Be from Re
 			//
 
-			double Be = this._interpolateBeFromRe.Interpolate(Re);
+			Be = this._interpolateBeFromRe.Interpolate(Re);
 
 			// then convert this into a kinematic pressure drop value
 			// 
 			// we'll use the in house function
 
-			SpecificEnergy _finalPressureDropvalue =
+			_finalPressureDropvalue =
 				this.getDynamicPressureDropFromBe(Be) /
 				this.getFluidDensity();
 
