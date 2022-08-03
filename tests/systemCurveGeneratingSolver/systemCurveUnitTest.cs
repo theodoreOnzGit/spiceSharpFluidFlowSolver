@@ -70,7 +70,7 @@ public class systemCurveGeneratingSolver : testOutputHelper
 		MassFlow massFlowrateFromRe(double Re,
 				IsothermalPipe pipe){
 
-			// Re = massflow/
+			// Re = massflow/A_XS * D_H/mu
 			MassFlow flowrate =
 				pipe.Parameters.crossSectionalArea()/
 				pipe.Parameters.hydraulicDiameter*
@@ -514,4 +514,6 @@ public class systemCurveGeneratingSolver : testOutputHelper
 
 		//throw new Exception();
 	}
+
+
 }

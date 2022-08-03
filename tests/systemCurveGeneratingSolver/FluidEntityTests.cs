@@ -1208,4 +1208,127 @@ public class fluidEntityTests : testOutputHelper
 		// test failed as of 27 jul 2022 1800 hrs
 	}
 
+	[Theory]
+	[InlineData(0.5,0.1,0.3)]
+	[InlineData(0.4,0.2,0.3)]
+	public void WhenParallelSubCkt_getHydraulicDiameter_expectEnsembleAverage(
+			double diameter1,
+			double diameter2,
+			double diameter3){
+
+		// Setup
+		//
+		// First let's get the lengths
+
+		Length hydraulicDiameter1 = new Length(diameter1, LengthUnit.Meter);
+		Length hydraulicDiameter2 = new Length(diameter2, LengthUnit.Meter);
+		Length hydraulicDiameter3 = new Length(diameter3, LengthUnit.Meter);
+
+		Length expectedAverageHydraulicDiameter =
+			(hydraulicDiameter1 + hydraulicDiameter2 + hydraulicDiameter3)/3.0;
+
+		// next let's setup the pipes
+
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Parameters.hydraulicDiameter = hydraulicDiameter1;
+		testPipe.Connect("parallelIn","parallelOut");
+
+		preCastPipe = new IsothermalPipe("isothermalPipe2","out","0");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Parameters.hydraulicDiameter = hydraulicDiameter2;
+		testPipe2.Connect("parallelIn","parallelOut");
+
+		preCastPipe = new IsothermalPipe("isothermalPipe3","out","0");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Parameters.hydraulicDiameter = hydraulicDiameter3;
+		testPipe3.Connect("parallelIn","parallelOut");
+
+		var subckt = new SubcircuitDefinition(new Circuit(
+					testPipe,
+					testPipe2,
+					testPipe3),
+				"parallelIn", "parallelOut");
+
+		FluidParallelSubCircuit fluidSubCkt
+			= new FluidParallelSubCircuit("X1", subckt);
+		fluidSubCkt.Connect("out" , "0");
+		
+		//Act
+		//
+		Length _actualAverageHydraulicDiameter = 
+			fluidSubCkt.getHydraulicDiameter();
+
+		// Assert
+
+		Assert.Equal(expectedAverageHydraulicDiameter.As(LengthUnit.SI),
+				_actualAverageHydraulicDiameter.As(LengthUnit.SI),
+				4);
+
+	}
+
+	[Theory]
+	[InlineData(0.5,0.1,0.3)]
+	[InlineData(0.4,0.2,0.3)]
+	public void WhenParallelSubCkt_getKinematicViscosity_expectEnsembleAverage(
+			double vis1,
+			double vis2,
+			double vis3){
+
+		// Setup
+		//
+		// First let's get the lengths
+
+		KinematicViscosity kinViscosity1 = 
+			new KinematicViscosity(vis1, 
+					KinematicViscosityUnit.SquareMeterPerSecond);
+		KinematicViscosity kinViscosity2 = 
+			new KinematicViscosity(vis2, 
+					KinematicViscosityUnit.SquareMeterPerSecond);
+		KinematicViscosity kinViscosity3 = 
+			new KinematicViscosity(vis3, 
+					KinematicViscosityUnit.SquareMeterPerSecond);
+
+		KinematicViscosity expectedAverageKinematicViscosity =
+			(kinViscosity1 + kinViscosity2 + kinViscosity3)/3.0;
+
+		// next let's setup the pipes
+
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Parameters.fluidKinViscosity = kinViscosity1;
+		testPipe.Connect("parallelIn","parallelOut");
+
+		preCastPipe = new IsothermalPipe("isothermalPipe2","out","0");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Parameters.fluidKinViscosity = kinViscosity2;
+		testPipe2.Connect("parallelIn","parallelOut");
+
+		preCastPipe = new IsothermalPipe("isothermalPipe3","out","0");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Parameters.fluidKinViscosity = kinViscosity3;
+		testPipe3.Connect("parallelIn","parallelOut");
+
+		var subckt = new SubcircuitDefinition(new Circuit(
+					testPipe,
+					testPipe2,
+					testPipe3),
+				"parallelIn", "parallelOut");
+
+		FluidParallelSubCircuit fluidSubCkt
+			= new FluidParallelSubCircuit("X1", subckt);
+		fluidSubCkt.Connect("out" , "0");
+		
+		//Act
+		//
+		KinematicViscosity _actualAverageFluidKinematicViscosity = 
+			fluidSubCkt.getFluidKinematicViscosity();
+
+		// Assert
+
+		Assert.Equal(expectedAverageKinematicViscosity.As(KinematicViscosityUnit.SI),
+				_actualAverageFluidKinematicViscosity.As(KinematicViscosityUnit.SI),
+				4);
+
+	}
 }
