@@ -652,6 +652,10 @@ class and one interpolated class. Otherwise, hook up a current source to two
 IsothermalPipes in parallel. That will be the reference. Then test this against
 the parallelSubCkts.
 
+Unfortunately, i tried the current source to parallel setup, failed miserably.
+
+
+
 1. Elevation tests, 
 a. means if i elevate the branch i should expect the proper mass flowrate
 given a pressure drop
@@ -670,6 +674,8 @@ correlation.
 
 Also, i forgot a few unit tests for my IFluidEntity anyhow when using the 
 interpolation thingy. Like the dynamic pressure tests are not done yet.
+For Isothermal pipe it isn't implemented properly and for fluidparallel subckt
+it's not even implemented.
 
 
 

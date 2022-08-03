@@ -727,7 +727,6 @@ public partial class fluidEntityTests : testOutputHelper
 	public void WhenFluidEntityInclinedToZeroPressureDrop_ExpectNoFlow(
 			double pressureDropValueJoulePerKg,
 			double inclineAngleDegrees){
-
 		// Setup
 
 
@@ -782,4 +781,31 @@ public partial class fluidEntityTests : testOutputHelper
 		// test failed as of 27 jul 2022 1800 hrs
 	}
 
+	// in this test i want to ensure that FluidEntities can deal with
+	// hydrostatic pressure gradients when using dynamic pressure
+	[Theory]
+	[InlineData(1.45, 0.846910353)]
+	[InlineData(0.0, -0.846910353)]
+	[InlineData(1.45, 180-0.846910353)]
+	[InlineData(0.0, 180+0.846910353)]
+	public void WhenFluidEntityInclinedToZeroDynamicPressureDrop_ExpectNoFlow(
+			double pressureDropValueJoulePerKg,
+			double inclineAngleDegrees){
+
+		throw new NotImplementedException();
+
+	}
+
+
+	// this test puts the fluid entity to the test
+	//
+	// What happens if after i make my interpolated Bejan number graph
+	// And then temperature changes, will the interpolated bejan number
+	// graph still produce the same results
+	[Theory]
+	[InlineData()]
+	public void WhenFluidEntityChangeTemperature_ExpectInterpolationCorrectResult(
+			){
+		throw new NotImplementedException();
+	}
 }

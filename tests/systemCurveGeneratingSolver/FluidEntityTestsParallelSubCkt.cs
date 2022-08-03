@@ -888,4 +888,26 @@ public partial class fluidEntityTests : testOutputHelper
 	}
 
 
+
+	// basically this test sees when i elevate parallel branches unevenly
+	// I should expect an exception thrown 
+	[Theory]
+	[InlineData()]
+	public void WhenParallelSubCktElevatedUnevenly_ExpectParallelSubCktException(){
+		throw new NotImplementedException();
+	}
+
+	[Theory]
+	[InlineData()]
+	public void WhenParallelSubCktElevated_ExpectCorrectMassFlowrate(){
+		throw new NotImplementedException();
+	}
+	
+	[Theory]
+	[InlineData()]
+	public void WhenParallelSubCktElevatedChgTemp_ExpectCorrectMassFlow(){
+		throw new NotImplementedException();
+	}
+
+
 }

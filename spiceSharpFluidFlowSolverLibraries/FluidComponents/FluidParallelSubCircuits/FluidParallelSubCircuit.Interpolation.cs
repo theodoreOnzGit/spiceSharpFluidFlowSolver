@@ -142,6 +142,7 @@ namespace SpiceSharp.Components
 				// scaling kinematic viscosity
 				//
 				//
+				// let me use the Bejan number to obtain a pressure drop
 
 				double ReynoldsNumberResult;
 				ReynoldsNumberResult = 0.0;

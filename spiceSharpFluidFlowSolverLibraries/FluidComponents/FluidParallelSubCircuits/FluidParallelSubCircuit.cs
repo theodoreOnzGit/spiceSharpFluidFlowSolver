@@ -125,7 +125,7 @@ namespace SpiceSharp.Components
 			// this method guesses kinematic pressureDrop given a mass
 			// flowrate
 			// it is an implicit method
-			//
+			// slow but accurate
 			// 
 			//
 			this.massFlowrateValueForKinematicPressureDrop 
