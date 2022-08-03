@@ -25,8 +25,8 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			   return this._hydraulicDiameter;
 		   }	   
 		   set{ 
-			  this._hydraulicDiameter = value;
-			 this.constructInterpolateReFromBe(); 
+			   this._hydraulicDiameter = value;
+			   this.constructInterpolateReFromBe(); 
 		   }
 		}  
 

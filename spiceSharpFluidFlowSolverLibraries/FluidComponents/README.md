@@ -640,7 +640,36 @@ public void WhenParallelSubCkt_getDensity_expectAreaWeightedSum(
 }
 
 ```
+Now for parallelSubCkts with this setup, what tests do we need?
+Assume that each branch has been condensed into a single component.
 
+0. basic functionality
+a. if i use the nondimensionalised interpolation method across various Re
+it should yield the same results as with a normal calculation (ie using the
+bisection or whatever else implicit methods).
+Meaning to say i'll want two classes of FluidParalleSubCircuit, one reference
+class and one interpolated class. Otherwise, hook up a current source to two
+IsothermalPipes in parallel. That will be the reference. Then test this against
+the parallelSubCkts.
+
+1. Elevation tests, 
+a. means if i elevate the branch i should expect the proper mass flowrate
+given a pressure drop
+b. it also means that if i elevate a branch, both branches should elevate
+equally. Meaning to say both branches should have the same elevation change.
+c. if i elevate branches and the temperatures change, i should expect a different
+flowrate due to the temperature change (this is more of a density change however
+probably do it later)
+
+2. Density and viscosity change tests (more of temperature change)
+a. if i calculate the mass flowrate from a pressure drop using the 
+nondimensionalised correlation, and change density and viscosity halfway thru,
+i should expect the massflowrate to be correct using the same nondimensionalised
+correlation.
+
+
+Also, i forgot a few unit tests for my IFluidEntity anyhow when using the 
+interpolation thingy. Like the dynamic pressure tests are not done yet.
 
 
 
