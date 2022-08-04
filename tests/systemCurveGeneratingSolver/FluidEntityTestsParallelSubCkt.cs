@@ -254,7 +254,8 @@ public partial class fluidEntityTests : testOutputHelper
 	}
 
 	// [Theory]
-	[Theory(Skip = "expedited testing, temporary skip")]
+	//[Theory(Skip = "expedited testing, temporary skip")]
+	[Theory]
 	[InlineData(1.45)]
 	[InlineData(0.45)]
 	[InlineData(-1.45)]
