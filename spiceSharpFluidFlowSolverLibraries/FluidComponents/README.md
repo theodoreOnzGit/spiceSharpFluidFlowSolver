@@ -71,7 +71,7 @@ in the programming sense.
 
 This would help us get a graph of:
 
-$$2 Be_D = (f_{darcy} \frac{L}{D} + K) Re^2
+$$ Be_D = 0.5(f_{darcy} \frac{L}{D} + K) Re^2
 $$
 
 We assume that this nondimensionalised relationship remains the same for all 
@@ -89,7 +89,8 @@ $$Re = \frac{ flowrate}{ A_{XS}} \frac{D_H}{\mu}$$
 $$Be_D = \frac{\Delta p D_H^2}{\nu^2} = \frac{\Delta P D_H^2}{\mu \nu}$$
 
 the question is, how can we nondimensionalise it such that the relationship
-remains constant regardless of Re and $Be_D$?
+remains constant regardless of Re and $Be_D$? Or even temperature profiles
+across this parallel pipe?
 
 We have multiple lengthscales and velocities to choose from. How can we pick
 one that represents our case?
@@ -99,6 +100,362 @@ compute reynold's numbers.
 
 It is quite intuitive that mass flowrates should be added up, and likewise
 cross sectional areas can be added up as well.
+
+### deriving how to average nondimensional parameters
+
+Firstly, what are the parameters we need to use to nondimensionalise pressure
+drop and mass flowrate?
+
+1. hydraulic diameter $D_H$
+2. cross sectional area $A_{XS}$
+3. dynamic viscosity $\mu$
+4. density $\rho$
+
+With this, we can always guess the pressure drop given a mass flowrate.
+
+
+For a series of parallel components, we have:
+
+$$Be_{Di} = 0.5 Re_i^2 (f_i \frac{L_i}{D_i} +K_i)$$
+
+
+
+Let's get those dimensionless parameters out so we can expose the mass flowrate
+$$\frac{\Delta P D_H^2}{\nu \mu}= 0.5 (f \frac{L}{D} + K) Re^2$$
+
+
+$$\Delta P = 0.5 \frac{\nu^2 \rho}{D_H^2} (f \frac{L}{D} + K) Re^2$$
+
+Now let's perform some cancellations noting that:
+
+$$Re = \frac{\dot{m} D_H}{A_{XS} \mu}$$
+
+
+$$\Delta P = 0.5 \frac{\nu^2 \rho}{D_H^2} (f \frac{L}{D} + K)
+\frac{\dot{m}^2 D_H^2}{A_{XS}^2 \mu^2}$$
+
+Let's cancel out the diameters:
+$$\Delta P = 0.5 \frac{\nu^2 \rho}{\mu^2} (f \frac{L}{D} + K)
+\frac{\dot{m}^2 }{A_{XS}^2 }$$
+
+And now the  viscosities as well:
+
+$$\Delta P = 0.5 \frac{1}{\rho} (f \frac{L}{D} + K)
+\frac{\dot{m}^2 }{A_{XS}^2 }$$
+
+Now before we carry on, we should note that this equation pertains to a
+pressure drop rather than a pressure change across the pipe. This is because
+we neglect hydrostatic pressure. So in actuality,
+
+
+$$\Delta P_{totalChange} = 0.5 \frac{1}{\rho} (f \frac{L}{D} + K)
+\frac{\dot{m}^2 }{A_{XS}^2 } - \rho g \Delta H$$
+
+$$\Delta P_{totalChange} +\rho g \Delta H = 0.5 \frac{1}{\rho} 
+(f \frac{L}{D} + K) \frac{\dot{m}^2 }{A_{XS}^2 } $$
+Let's make the mass flowrate the subject
+
+
+$$\frac{\dot{m}^2}{A_{XS}^2} = 
+\frac{(\Delta P_{totalChange} +\rho g \Delta H) 
+\rho}{0.5 (f \frac{L}{D} + K)}$$
+
+Square root:
+$$\frac{\dot{m}^2}{A_{XS}^2} = \frac{(\Delta P_{totalChange} +\rho g \Delta H)
+ \rho}{0.5 (f \frac{L}{D} + K)}$$
+
+$$\frac{\dot{m}}{A_{XS}} =\sqrt{ \frac{\rho(\Delta P_{totalChange} +\rho g
+ \Delta H)}{0.5 (f \frac{L}{D} + K)}}$$
+
+$$\dot{m}= 
+A_{XS}\sqrt{ \frac{\rho(\Delta P_{totalChange} +\rho g \Delta H)}{0.5 (f \frac{L}{D} + K)}}$$
+
+In general for any branch eg. branch-i that can be represented as an fLDK 
+component, we have the correlation as follows:
+
+$$\dot{m_i}= 
+A_{XSi}\sqrt{ \frac{\rho(\Delta P_{totalChange i} +\rho_i g \Delta H_i)}
+{0.5 (f_i \frac{L_i}{D_i} + K_i)}}$$
+
+
+
+Suppose now that we have the total mass flowrate $\dot{m}_{total}$
+
+$$\dot{m}_{total} = \sum_i^n \dot{m}_i$$
+
+$$\dot{m}_{total} = \sum_i^n A_{XSi}
+\sqrt{ \frac{\rho(\Delta P_{totalChange i} +\rho_i g \Delta H_i)}
+{0.5 (f_i \frac{L_i}{D_i} + K_i)}}$$
+
+Now mass balance is already looking pretty scary and complicated.
+
+To help us. we use another property of parallel pipe systems, that
+the sum of pressure change across each pipe section is equal, including
+hydrostatic pressure and pressure drop etc.
+
+
+$$\Delta P_{totalChange}  = 0.5 \frac{1}{\rho} 
+(f \frac{L}{D} + K) \frac{\dot{m}^2 }{A_{XS}^2 } - \rho g \Delta H$$
+
+$$constant = 0.5 \frac{1}{\rho_i} 
+(f_i \frac{L_i}{D_i} + K_i) 
+\frac{\dot{m}_i^2 }{A_{XSi}^2 } - \rho_i g \Delta H_i$$
+
+
+
+#### Fundamental correlation to find parameters for parallel circuit
+And now suppose that this parallel setup should be represented by an fLDK
+type component
+
+$$
+A_{XSparallel}\sqrt{ \frac{\Delta P_{parallel} \rho_{parallel}}
+{0.5 (f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel})}}
+ = \sum_i^n A_{XSi}
+\sqrt{ \frac{\Delta P_i \rho_i}{0.5 (f_i \frac{L_i}{D_i} + K_i)}}$$
+
+
+This equation is saying that the mass flowrate of this fLDK parallel pipe
+component is the same as the sum of the constituent mass flowrates.
+
+We know of course that the pressure drop across all branches is the same so 
+we can take pressure out of the equation, we also take out the factor of 0.5
+for convenience.
+
+
+$$
+A_{XSparallel}\sqrt{ \frac{ \rho_{parallel}}
+{ (f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel})}}
+ = \sum_i^n A_{XSi}
+\sqrt{ \frac{ \rho_i}{ (f_i \frac{L_i}{D_i} + K_i)}}$$
+
+
+Now this is not always true that the pressure change of the system is equal 
+to the pressure drop. There's hydrostatic pressure as well...
+
+$$\Delta P_i = $$
+
+
+Next we shall define that the area of this parallel component is
+the sum of the constituent areas, for convenience. Plus it would make intuitive
+sense.
+
+$$A_{XSparallel} = \sum_i^n A_{XSi}$$
+
+Also, because of this, we can get a proper lengthscale for a representative
+hydraulic mean diameter.
+
+$$D_{parallel}^2 \frac{\pi}{4} = A_{XSparallel}$$
+
+This would leave us with:
+
+$$
+\sqrt{ \frac{ \rho_{parallel}}
+{ (f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel})}}
+ =\frac{1}{\sum_i^n A_{XSi}} \sum_i^n A_{XSi}
+\sqrt{ \frac{ \rho_i}{ (f_i \frac{L_i}{D_i} + K_i)}}$$
+
+So far, all the terms on the right hand side are known, except for the 
+individual $f_i$ which are the constituent darcy friction factors.
+
+Remember, that we have to nondimensionalise density, dynamic viscosity
+and lengthscales. So far we already have done diameter.
+
+So let's have a way to weight our density:
+
+$$
+\sqrt{\rho_{parallel}}
+ =\frac{\sqrt{(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel})}}{\sum_i^n A_{XSi}} \sum_i^n A_{XSi}
+\sqrt{ \frac{ \rho_i}{ (f_i \frac{L_i}{D_i} + K_i)}}$$
+
+
+We note that to help us simplify our equation, we can define weighting factors
+
+$$w_{XSareai} = \frac{A_{XSi}}{\sum_i^n A_{XSi}} $$
+
+With this, we can see:
+
+
+$$
+\sqrt{\rho_{parallel}}
+ =\sqrt{(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel})} \sum_i^n w_{XSareai}
+\sqrt{ \frac{ \rho_i}{ (f_i \frac{L_i}{D_i} + K_i)}}$$
+
+We see that the weighting factor for area will sum to equal 1. And it should be the case.
+
+Now we see another weighting factor, namely the fLDK weighting factor:
+
+$$w_{fLDKi} = \sqrt{\frac{(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel})}{ (f_i \frac{L_i}{D_i} + K_i)}} $$
+
+So that:
+
+
+$$ \sqrt{\rho_{parallel}} = \sum_i^n w_{XSareai} \ w_{fLDKi} \ \sqrt{\rho_i}$$
+
+Now, if we apply the boussinesq approximation, ie that density doesn't change
+so much, we will get:
+
+
+$$1 = \sum_i^n w_{XSareai} \ w_{fLDKi} $$
+
+However, even if densities are not that constant, we would still like the
+weighting factors to sum up to one any how. This is the only way it makes
+physical sense.
+
+Now with this we can start looking at how to scale viscosity and density.
+$$ \sum_i^n w_{XSareai} \ w_{fLDKi}  = 1$$
+
+Let's substitute back in:
+$$w_{fLDKi} = \sqrt{\frac{(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel})}{ (f_i \frac{L_i}{D_i} + K_i)}} $$
+ 
+$$ \sum_i^n w_{XSareai} 
+\sqrt{\frac{(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel})}{ (f_i \frac{L_i}{D_i} + K_i)}}  = 1$$
+
+$$ \sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (f_i \frac{L_i}{D_i} + K_i)}}  = (f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel})^{-0.5}$$
+
+With this we have a correlation for our respective friction factors. It appears
+that they are weighted by the cross sectional areas.
+
+$$ \sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (f_i \frac{L_i}{D_i} + K_i)}}  = (f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel})^{-0.5}$$
+
+ Here, everything on the left hand side is assumed known except for $f_i$.
+ We have not found ways to find $K_{parallel}$ just yet. Because while we
+ explictly would know the mass flowrate (we are using that to solve for pressure
+ drop), we have not scaled the viscosity just yet.
+
+ But let's take a look if we make the fLDK of the parallel circuit the subject.
+
+
+$$ \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (f_i \frac{L_i}{D_i} + K_i)}} \right)^{-2}  = f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel}$$
+
+To help us with how to handle $K_{parallel}$ and how to scale viscosity,
+we first can go to the bounding case of fully laminar flow such that K is
+not even important.
+
+$$ \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (f_i \frac{L_i}{D_i} + K_i)}} \right)^{-2}  = f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel}$$
+
+#### bounding cases to help us guess how to average parameters
+
+1. Fully turbulent flow regime
+
+Under fully turbulent flow regime
+
+$$\frac{1}{\sqrt{f_{darcy}}} = -2 \log_{10} (\frac{\varepsilon/D}{3.7})$$
+
+$$ \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (k_i \frac{L_i}{D_i} + K_i)}} \right)^{-2}  = k_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ + K_{parallel}$$
+
+So here, every term on the left hand side is known. However, we still need
+other equations for us to find the appropriate length scaling and appropriate 
+K scaling
+
+2. laminar flow regime
+
+Here we consider the other case where flowrate is so small that K is
+neglected.
+
+$$ \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (f_i \frac{L_i}{D_i} )}} \right)^{-2}  = f_{parallel} \frac{L_{parallel}}{D_{parallel}} $$
+
+
+Let's consider that 
+
+$$f_{darcy} = \frac{64}{Re} = \frac{64 A_{XS} \mu}{\dot{m} D_H}$$
+
+
+$$ \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (\frac{64 A_{XSi} \mu}{\dot{m}_i D_i} 
+\frac{L_i}{D_i} )}} \right)^{-2}  
+= \frac{64 A_{XS} \mu}{\dot{m} D_{parallel}} 
+\frac{L_{parallel}}{D_{parallel}} $$
+
+Let's use
+
+$$A_{XS} = \frac{\pi}{4} D^2$$
+
+$$ \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (\frac{16 \pi \mu L_i}{\dot{m}_i } 
+)}} \right)^{-2}  
+= \frac{16 \pi \mu L_{parallel}}{\dot{m} } 
+$$
+
+$$ \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{\dot{m}_i}{ 16 \pi \mu_i L_i}} \right)^{-2}  
+= \frac{16 \pi \mu_{parallel} L_{parallel}}{\dot{m_{total}} } 
+$$
+
+Now we may not know the individual mass flowrates for this case, but
+in stokes regime or fully laminar regime, Ohm's law actually applies
+for each branch
+
+
+$$\Delta P = 0.5 \frac{1}{\rho} (f \frac{L}{D} + K)
+\frac{\dot{m}^2 }{A_{XS}^2 }$$
+
+When we apply darcy friction factor is 64/Re and neglect K:
+
+$$\Delta P = 0.5 \frac{1}{\rho} (\frac{64}{Re} \frac{L}{D} )
+\frac{\dot{m}^2 }{A_{XS}^2 }$$
+
+$$\Delta P = 0.5 \frac{1}{\rho} (\frac{64 A_{XS} \mu}{\dot{m} D_H} \frac{L}{D_H})
+\frac{\dot{m}^2 }{A_{XS}^2 }$$
+
+Let's tidy up the equation first by cancelling mass flowrate and cross sectional 
+area.
+
+
+$$\Delta P = 0.5 \frac{1}{\rho} (\frac{64 A_{XS} \mu}{ D_H}\frac{L}{D_H})
+\frac{\dot{m} }{A_{XS}^2 }$$
+
+$$\Delta P = 0.5 \frac{1}{\rho} (\frac{64 A_{XS} \mu}{ D_H}\frac{L}{D_H})
+\frac{\dot{m} }{A_{XS}^2 }$$
+
+Substiute cross sectional area is $\frac{\pi}{4} D^2$
+
+$$\Delta P = 0.5 \frac{1}{\rho} (16\pi \mu L)
+\frac{\dot{m} }{A_{XS}^2 }$$
+
+
+$$\Delta P = \frac{1}{\rho} (8 \pi \mu L)
+\frac{\dot{m} }{A_{XS}^2 }$$
+
+Now we don't know that the pressure drop is at this point, but we
+want to iterate it out.
+
+However, what we do know is that the pressure drop over the whole system
+is in essence equal to the pressure drop over each branch, of course 
+taking into account the hydrostatic pressure changes.
+
+
+$$\Delta P = \frac{1}{\rho} (8 \pi \mu L)
+\frac{\dot{m} }{A_{XS}^2 }$$
+
+$$\Delta P = \frac{1}{\rho} (8 \pi \mu L)
+\frac{\dot{m} }{A_{XS}^2 }$$
+Now this is true for each and every branch,
+
+
+
+
+
+
+
+
+
+
 
 The question is that for hydraulic diameter $D_H$. 
 
@@ -355,11 +712,11 @@ $$Be_D = \frac{\Delta p D^2}{\nu^2}$$
 To understand how we got here, we should visit the underlying equations
 This is for the pipe:
 
-$$Be_D = 0.5 (\frac{L}{D} f_{darcy} + K} Re^2$$
+$$Be_D = 0.5 (\frac{L}{D} f_{darcy} + K) Re^2$$
 
-$$Be_D = 0.5 (\frac{L}{D} f_{darcy} + K} Re^2$$
+$$Be_D = 0.5 (\frac{L}{D} f_{darcy} + K) Re^2$$
 
-$$ \frac{\Delta p D^2}{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K} Re^2$$
+$$ \frac{\Delta p D^2}{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K) Re^2$$
 
 $$ \frac{\Delta p D^2}{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K} 
 \frac{\dot{m}^2}{A_{xs}^2} \frac{D_H^2}{\mu^2}$$
