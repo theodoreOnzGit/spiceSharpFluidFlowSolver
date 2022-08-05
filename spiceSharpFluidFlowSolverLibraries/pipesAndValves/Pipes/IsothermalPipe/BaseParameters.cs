@@ -489,8 +489,8 @@ namespace SpiceSharp.Components.IsothermalPipeBehaviors
 			double Be_D;
 			Be_D = getBejanFromKinematicPressureDrop(kinematicPressureDrop);
 
-			if(Be_D < 1e12){
-				// if Be_D is sufficiently small, within linear range,
+			if(Be_D < 1e10){
+				// if Be_D is sufficiently small, within our interpolation range
 				// we can interpolate it rather than go about iterating our
 				// way to an answer
 				double Re;
