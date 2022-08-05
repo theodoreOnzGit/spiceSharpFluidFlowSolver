@@ -465,7 +465,7 @@ However, the exact procedure should not matter too much as long as
 the above conditions are satisfied.
 
 
-### now back to our density
+### now back to our density (Liquid phase only, <10% thermal expansion)
 
 So far we have found out suitable ways of finding a representative
 dynamic viscosity $\mu_{series}$ for a series system of pipes
@@ -475,6 +475,16 @@ This will ensure that under temperature changes, friction factor changes
 for laminar and fully turbulent profiles are taken care of; no need to
 recalculate the dimensionless correlation between Re and Be.
 
+Now we should note that we need not spend too much effort here 
+trying to find the appropriate ways to weight out density
+since the density of the fluid doesn't change by more than 10% from 20C
+to 120C, this is dowtherm i'm talking about.
+
+Liquid phase flows in general do not change density too much. So
+no matter how accurately i weigh the average densities, it won't yield
+as much bang for buck as when i spend effort elsewhere.
+
+Nevertheless, here's what i have.
 
 What remains is now for us to find out how to weigh $\rho_{series}$ in
 order to find an average.
@@ -532,7 +542,7 @@ Would stay constant regardless of laminar or turbulent flow. This was
 our assumption from the beginning.
 
 For laminar flow, we note this weighting factor is quite dependent upon
-mass flowrate.
+mass flowrate. This is flow so slow that it is essentially creeping.
 
 
 so that:
@@ -555,7 +565,7 @@ $$\frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i})}
 We can cancel out the mass flowrates and calculate the weighting factors
 directly
 
-$$\frac{(\frac{64 A_{XS}\mu}{ D_H} \frac{L_i}{D_i})}
+$$\frac{(\frac{64 A_{XSi}\mu}{ D_{Hi}} \frac{L_i}{D_{Hi}})}
 {(\frac{64 A_{XSseries}\mu_{series}}{ D_{series}} 
 \frac{L_{series}}{D_{series}} )} 
 \approx constant = w_i$$
@@ -565,7 +575,7 @@ Whereas for fully turbulent flow, this is mass flowrate independent.
 #### turbulent weighting factors (flow independent)
 
 
-$$\frac{(k_{darcyi} \frac{L_i}{D_i} + K_1)}
+$$\frac{(k_{darcyi} \frac{L_i}{D_i} + K_i)}
 {(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
 \approx constant = w_i$$
 
@@ -573,15 +583,151 @@ $$\frac{(k_{darcyi} \frac{L_i}{D_i} + K_1)}
 A user can choose between both depending on the kind of flow he or she 
 might expect.
 
-Anyway enough for today, i will take a break (8pm 04 aug 2022).
+
+Over here, we calculate $k_{darcyi}$ as the friction factor when
+the flow is totally turbulent.
+
+We can use the function in churchill's correlation to determine this.
+And just set the Reynold's number to 1e8.
+
+
+Now for $k_{darcySeries}$ we can use the following correlation
+
+
+$$\sum (k_{darcyi} \frac{L_i}{D_i} + K_i) =
+(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})
+$$
+
+We note that
+
+$$K_{series} = \sum K_i$$
+
+So those cancel out
+
+$$\sum (k_{darcyi} \frac{L_i}{D_i} ) =
+(k_{darcySeries} \frac{L_{series}}{D_{series}} )
+$$
+
+
+$$\frac{D_{series}}{L_{series}}\sum (k_{darcyi} \frac{L_i}{D_i} ) =
+(k_{darcySeries}  )
+$$
+
+$$k_{darcySeries} =\frac{D_{series}}{L_{series}}
+\sum (k_{darcyi} \frac{L_i}{D_i} ) 
+$$
+
+Those should be okay for functions to calculate. So we calculate
+$k_{darcyi}$ first using churchill's correlation and only do it once
+and then we can calculate the L and D of the series
+circuit. Then from that arrive at the answer.
+
+The advantage is that this is Reynold's number indepdenent, and also
+temperature independent.
+
+And as the flow goes up to higher Reynold's numbers, the solution becomes
+exact. It will not do as well for lower reynold's numbers but a meager
+guess for the weighting factors is better than no weighting factors at
+all. Or an ensemble average.
+
+Furthermore, liquid density of therminol hardly changes from 20C to 120C.
+It is 1064 $kg/m^3$ at 20 C, and 982 $kg/m^3$ at 120C. 
+Taking 120C as the reference temperature, that is at most an 8.4% change over that wide range. So no matter how much
+effort we spend to do density weightage, the flow is mostly 
+incompressible anyhow and this won't matter too much.
 
 
 
+#### dyanmic weighting factors (don't bother too much here)
+
+$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
+{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
+\approx constant = w_i$$
+
+Now we know this correlation holds
 
 
+$$Be_{Di} = 0.5 Re_i^2 (f_{darcyi} \frac{L_i}{D_i} + K_i)$$
 
 
+$$(f_{darcyi} \frac{L_i}{D_i} + K_i) = \frac{Be_{Di}}{0.5 Re_i^2}$$
 
+$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
+{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
+\approx constant $$
+
+$$ =\frac{Be_{Di}}{0.5 Re_i^2} \frac{0.5 Re_{Dseries}}{Be_{Dseries}} $$
+
+$$ =\frac{Be_{Di}}{Re_i^2} \frac{Re^2_{Dseries}}{Be_{Dseries}} $$
+
+If we can find the ratios of the bejan numbers and Reynold's numbers
+, that would be a great estimate for us.
+
+Suppose first that i have a Reynold's number with appropriate scaling:
+
+
+$$Re_{series} = \frac{\dot{m}_{Series} D_{Hseries}}
+{A_{XSseries} \mu_{series}}$$
+
+$$Re_{i} = \frac{\dot{m}_{Series} D_{Hi}}
+{A_{XSi} \mu_{i}}$$
+
+$$\frac{Re_{Dseries}^2}{Re_i^2} = \frac{D_{Hseries}^2}{D_{Hi}^2}
+\frac{A_{XSi}^2 \mu_i^2}{A_{XSseries}^2\mu_{series}^2}$$
+
+
+Again if we have 
+
+$$A_{XS} = \frac{\pi}{4}D^2$$
+
+$$\frac{Re_{Dseries}^2}{Re_i^2} 
+= \frac{D_{i}^2 \mu_i^2}{D_{series}^2\mu_{series}^2}$$
+
+This is temperature dependent
+
+$$\frac{Be_{Di}}{Be_{Dseries}} = \frac{\Delta P_i D_i^2}{\mu_i \nu_i}
+\frac{\mu_{series}\nu_{series}}{\Delta P_{total} D_{series}^2}
+$$
+
+Multiply them together:
+
+
+$$\frac{Be_{Di}}{Be_{Dseries}} \frac{Re_{Dseries}^2}{Re_i^2}=
+ \frac{\Delta P_i D_i^2}{\mu_i \nu_i}
+\frac{\mu_{series}\nu_{series}}{\Delta P_{total} D_{series}^2}
+\frac{D_{i}^2 \mu_i^2}{D_{series}^2\mu_{series}^2}
+$$
+
+
+$$\frac{Be_{Di}}{Be_{Dseries}} \frac{Re_{Dseries}^2}{Re_i^2}=
+ \frac{\rho_{i}\Delta P_i D_i^4}
+ {\rho_{series}\Delta P_{total} D_{series}^4}
+$$
+
+
+That's as much as we can simplify it.
+
+Now we'll have to make some assumptions. Under constant flowrate,
+the flow regimes should not change so much as to impact the value of
+$\frac{\Delta P_i}{\Delta P_{total}}$ even when temperature changes.
+
+Thus, where weighting is concerned,
+
+$$\frac{\Delta P_i}{\Delta P_{total}} \approx constant$$
+
+While in truth, this ratio is Reynold's number dependent, this is just
+here to help us estimate weights for density. So that the average
+density produces the correct pressure drop.
+
+We can just take this ratio at one temperature and Reynold's number
+and hope it stays constant.
+
+We also assume that there are a large number of components, so that
+one component having a density change doesn't affect $\rho_{series}$
+too much.
+
+Either way i do this, it's not very much bang for buck. I'd rather go 
+with the fixed turbulent regime weights.
 
 
 
