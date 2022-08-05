@@ -189,6 +189,10 @@ $$\dot{m}_{total} = \sum_i^n A_{XSi}
 
 Now mass balance is already looking pretty scary and complicated.
 
+Thankfully though, we are coming at this problem already knowing
+the total mass flowrate. The whole idea is to iterate the pressure change
+from the mass flowrate.
+
 To help us. we use another property of parallel pipe systems, that
 the sum of pressure change across each pipe section is equal, including
 hydrostatic pressure and pressure drop etc.
@@ -201,32 +205,147 @@ $$constant = 0.5 \frac{1}{\rho_i}
 (f_i \frac{L_i}{D_i} + K_i) 
 \frac{\dot{m}_i^2 }{A_{XSi}^2 } - \rho_i g \Delta H_i$$
 
+This gives us an easy way of finding the mass flowrates in the 
+respective branches if we know the friction factors and k within each branch.
 
 
 #### Fundamental correlation to find parameters for parallel circuit
 And now suppose that this parallel setup should be represented by an fLDK
 type component
 
-$$
-A_{XSparallel}\sqrt{ \frac{\Delta P_{parallel} \rho_{parallel}}
-{0.5 (f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel})}}
- = \sum_i^n A_{XSi}
-\sqrt{ \frac{\Delta P_i \rho_i}{0.5 (f_i \frac{L_i}{D_i} + K_i)}}$$
+$$ \dot{m}_{total} = \sum_i^n A_{XSi}
+\sqrt{ \frac{\rho_i(\Delta P_{totalChange i} +\rho_i g \Delta H_i)}{0.5 (f_i \frac{L_i}{D_i} + K_i)}}$$
 
 
-This equation is saying that the mass flowrate of this fLDK parallel pipe
-component is the same as the sum of the constituent mass flowrates.
 
-We know of course that the pressure drop across all branches is the same so 
-we can take pressure out of the equation, we also take out the factor of 0.5
-for convenience.
+This is essence helps us guess the correct properties via mass balance equation
 
 
-$$
-A_{XSparallel}\sqrt{ \frac{ \rho_{parallel}}
-{ (f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel})}}
- = \sum_i^n A_{XSi}
-\sqrt{ \frac{ \rho_i}{ (f_i \frac{L_i}{D_i} + K_i)}}$$
+We can also take advantage of the fact that pressure changes across each
+branch are equal:
+
+$$\Delta P_{totalChange}  = 0.5 \frac{1}{\rho} 
+(f \frac{L}{D} + K) \frac{\dot{m}^2 }{A_{XS}^2 } - \rho g \Delta H$$
+
+
+$$\Delta P_{totalChange} = 0.5 \frac{1}{\rho_i} 
+(f_i \frac{L_i}{D_i} + K_i) 
+\frac{\dot{m}_i^2 }{A_{XSi}^2 } - \rho_i g \Delta H_i$$
+
+$$\Delta P_{totalChange} = 0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
+ - \rho_{parallel} g \Delta H_{parallel}$$
+
+Now supposing again that the parallel pipe system is meant to be represented by
+a single representative fLDK component:
+
+
+
+
+$$\dot{m}_{total} = \sum_i^n A_{XSi}
+\sqrt{ \frac{\rho_i(\Delta P_{totalChange i} +\rho_i g \Delta H_i)}
+{ 0.5(f_i \frac{L_i}{D_i} + K_i)}}$$
+
+
+$$\dot{m}_{total} = \sum_i^n A_{XSi}
+\sqrt{ \frac{\rho_i(0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
++ (- \rho_{parallel}+\rho_i )g \Delta H_i)}
+{ 0.5(f_i \frac{L_i}{D_i} + K_i)}}$$
+
+Here we know
+
+$$H_{parallel} = H_i$$
+
+Which for a realistic pipe system in parallel, the change in height at the
+final and initial point must be in the same physical space!
+
+$$\dot{m}_{total} = \sum_i^n A_{XSi}
+\sqrt{ \frac{0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{total}^2 }{A_{XS{parallel}}^2 }
++ (- \rho_{parallel}+\rho_i )g \Delta H_i}
+{ 0.5 \frac{1}{\rho_i}(f_i \frac{L_i}{D_i} + K_i)}}$$
+
+Now we still don't know that the component mass flowrates are in each branch,
+but we know the total flowrates, so that is good!
+
+Let's tidy up before going further.
+
+We make the boussinesq approximation, that for pressure loss terms, density
+changes so little that it can be neglected.
+
+So for convenience sake, we mutliply top and bottom of the square root
+term by $\rho_i$ since it can be explicitly calculated.
+The only thing is that the difference between $\rho_{parallel}$ and $\rho_i$
+cannot be neglected
+
+
+$$\dot{m}_{total} = \sum_i^n A_{XSi} 
+\sqrt{ \frac{0.5 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{total}^2 }{A_{XS{parallel}}^2 }
++ \rho_i(- \rho_{parallel}+\rho_i )g \Delta H_i}
+{ 0.5 (f_i \frac{L_i}{D_i} + K_i)}}$$
+
+
+I then bring the total mass flowrate out, 
+
+
+$$\dot{m}_{total} = \sum_i^n A_{XSi} \dot{m}_{total}
+\sqrt{ \frac{0.5 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}^2_{total} }{A_{XS{parallel}}^2 }
++ \rho_i(- \rho_{parallel}+\rho_i )g \Delta H_i}
+{ 0.5 (f_i \frac{L_i}{D_i} + K_i) \dot{m}_{total}^2}}$$
+
+Now divide throughout by $\dot{m}_{total}$
+
+$$1 = \sum_i^n A_{XSi} 
+\sqrt{ \frac{0.5 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}^2_{total} }{A_{XS{parallel}}^2 }
++ \rho_i(- \rho_{parallel}+\rho_i )g \Delta H_i}
+{ 0.5 (f_i \frac{L_i}{D_i} + K_i) \dot{m}_{total}^2}}$$
+
+$$1 = \sum_i^n A_{XSi} 
+\sqrt{ \frac{0.5 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
++ K_{parallel}) \dot{m}^2_{total}
++ A_{XS{parallel}}^2 \rho_i(- \rho_{parallel}+\rho_i )g \Delta H_i}
+{ 0.5 (f_i \frac{L_i}{D_i} + K_i) \dot{m}_{total}^2 A_{XS{parallel}}^2}}$$
+
+Now let's take the parallel areas out...
+
+$$1 = \sum_i^n \frac{A_{XSi}}{A_{XS{parallel}} }
+\sqrt{ \frac{0.5 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
++ K_{parallel}) \dot{m}^2_{total}
++ A_{XS{parallel}}^2 \rho_i(- \rho_{parallel}+\rho_i )g \Delta H_i}
+{ 0.5 (f_i \frac{L_i}{D_i} + K_i) \dot{m}_{total}^2 }}$$
+This in fact becomes our weighting factor with which to find the flowrate 
+distribution amongs all the flows.
+
+And now just a smple dimensions check... are top and bottom in units of mass
+flowrate squared?
+
+The hydrostatic term is:
+
+$$A^2 \rho^2 gz = m^4 kg^2 m^{-6} m s^{-2} m$$
+$$A^2 \rho^2 gz = kg^2   s^{-2} $$
+
+Units look ok!
+
+
+The challenge now then is to find $\rho_{parallel}$, $f_{parallel}$ and
+$L_{parallel}$ as well as $\mu_{parallel}$
+
+
+
+
+
 
 
 Now this is not always true that the pressure change of the system is equal 
