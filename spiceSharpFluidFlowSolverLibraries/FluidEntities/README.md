@@ -246,9 +246,8 @@ K_{series}}{\rho_{series}A_{XSseries}^2 }
 In general
 
 $$ \frac{f_{darcySeries} \frac{L_{Series}}{D_{series}} + 
-K_{series}}{\rho_{series}A_{XSseries}^2 }$$
-
-$$=  \sum_{i=1}^n\frac{f_{darcyi} \frac{L_i}{D_1} + K_i}{\rho_i A_{XSi}^2}$$
+K_{series}}{\rho_{series}A_{XSseries}^2 }
+=  \sum_{i=1}^n\frac{f_{darcyi} \frac{L_i}{D_1} + K_i}{\rho_i A_{XSi}^2}$$
 
 This will become our fundamental correlation as to how to find the average
 of these quantities for the whole pipe such that the total pressure drop doesn't
@@ -314,7 +313,7 @@ However, our life will be made easier if:
 Now suppose i set the constraint that the ratio of the fLDK terms are approximately
 1.
 
-$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_1)}
+$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
 {(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
 \approx 1$$
 
