@@ -331,24 +331,33 @@ However, this will hardly be possible for every single component
 because they are so varied. A more plausible approach is that
 these weighting ratios are more or less constant
 
-$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_1)}
-{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
 
 These will be weighting factors in determining our series density.
+Now even this will be hard in general because at different temperatures
+the Reynold's number at each pipe section will differ.
 
-How shall this condition be achieved?
+$$w_i = \frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
+{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
+\approx constant $$
 
-The friction factor indeed is quite complex in itself. So for a start
-we go with bounding cases:
+If this were doable, our life will be simple. Unfortunately it is not
+the case in gneeral since the ratios may differ based on temperature and
+flow regime.
 
-1. laminar
+The friction factor indeed is quite complex in itself. 
+So to estimate these weighting factors we might 
+go with bounding cases:
+
+1. Stokes regime laminar
 2. fully turbulent
 
 ### laminar restrictions on finding series parameters
 
 suppose we are in a fully laminar regime, and all our pipes are in
-a more or less laminar regime
+a more or less laminar regime.
+
+This is the extreme case where Re is so low we can ignore the effects
+of K.
 
 $$f_{darcy} = \frac{64}{Re}$$
 
@@ -356,59 +365,90 @@ $$f_{darcy} = \frac{64 A_{XS}\mu}{\dot{m} D_H}$$
 
 we can substitute this in here:
 
-$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_1)}
+$$w_i = \frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
 {(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
+$$
 
 so that:
-$$\frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i} + K_1)}
+$$w_i = \frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i} + K_i)}
 {(\frac{64 A_{XSseries}\mu_{series}}{\dot{m} D_{series}} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
+$$
 
-Now for our weighting factors to be constant, we only need the darcy
-depdendent terms to be constant, so we can get rid of the K bits
+In this limiting case we can ignore K.
 
-$$\frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i} )}
+$$w_i =\frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i} )}
 {(\frac{64 A_{XSseries}\mu_{series}}{\dot{m} D_{series}} 
 \frac{L_{series}}{D_{series}} )} 
-\approx constant $$
+$$
 
 we can cancel out the 64 and mass flowrate since mass flowrate across
 a series of fluid components ought to be constant
 
-$$\frac{(\frac{ A_{XS}\mu}{ D_H} \frac{L_i}{D_i} )}
+$$w_i = \frac{(\frac{ A_{XS}\mu}{ D_H} \frac{L_i}{D_i} )}
 {(\frac{ A_{XSseries}\mu_{series}}{ D_{series}} 
 \frac{L_{series}}{D_{series}} )} 
-\approx constant $$
+ $$
 
 We note that cross sectional area
 
 $$A_{XS} = \frac{\pi}{4} D_H^2$$
 
-So we can effectively cancel out the effect of hydraulic diameter.
+So we can effectively cancel out the effect of hydraulic diameter
+and cross sectional area since the constant of difference between them
+is $\pi/4$
 
-$$\frac{\mu_i L_i} {\mu_{series}L_{series}} 
-\approx constant $$
+We are then left with this simple setup for weighting factor:
 
-Now one correlation which satisfies this condition is:
+$$w_i =\frac{\mu_i L_i} {\mu_{series}L_{series}} 
+ $$
 
+ This will be quite exact for very low Reynold's numbers.
+
+Now this presumes we know $\mu_{series}$ and $L_{series}$.
+
+One way to ensure the weighting factors sum up to 1 is this:
 
 $$\mu_{series} = \frac{1}{L_{series}} \sum_{i=1}^n L_i \mu_i$$
 
 Where
 
 $$L_{series} = \sum_i^n L_i$$
+
+Taking the lengthscale of the series to be the sum of constituent lengthscales
+would make intuitive sense.
+
 $$\mu_{series} = \frac{\sum_{i=1}^n L_i \mu_i}{\sum_i^n L_i} $$
+
+
+
+This ensures that the weighting factors are normalised. Also it forces 
+us to weigh viscosity using the relative lengthscales of the system.
 
 Effectively the series lengthscale should be the sum of all the pipes
 in that series. And the dynamic viscosity of the series is the length
 weighted average of all the viscosities. Which should make sense,
 
 a longer pipe section has a larger kinematic viscosity effect.
+Now this is somewhat of a handwavy way of averaging kinematic viscosity. But
+it would make intuitive sense.
+
+
+A better way if we really want to take viscous forces into account at low
+Re is this:
+
 
 ### turbulent flow restrictions in finding series parameters
 
-For fully turbulent flow, $f_{darcy} =  k_{darcy} $
+For fully turbulent flow, $f_{darcy} =  k_{darcy}$
+
+
+From the [colebrook correlation](https://www.sciencedirect.com/book/9781856178303/transmission-pipeline-calculations-and-simulations-manual):
+
+For fully rough pipes:
+$$\frac{1}{\sqrt{f_{darcy}}} = -2 \log_{10} (\frac{\varepsilon/D}{3.7})$$
+
+This is very convenient for us since this is indepdenent of both
+flowrates and temperatures (pipe expansion neglected).
 
 The constant will depend on the roughness ratio of the pipe. This
 is a constant property of each pipe.
@@ -416,53 +456,74 @@ is a constant property of each pipe.
 This is towards the right hand side of the moody chart. We can 
 substitute this in here:
 
-$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_1)}
+$$w_i = \frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
 {(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
+$$
 
-$$\frac{(k_{darcyi} \frac{L_i}{D_i} + K_1)}
+$$w_i = \frac{(k_{darcyi} \frac{L_i}{D_i} + K_i)}
 {(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
+$$
 
 We can cancel out the other form losses and the darcy friction
 factors which at this point are more or less constant.
 
+Now how shall we ensure that this is normalised?
 
-$$\frac{( \frac{L_i}{D_i} )}{ (\frac{L_{series}}{D_{series}} )} = constant$$
+$$\sum (k_{darcyi} \frac{L_i}{D_i} + K_i) =
+(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})
+$$
 
-What is a suitable correlation which satisfies this condition?
+Now to start us off, we can use a very intuitive way of finding $K_{series}$
 
-I could say that the length to diameter ratio is either the sum
-of all constitutent length to diameter ratios or an ensemble mean.
-
-Since i have already determined that the series component lengthscale
-is the sum of all constituent lengthscales, i can just say that the
-series length to diameter ratio is a simple average of all length to
-diameter ratios. This would ensure that the hydraulic diameter is s
-somewhat an average of all the diameters here.
+$$K_{series} = \sum_{i=1}^n K_i$$
 
 
-$$\frac{L_{series}}{D_{series}} = \frac{1}{n} \sum_{i=1}^n 
+
+
+Subtracting this term from both sides,
+$$k_{darcySeries} \frac{L_{series}}{D_{series}} 
+ = \sum_{i=1}^n k_{darcyi} \frac{L_i}{D_i}$$
+
+Now we know how $L_{series}$ is calculated. What is left for us is to calculate
+$D_{series}$.
+
+Now it seems the friction factor of the series is also some weighted average
+of the individual components.
+
+We have yet another seti of weighting factors here:
+
+
+$$w_{kDarcyi} =\frac{( \frac{L_i}{D_i} )}{ (\frac{L_{series}}{D_{series}} )} $$
+
+To ensure that the weighting factors all sum up to one, we can use:
+$$\frac{L_{series}}{D_{series}} =  \sum_{i=1}^n 
 \frac{L_i}{D_i}$$
 
-So in fact the way to find the hydraulic diameter of the series is:
 
-$$\frac{L_{series}}{\frac{1}{n} \sum_{i=1}^n 
+
+$$\frac{L_{series}}{ \sum_{i=1}^n 
 \frac{L_i}{D_i}} = D_{series}$$
 
-$$\frac{L_{series}n}{ \sum_{i=1}^n 
-\frac{L_i}{D_i}} = D_{series}$$
+When we substiute the above values back into here, we shall get:
+$$k_{darcySeries}  
+ =\frac{D_{series}}{L_{series}} \sum_{i=1}^n k_{darcyi} \frac{L_i}{D_i}$$
 
-n here is the number of components or pipes in series. This is of course
+This is of course
 provided that the darcy friction factor actually provides some friction
 factor, and it is not some valve where there is no pipe friction factor.
 
-In that case, we can just set L/D to 0. But that means we should not 
-count those components in the weighting of the hydraulic diameter for 
-the series. The same goes for the weighting of $\mu$. 
+### Summary viscosity, area and hydraulic diameter scaling for series of components
 
-However, the exact procedure should not matter too much as long as
-the above conditions are satisfied.
+For length:
+$$L_{series} = \sum_i^n L_i$$
+
+Dynamic viscosity:
+$$\mu_{series} = \frac{\sum_{i=1}^n L_i \mu_i}{\sum_i^n L_i} $$
+
+For hydraulic diameter:
+
+$$D_{series} = \frac{L_{series}}{ \sum_{i=1}^n 
+\frac{L_i}{D_i}} $$
 
 
 ### now back to our density (Liquid phase only, <10% thermal expansion)
@@ -494,240 +555,27 @@ K_{series}}
 {\sum_{i=1}^n\frac{f_{darcyi} 
 \frac{L_i}{D_1} + K_i}{\rho_i A_{XSi}^2}}$$
 
-So now we need to find a representative value for $K_{series}$ and 
-$f_{darcySeries}$
+We have already shown two ways of weighting the density, one in a laminar bounding
+case, and one in the fully turbulent bounding case.
 
-To save us work however, we can just note:
+All other cases in between are some mixture of both cases.
 
-$$Be = 0.5 Re^2 (\frac{L}{D} f_{darcySeries} +K_{series})$$
+For laminar case:
+$$w_i =\frac{\mu_i L_i} {\mu_{series}L_{series}} 
+ $$
 
-This may not be so helpful for now, because we will need to iterate
-a flowrate to find the values. That again defeats the purpose of
-interpolation.
+For turbulent case:
 
-Let's first solve the easier of the two:
-
-We assumed just now that
-
-$$\frac{K_{i}}{K_{series}} = constant$$
-
-An easy way to get this correlation is:
-
-$$K_{series} = \sum_{i=1}^n K_i$$
-
-This would make intuitive sense as well.
-
-The last challenge would be to get $f_{darcySeries}$ from 
-the $f_{darcyi}$. We could simply use a weighted sum like before:
-
-$$f_{darcySeries} \frac{L_{series}}{D_{series}} $$
-$$ = \sum_{i=1}^n f_{darcyi} \frac{L_i}{D_i}$$
-
-However the issue is we don't know what $f_{darcyi}$ is, we need a 
-Reynold's number to figure that out.
-
-One way around this is to build more interpolations, with respective 
-Bejan numbers, we would then interpolate the individual $f_{darcyi}$.
-
-However, it would mean taking up a lot of RAM and such. Nevertheless
-this is a surefire way to get things done.
-
-A second way is to assume that the weighting factors:
-
-$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_1)}
-{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
-
-Would stay constant regardless of laminar or turbulent flow. This was
-our assumption from the beginning.
-
-For laminar flow, we note this weighting factor is quite dependent upon
-mass flowrate. This is flow so slow that it is essentially creeping.
-
-
-so that:
-$$\frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i} + K_1)}
-{(\frac{64 A_{XSseries}\mu_{series}}{\dot{m} D_{series}} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
-
-Though an argument could be made that for laminar flow, Re is small, 
-so K is negligible in general. This is true if most of the system is
-comprised of pipes.
-
-#### laminar weighting factors (flow independent)
-Under this assumption:
-
-$$\frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i})}
-{(\frac{64 A_{XSseries}\mu_{series}}{\dot{m} D_{series}} 
-\frac{L_{series}}{D_{series}} )} 
-\approx constant = w_i$$
-
-We can cancel out the mass flowrates and calculate the weighting factors
-directly
-
-$$\frac{(\frac{64 A_{XSi}\mu}{ D_{Hi}} \frac{L_i}{D_{Hi}})}
-{(\frac{64 A_{XSseries}\mu_{series}}{ D_{series}} 
-\frac{L_{series}}{D_{series}} )} 
-\approx constant = w_i$$
-
-Whereas for fully turbulent flow, this is mass flowrate independent.
-
-#### turbulent weighting factors (flow independent)
-
-
-$$\frac{(k_{darcyi} \frac{L_i}{D_i} + K_i)}
+$$w_i = \frac{(k_{darcyi} \frac{L_i}{D_i} + K_i)}
 {(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
-
-
-A user can choose between both depending on the kind of flow he or she 
-might expect.
-
-
-Over here, we calculate $k_{darcyi}$ as the friction factor when
-the flow is totally turbulent.
-
-We can use the function in churchill's correlation to determine this.
-And just set the Reynold's number to 1e8.
-
-
-Now for $k_{darcySeries}$ we can use the following correlation
-
+$$
 
 $$\sum (k_{darcyi} \frac{L_i}{D_i} + K_i) =
 (k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})
 $$
 
-We note that
+Since the weighting factors for density don't matter as much (density doesn't
+even change more than 8%). 
 
-$$K_{series} = \sum K_i$$
-
-So those cancel out
-
-$$\sum (k_{darcyi} \frac{L_i}{D_i} ) =
-(k_{darcySeries} \frac{L_{series}}{D_{series}} )
-$$
-
-
-$$\frac{D_{series}}{L_{series}}\sum (k_{darcyi} \frac{L_i}{D_i} ) =
-(k_{darcySeries}  )
-$$
-
-$$k_{darcySeries} =\frac{D_{series}}{L_{series}}
-\sum (k_{darcyi} \frac{L_i}{D_i} ) 
-$$
-
-Those should be okay for functions to calculate. So we calculate
-$k_{darcyi}$ first using churchill's correlation and only do it once
-and then we can calculate the L and D of the series
-circuit. Then from that arrive at the answer.
-
-The advantage is that this is Reynold's number indepdenent, and also
-temperature independent.
-
-And as the flow goes up to higher Reynold's numbers, the solution becomes
-exact. It will not do as well for lower reynold's numbers but a meager
-guess for the weighting factors is better than no weighting factors at
-all. Or an ensemble average.
-
-Furthermore, liquid density of therminol hardly changes from 20C to 120C.
-It is 1064 $kg/m^3$ at 20 C, and 982 $kg/m^3$ at 120C. 
-Taking 120C as the reference temperature, that is at most an 8.4% change over that wide range. So no matter how much
-effort we spend to do density weightage, the flow is mostly 
-incompressible anyhow and this won't matter too much.
-
-
-
-#### dyanmic weighting factors (don't bother too much here)
-
-$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
-{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant = w_i$$
-
-Now we know this correlation holds
-
-
-$$Be_{Di} = 0.5 Re_i^2 (f_{darcyi} \frac{L_i}{D_i} + K_i)$$
-
-
-$$(f_{darcyi} \frac{L_i}{D_i} + K_i) = \frac{Be_{Di}}{0.5 Re_i^2}$$
-
-$$\frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
-{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-\approx constant $$
-
-$$ =\frac{Be_{Di}}{0.5 Re_i^2} \frac{0.5 Re_{Dseries}}{Be_{Dseries}} $$
-
-$$ =\frac{Be_{Di}}{Re_i^2} \frac{Re^2_{Dseries}}{Be_{Dseries}} $$
-
-If we can find the ratios of the bejan numbers and Reynold's numbers
-, that would be a great estimate for us.
-
-Suppose first that i have a Reynold's number with appropriate scaling:
-
-
-$$Re_{series} = \frac{\dot{m}_{Series} D_{Hseries}}
-{A_{XSseries} \mu_{series}}$$
-
-$$Re_{i} = \frac{\dot{m}_{Series} D_{Hi}}
-{A_{XSi} \mu_{i}}$$
-
-$$\frac{Re_{Dseries}^2}{Re_i^2} = \frac{D_{Hseries}^2}{D_{Hi}^2}
-\frac{A_{XSi}^2 \mu_i^2}{A_{XSseries}^2\mu_{series}^2}$$
-
-
-Again if we have 
-
-$$A_{XS} = \frac{\pi}{4}D^2$$
-
-$$\frac{Re_{Dseries}^2}{Re_i^2} 
-= \frac{D_{i}^2 \mu_i^2}{D_{series}^2\mu_{series}^2}$$
-
-This is temperature dependent
-
-$$\frac{Be_{Di}}{Be_{Dseries}} = \frac{\Delta P_i D_i^2}{\mu_i \nu_i}
-\frac{\mu_{series}\nu_{series}}{\Delta P_{total} D_{series}^2}
-$$
-
-Multiply them together:
-
-
-$$\frac{Be_{Di}}{Be_{Dseries}} \frac{Re_{Dseries}^2}{Re_i^2}=
- \frac{\Delta P_i D_i^2}{\mu_i \nu_i}
-\frac{\mu_{series}\nu_{series}}{\Delta P_{total} D_{series}^2}
-\frac{D_{i}^2 \mu_i^2}{D_{series}^2\mu_{series}^2}
-$$
-
-
-$$\frac{Be_{Di}}{Be_{Dseries}} \frac{Re_{Dseries}^2}{Re_i^2}=
- \frac{\rho_{i}\Delta P_i D_i^4}
- {\rho_{series}\Delta P_{total} D_{series}^4}
-$$
-
-
-That's as much as we can simplify it.
-
-Now we'll have to make some assumptions. Under constant flowrate,
-the flow regimes should not change so much as to impact the value of
-$\frac{\Delta P_i}{\Delta P_{total}}$ even when temperature changes.
-
-Thus, where weighting is concerned,
-
-$$\frac{\Delta P_i}{\Delta P_{total}} \approx constant$$
-
-While in truth, this ratio is Reynold's number dependent, this is just
-here to help us estimate weights for density. So that the average
-density produces the correct pressure drop.
-
-We can just take this ratio at one temperature and Reynold's number
-and hope it stays constant.
-
-We also assume that there are a large number of components, so that
-one component having a density change doesn't affect $\rho_{series}$
-too much.
-
-Either way i do this, it's not very much bang for buck. I'd rather go 
-with the fixed turbulent regime weights.
-
-
-
+I can just take a ensemble average of these two weighting factors and it won't 
+matter all that much.
