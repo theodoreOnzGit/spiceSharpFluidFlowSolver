@@ -325,6 +325,7 @@ $$1 = \sum_i^n \frac{A_{XSi}}{A_{XS{parallel}} }
 + K_{parallel}) \dot{m}^2_{total}
 + A_{XS{parallel}}^2 \rho_i(- \rho_{parallel}+\rho_i )g \Delta H_i}
 { 0.5 (f_i \frac{L_i}{D_i} + K_i) \dot{m}_{total}^2 }}$$
+
 This in fact becomes our weighting factor with which to find the flowrate 
 distribution amongs all the flows.
 
@@ -342,19 +343,58 @@ Units look ok!
 The challenge now then is to find $\rho_{parallel}$, $f_{parallel}$ and
 $L_{parallel}$ as well as $\mu_{parallel}$
 
+We have to work with this equation, which means the sum of the total
+mass flowrate fractions is the sum of the individual mass flowrate
+fractions through the branches.
+
+$$1 = \sum_i^n \frac{A_{XSi}}{A_{XS{parallel}} }
+\sqrt{ \frac{0.5 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
++ K_{parallel}) \dot{m}^2_{total}
++ A_{XS{parallel}}^2 \rho_i(- \rho_{parallel}+\rho_i )g \Delta H_i}
+{ 0.5 (f_i \frac{L_i}{D_i} + K_i) \dot{m}_{total}^2 }}$$
+
+It is evident the first term in the numerator pertains to the pressure
+loss term over the whole parallel pipe system, whereas the second term
+describes the extra contribution due to buoyancy forces. 
+
+The term in the denominator represents the friction factor terms for
+that singular pipe branch.
+
+### simplification: reference point is pipe system at isothermal condition
+Suppose we chose a $\rho_{parallel}$ which describes the system at 
+isothermal conditions, 
+
+$$1 = \sum_i^n \frac{A_{XSi}}{A_{XS{parallel}} }
+\sqrt{ \frac{0.5 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
++ K_{parallel}) \dot{m}^2_{total}
++ A_{XS{parallel}}^2 \rho_i(- \rho_{parallel}+\rho_i )g \Delta H_i}
+{ 0.5 (f_i \frac{L_i}{D_i} + K_i) \dot{m}_{total}^2 }}$$
 
 
+In this case 
 
+$$\rho_{parallel}= \rho_i (T_{ref})$$
 
+And we are left with:
+$$1 = \sum_i^n \frac{A_{XSi}}{A_{XS{parallel}} }
+\sqrt{ \frac{0.5 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} 
++ K_{parallel}) \dot{m}^2_{total}
+}
+{ 0.5 (f_i \frac{L_i}{D_i} + K_i) \dot{m}_{total}^2 }}$$
 
+In this regard, we have chosen a descriptive reference density which
+is the density of a fluid at a chosen temperature, rather than some
+weighted average of the pipe.
 
-Now this is not always true that the pressure change of the system is equal 
-to the pressure drop. There's hydrostatic pressure as well...
+If there are changes to the buoyancy forces, we will then factor that
+in by calculating the buoyancy term separately and without iteration.
 
-$$\Delta P_i = $$
+Next we shall set some constraints which amke intuitive sense:
 
-
-Next we shall define that the area of this parallel component is
+We shall define that the area of this parallel component is
 the sum of the constituent areas, for convenience. Plus it would make intuitive
 sense.
 
@@ -365,18 +405,28 @@ hydraulic mean diameter.
 
 $$D_{parallel}^2 \frac{\pi}{4} = A_{XSparallel}$$
 
+
+The next part would have us make some assumptions:
+
+Firstly that the friction factor doesn't change too much under 
+the influence of buoyancy forces.
+
+
+Thus, hydraulic mean diameter and cross sectional area of the pipe
+system are now determined.
+
 This would leave us with:
 
 $$
-\sqrt{ \frac{ \rho_{parallel}}
+\sqrt{ \frac{1}
 { (f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel})}}
  =\frac{1}{\sum_i^n A_{XSi}} \sum_i^n A_{XSi}
-\sqrt{ \frac{ \rho_i}{ (f_i \frac{L_i}{D_i} + K_i)}}$$
+\sqrt{ \frac{1}{ (f_i \frac{L_i}{D_i} + K_i)}}$$
 
 So far, all the terms on the right hand side are known, except for the 
 individual $f_i$ which are the constituent darcy friction factors.
 
-Remember, that we have to nondimensionalise density, dynamic viscosity
+Remember, that we have to average density, dynamic viscosity
 and lengthscales. So far we already have done diameter.
 
 So let's have a way to weight our density:
@@ -516,9 +566,17 @@ $$ \left(\sum_i^n w_{XSareai}
 = \frac{16 \pi \mu_{parallel} L_{parallel}}{\dot{m_{total}} } 
 $$
 
+Or so to help me see the correlations better:
+
+$$ \sum_i^n w_{XSareai} 
+\sqrt{\frac{\dot{m}_i}{ 16 \pi \mu_i L_i}}   
+= \sqrt{\frac{\dot{m_{total}}}{16 \pi \mu_{parallel} L_{parallel} } }
+$$
+
+
 Now we may not know the individual mass flowrates for this case, but
 in stokes regime or fully laminar regime, Ohm's law actually applies
-for each branch
+for each branch,
 
 
 $$\Delta P = 0.5 \frac{1}{\rho} (f \frac{L}{D} + K)
@@ -556,19 +614,154 @@ want to iterate it out.
 
 However, what we do know is that the pressure drop over the whole system
 is in essence equal to the pressure drop over each branch, of course 
-taking into account the hydrostatic pressure changes.
+for the sake of guessing the mass flowrate distributions to estimate
+the weight of our viscosity, we will just pretend for a moment 
+that buoyancy forces don't exist.
 
+$$\Delta P = \frac{1}{\rho} (8 \pi \mu L)
+\frac{\dot{m} }{A_{XS}^2 }$$
 
 $$\Delta P = \frac{1}{\rho} (8 \pi \mu L)
 \frac{\dot{m} }{A_{XS}^2 }$$
 
+Now this is true for each and every branch, so we can substitute
+this value of mass flowrate in for branch i.
+
+However, that would cancel out any chance of trying to weight 
+the viscosities for us.
+
+
+$$ \sum_i^n w_{XSareai} 
+\sqrt{\frac{\dot{m}_i}{ 16 \pi \mu_i L_i}}   
+= \sqrt{\frac{\dot{m_{total}}}{16 \pi \mu_{parallel} L_{parallel} } }
+$$
+
+#### using Ohm's law assumption to help us weight mass flowrates to weight viscosity
+
+Suppose we apply a small pressure drop that we have a small mass 
+flowrate in each branch, we also ignore contributions of buoyancy
+for now.
+
+We would then know $m_i$ and $m_{total}$ for this mini experiment
+
+So the pressure losses across these series of pipes becomes:
+
 $$\Delta P = \frac{1}{\rho} (8 \pi \mu L)
 \frac{\dot{m} }{A_{XS}^2 }$$
-Now this is true for each and every branch,
+
+And since the pressure drops across each branch is the same, and Ohm's
+law is obeyed, the ratios of mass flowrates in each of the branches 
+will be equal
+
+$$\Delta P = \frac{1}{\rho} (8 \pi \mu L)
+\frac{\dot{m} }{A_{XS}^2 }$$
+So the mass distributions of the 
+
+$$\Delta P = \frac{1}{\rho_i} (8 \pi \mu L)_i
+\frac{\dot{m}_i }{A_{XSi}^2 }
+=\frac{1}{\rho_{parallel}} (8 \pi \mu L)_{parallel}
+\frac{\dot{m}_{parallel} }{A_{XSparallel}^2 }
+$$
+
+Removing pressure from the equation, density (via boussinesq 
+approximation)
+and the factor of 
+$8\pi$
+
+$$ (\mu L)_i
+\frac{\dot{m}_i }{A_{XSi}^2 }
+= ( \mu L)_{parallel}
+\frac{\dot{m}_{total} }{A_{XSparallel}^2 }
+$$
 
 
+$$\frac{m_i}{m_{total}} =
+\frac{(\mu L)_{parallel}}{(\mu L )_i} w_{XSAreai}^2$$
 
 
+Let's substitute this back here:
+$$ \sum_i^n w_{XSareai} 
+\sqrt{\frac{\dot{m}_i}{ 16 \pi \mu_i L_i}}   
+= \sqrt{\frac{\dot{m_{total}}}{16 \pi \mu_{parallel} L_{parallel} } }
+$$
+
+So we get:
+
+$$ \sum_i^n w_{XSareai} 
+\sqrt{\frac{\frac{(\mu L)_{parallel}}{(\mu L )_i} w_{XSAreai}^2}{ 16 \pi \mu_i L_i}}   
+= \sqrt{\frac{1}{16 \pi \mu_{parallel} L_{parallel} } }
+$$
+
+Let's condense the area ratios
+
+$$ \sum_i^n w_{XSareai}^2 
+\sqrt{\frac{\frac{(\mu L)_{parallel}}{(\mu L )_i} }{ 16 \pi \mu_i L_i}}   
+= \sqrt{\frac{1}{16 \pi \mu_{parallel} L_{parallel} } }
+$$
+
+And now the viscosities and lengthscales
+
+
+$$ \sum_i^n w_{XSareai}^2 \frac{1}{\mu_i L_i}
+\sqrt{\frac{1}
+{ 16 \pi }}   
+= \sqrt{\frac{1}{16 \pi  } }
+\frac{1}{\mu_{parallel} L_{parallel}}
+$$
+
+
+And removing the 16 $\pi$ term:
+$$ \sum_i^n w_{XSareai}^2 \frac{1}{\mu_i L_i} = 
+\frac{1}{\mu_{parallel} L_{parallel}}
+$$
+
+And removing the 16 $\pi$ term:
+$$ \sum_i^n w_{XSareai}^2 \frac{1}{\mu_i } \frac{1}{L_i} = 
+\frac{1}{\mu_{parallel} L_{parallel}}
+$$
+
+We thus come up with a very simple way of weighting our lengths
+and viscosities. 
+
+We can view the lengthscales and area weighting ratios as sort
+of using system dimensions to help in weighting our average viscosity:
+
+And removing the 16 $\pi$ term:
+$$ \sum_i^n  \frac{w_{XSareai}^2}{L_i} \frac{1}{\mu_i }  = 
+\frac{1}{\mu_{parallel} L_{parallel}}
+$$
+
+So if we were to intrepret this as such, then we will have to 
+normalise our weighting factors like so:
+
+$$\sum_i^n  \frac{w_{XSareai}^2}{L_i}   = 
+\frac{1}{ L_{parallel}}
+$$
+
+In this regard, we have found our weighted average of Length
+
+$$ L_{parallel} =    
+\frac{1}{\sum_i^n  \frac{w_{XSareai}^2}{L_i} }
+$$
+
+With this length, we can use this to weight our viscosities:
+
+
+$$ \sum_i^n  \frac{w_{XSareai}^2}{L_i} \frac{1}{\mu_i }  = 
+\frac{\sum_i^n  \frac{w_{XSareai}^2}{L_i} }{\mu_{parallel} }
+$$
+
+$$\frac{\sum_i^n  \frac{w_{XSareai}^2}{L_i} }
+{ \sum_i^n  \frac{w_{XSareai}^2}{L_i} \frac{1}{\mu_i }} =
+  \mu_{parallel} 
+$$
+
+With these, we have found weighting methods for our viscosity,
+and that was really the point anyhow.
+
+So now we have weighting methods for our average viscosity, 
+hydraulic diameter and density. Or at least some methods to reference
+the density.
 
 
 
