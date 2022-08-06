@@ -764,8 +764,68 @@ hydraulic diameter and density. Or at least some methods to reference
 the density.
 
 
+While our density was chosen at some arbitrary isothermal reference 
+temperature, it may not make sense if we were to set it at a fixed 
+value for our representative fLDK component.
+
+We want to squish the entire pipe network into one kind of component.
+And we want to capture the net effect of buoyancy forces on the 
+external flowrate.
+
+How can we do so?
+
+One thing is that we can scale the density using a force balance
+
+$$F_{hydrostaticParallel} = \sum_i^n F_{hydrostatic i}$$
+
+Now we can split fBuoyancy up into pressure and area
 
 
+$$P_{hydrostaticParallel}A_{hydrostaticParallel} 
+= \sum_i^n P_{hydrostatic i}A_{hydrostatici}$$
+
+
+$$\rho_{Parallel} g \Delta H A_{hydrostaticParallel} 
+= \sum_i^n \rho_i g \Delta H A_{hydrostatici}$$
+
+given that g and $\Delta H$ are the same
+
+$$\rho_{Parallel}  A_{hydrostaticParallel} 
+= \sum_i^n \rho_i  A_{hydrostatici}$$
+
+Unless a pipe is angled 90 degrees, it is not likely hydrostatic area
+is equal to cross sectional area.
+
+How should the hydrostatic area vector be considered. 
+
+We should consider that the hydrostatic force that we are interested
+in is in the direction of the flow. So indeed using cross sectional
+area would be fine. And shall we use the entrance or exit cross section
+area?
+
+$$\rho_{Parallel}  A_{XSparallel} 
+= \sum_i^n \rho_i  A_{XSi}$$
+
+By convention we use entrance cross sectional area to calculate a 
+representative reynold's number. So for a general pipe or component
+we need to use two different cross sectional areas if possible.
+Otherwise, a simplifying assumption would be to assume these areas
+are the same.
+
+As long as we use the same area to weight our density always, shouldn't
+be too much of an issue
+
+$$\rho_{Parallel}  A_{XSparallel} 
+= \sum_i^n \rho_i  A_{XSi}$$
+
+So this way to weighting densities should in theory capture
+the effects of individual hydrostatic pressures on the net hydrostatic
+pressure exerted by this parallel assembly of components.
+
+
+
+We also note that it's likely the entrance and exit of the pipe
+have different areas. 
 
 
 
