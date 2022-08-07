@@ -759,6 +759,8 @@ $$
 With these, we have found weighting methods for our viscosity,
 and that was really the point anyhow.
 
+
+#### using a hydrostatic force balance to weight density 
 So now we have weighting methods for our average viscosity, 
 hydraulic diameter and density. Or at least some methods to reference
 the density.
@@ -1405,6 +1407,135 @@ Also, i forgot a few unit tests for my IFluidEntity anyhow when using the
 interpolation thingy. Like the dynamic pressure tests are not done yet.
 For Isothermal pipe it isn't implemented properly and for fluidparallel subckt
 it's not even implemented.
+
+
+### Hybrid Bejan number and buoyancy correction method
+
+The trouble with the Bejan number method is that it becomes very 
+confusing as to how to weigh density, friction factors and lengthscales.
+
+When buoyancy forces come in, the equation becomes very messy.
+
+The other way is to simply iterate our way through, seeing that our
+setup is parallel. 
+
+Problem is, with nested parallel loops, this will take a long time.
+
+#### An initial guess for iteration
+
+There are several ways to speed this up given that the pressure change
+(not form losses) across each parallel branch are equal.
+
+Suppose i have the $\dot{m}_{total}$ mass flowrate through the whole
+pipe. Now i force it through onemass any one branch of the pipe.
+
+I will then get an appropriate pressure drop pretty quickly.
+
+I then apply this pressure drop across the whole parallel setup to
+got a guess $\dot{m}_{totalGuess}$ guessed mass flowrate. Of course,
+the guessed mass flowrate will be several times bigger than
+the set total mass flowrate.
+
+Since this is so, i have a ratio of the guessed mass flowrate to the
+total mass flowrate. I will take the branch mass flowrate in the initial
+pipe to be the ratio of the total mass flowrate to this initial guess
+mass flowrate.
+
+I will then obtain a new pressure change, and apply this uniformly 
+across the entire pipe system. I then iterate until a set tolerance,
+perhaps 1 or 2\% will suffice. The key here is speed. As the simulation
+is planned to happen in almost realtime, but accuracy needs to be
+sufficient but perhaps within instrument error (one standard deviation
+of the flowmeter reading).
+
+
+If we just leave things at one iteration, i can get an estimate of
+a pressure drop very quickly. Neverthless, the relative flow 
+ratios of the mass flowrates for the pipe may not apply 
+at both of these flowrates.
+
+Since that is the case, it may be better to have another way of 
+guessing this initial mass flowrate.
+
+
+Suppose again that i have a set mass flowrate $\dot{m}_{total}$.
+
+I can map out the
+pressure losses using the bejan number method described before and
+completely ignore buoyancy forces. I would then have a set pressure
+drop unaffected by buoyancy forces.
+
+I can estimate the pressure change by adding this pressure drop to
+the mean hydrostatic pressure across the pipes. 
+
+$$\Delta P_{change} = \Delta P_{loss} + h\rho g$$
+
+
+And again i take one
+branch as a reference branch, and I check the mass flowrate 
+$\dot{m}_{branch}$
+
+Now i apply this pressure change $\Delta P_{change}$ to 
+all branches of the pipe WITH
+buoyancy forces. I would then get an iterated total mass flowrate.
+$\dot{m}_{totalGuess}$
+This value may be more or less than the total mass flowrate.
+
+Suppose that natural convection is aiding flow for all branches, 
+for a set pressure change across the branch, the branch flowrate with
+natural convection will be more than branch flowrate neglecting 
+natural convection so that:
+
+
+$$\dot{m}_{totalGuess} > \dot{m}_{total}$$
+
+In this setup we must then reduce the branch mass flowrate slightly
+to correct for the natural convection aiding flow
+
+What i then do is to correct the branch mass flowrate
+
+$$\dot{m}_{branchCorrected} = \dot{m}_{branch} 
+\frac{\dot{m}_{total}}{\dot{m}_{totalGuess}}$$
+
+We would then get buoyancy corrected branch flowrate for this branch
+and we can then estimate the pressure change across the branch. And
+obtain a guessed total mass flowrate, which should me much closer 
+to the set total mass flowrate.
+
+We cna then return the pressure change to the environment, and use the
+pre-exising derivaitons of fLDK formulas to calculate the net 
+pressure drop. And then we subtract this pressure drop from the 
+pressure change to obtain a net hydrostatic pressure increase or 
+decrease.
+
+
+This is one iteration. Here, so long as the forced convection is much
+greater than natural convection, the ratios of the mass flowrate 
+in the branch should. Otherwise we can keep iterating until we stop.
+
+
+### what if natural convection dominates the flow?
+For zero total mass flowrate however, we won't be doing good with this
+method since $\dot{m}_{total} = 0$ and there is no means for us to
+guess mass flowrate.
+
+In this regard, we should set the pressure change in each branch as
+the hydrostatic pressure drop across the whole parallel pipe system.
+
+In general, there would be branches with posistive and negative flows,
+they should all sum to zero however.
+
+But that's another problem for another time.
+
+
+
+
+
+
+
+
+
+
 
 ## Nested tests with FluidSeriesCircuits
 
