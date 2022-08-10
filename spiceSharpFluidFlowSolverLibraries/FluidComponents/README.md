@@ -558,22 +558,301 @@ not be the case. And it's up to the user to judiciously decide.
 However, we shall not consider that issue here.
 
 The scenario now is that we have determined the driving force supplied
-by this parallel pipe section due to buoyancy factors.
+by this parallel pipe section due to buoyancy factors. Once that driving
+force is determined, we can use the fLDK factors for the parallel
+pipe system to estimate a total mass flowrate.
 
-$$\Delta P_{totalChange} = - 0.5 \frac{1}{\rho} (f \frac{L}{D} + K)
-\frac{\dot{m}^2 }{A_{XS}^2 } + \rho g \Delta H$$
-
-$$-\Delta P_{totalChange} +\rho g \Delta H = 0.5 \frac{1}{\rho} 
-(f \frac{L}{D} + K) \frac{\dot{m}^2 }{A_{XS}^2 } $$
-
-
-The fact is that we want 
+This is assuming we can even estimate fLDK for the parallel subcircuit
+in the first place. We shall discuss that in another section.
 
 
+And we now want to determine a pressure loss term for 
+this given a mass flowrate.
+
+For purposes of speed, we want to represent the pressure loss terms
+of this parallel fluid subcircuit using this singular correlation.
 
 
+$$\Delta P_{totalChange} = 0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
+ - \rho_{parallel} g \Delta H_{parallel}$$
+
+The trouble is, depending on the relative temperatures of the 
+branches in parallel, the fLDK factor can change. For the same
+$\rho_{parallel}$ using the aforementioned weighting method,
+the different branches can be experiencing aiding or opposing mixed 
+convection depending on the temperature distribution. As such,
+fLDK for each branch will be different in those scenarios, and 
+fLDK for the parallel system in total will also change.
+
+We can of course obtain this iteratively, but that is too time consuming
+and we want to avoid is as far as possible. We would however like to
+obtain a pressure loss term perhaps within 1% of the iteration methods
+using another method to guestimate this overall pressure loss term.
+
+However, the challenge is we cannot solve for this pressure drop 
+iteratively using a while loop. Otherwise the simulation would be too
+computationally resource heavy and time consuming.
+
+### Buoyancy Correction Step
+For a pipe system we consider:
+
+$$Be_{Di} = 0.5 Re_i^2 (f_i \frac{L_i}{D_i} +K_i)$$
+
+In effect it is easy for us to derive this correlation for a single
+pipe because we can decouple the effects of buoyancy and pressure loss
+in these equations.
+
+Thus if we were to ignore buoyancy altogether, we could also obtain:
+
+$$Be_{Dparallel} = 0.5 Re_{parallel}^2 (
+	f_{parallel }  \frac{L_{parallel } }
+	{D_{parallel } } +K_{parallel } )$$
+
+Thus, we could still obtain fLDK parallel without buoyancy, and perhaps
+perform a few steps to correct for buoyancy effects within the branch.
+
+The only question is how?
+
+We shall have to take advantage of the fact that pressure change
+across each branch is equal.
+
+$$ -\Delta P_{totalChange}= 0.5 \frac{1}{\rho_i} 
+(f_i \frac{L_i}{D_i} + K_i) 
+\frac{\dot{m}_i^2 }{A_{XSi}^2 } - \rho_i g \Delta H_i$$
+
+If we were to equate this to the components of the system:
+
+$$ 0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
+ - \rho_{parallel} g \Delta H_{parallel}
+$$
+$$ = 0.5 \frac{1}{\rho_i} 
+(f_i \frac{L_i}{D_i} + K_i) 
+\frac{\dot{m}_i^2 }{A_{XSi}^2 } - \rho_i g \Delta H_i$$
+
+Rearranging to make the pressure loss terms across each branch labelled
+branch i the subject:
+
+$$ 0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
+ - \rho_{parallel} g \Delta H_{parallel}+ \rho_i g \Delta H_i
+$$
+$$ = 0.5 \frac{1}{\rho_i} 
+(f_i \frac{L_i}{D_i} + K_i) 
+\frac{\dot{m}_i^2 }{A_{XSi}^2 } $$
+
+Note that the total change in height for each branch must also be the
+same as that in parallel:
+
+$$ 0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
+ +(\rho_i- \rho_{parallel}) g \Delta H_{parallel}
+$$
+$$ = 0.5 \frac{1}{\rho_i} 
+(f_i \frac{L_i}{D_i} + K_i) 
+\frac{\dot{m}_i^2 }{A_{XSi}^2 } $$
+
+We note that at this stage, the pressure loss over branch i can be
+explicitly calculated:
+
+$$\Delta P_{lossBranch\ i} = 0.5 \frac{1}{\rho_i} 
+(f_i \frac{L_i}{D_i} + K_i) 
+\frac{\dot{m}_i^2 }{A_{XSi}^2 } 
+=
+$$
+
+$$ 0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
+ +(\rho_i- \rho_{parallel})\rho_i g \Delta H_{parallel}
+$$
+
+Assuming that each parallel branch already has the Reynold's number
+and Bejan number mapped out, we can easily obtain the mass flowrate
+across that pipe branch:
+
+$$\dot{m_i}= 
+A_{XSi}\sqrt{ \frac{\rho_i(0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
++ (- \rho_{parallel}+\rho_i )\rho_i g \Delta H_i)}
+{ 0.5(f_i \frac{L_i}{D_i} + K_i)}}$$
+
+This assumes the fLDK term for each branch can be easily and quickly
+calculated (we need a Re vs Be correlation for which we can use):
 
 
+$$Be_{Di} = 0.5 Re_i^2 (f_i \frac{L_i}{D_i} +K_i)$$
+
+One can use the interpolation for this parallel pipe branch, read off
+the Reynold's number, and calculate fLDK for this branch using:
+
+$$f_i \frac{L_i}{D_i} +K_i = \frac{Be_{Di}}{0.5 Re_i^2}$$
+
+Given that the correlation is already there, this step is relatively
+straightforward.
+
+Of course, if the pressure drop is negative, we don't get imaginary
+numbers here, we simply reverse the direction of flow for the mass 
+flowrate.
+
+
+Once that is done, we can compute a new total mass flowrate by
+summing up the mass flowrate of the individual branches:
+
+$$\dot{m}_{totalEstimated} = \sum_i^n A_{XSi}
+\sqrt{ \frac{\rho_i(0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
++ (- \rho_{parallel}+\rho_i )\rho_i g \Delta H_i)}
+{ 0.5(f_i \frac{L_i}{D_i} + K_i)}}$$
+
+It is apparent that the total mass flowrate calculated from this step
+will not be the same as the mass flowrate specified externally.
+
+If the pipes are generally experiencing aiding mixed convection,
+then the total estimated mass flowrate calculated here 
+$\dot{m}_{totalEstimated}$
+will be more than that of the mass flowrate without aiding mixed
+convection. In effect, we have overestimated the fLDK term for 
+the parallel setup.
+
+Having an average $\rho_{parallel}$ partially corrects for this case,
+but in terms of finding the branch flowrates accurately, one must go
+through these steps of iteration. To perform additional correction.
+
+If fLDK is overestimated, we can correct for this by assuming a lower
+pressure loss term across the entire parallel pipe branch. Thus,
+we can make corrections to the fLDK term by using a corrected mass
+flowrate to estimate fLDK.
+
+
+$$\dot{m}_{corrected} = \dot{m}_{parallel} *\frac{\dot{m}_{parallel}}
+{\dot{m}_{totalEstimated}}$$
+
+
+$$\dot{m}_{corrected} = \frac{\dot{m}^2_{parallel}}
+{\dot{m}_{totalEstimated}}$$
+
+Using this corrected mass flowrate, we can re-estimate fLDK parallel
+using the Bejan number vs Reynold's number correlation,
+
+
+$$Be_{Dparallel} = 0.5 Re_{corrected}^2 (
+	f_{corrected }  \frac{L_{corrected } }
+	{D_{corrected } } +K_{corrected } )$$
+
+We can then use this new pressure loss term and assume this is the 
+pressure loss for the specified flowrate because we already did one
+correction step.
+
+This would then be a quick way to estimate pressure loss terms for
+the entire parallel setup when correcting for natural buoyancy.
+
+It remains to be seen whether this step gets us sufficiently close.
+
+The assumption here is that forced convection will dominate the flow,
+rather than natural convection, and that the buoyancy corrections to 
+obtain the pressure losses and fLDK factors are small. So that only
+a single step is required to correct for reduced or additional losses
+due to aiding or opposing mixed convection.
+
+Of course, one could add two or three more steps, but the key here is
+to avoid using a while loop so that calculation time can be minimised.
+
+
+### Possible Numerical Instabilies
+
+For such a calculation, the way we estimate the corrected mass flowrate
+depends on:
+
+$$\dot{m}_{corrected} = \frac{\dot{m}^2_{parallel}}
+{\dot{m}_{totalEstimated}}$$
+
+Any time division is in the picture, there would be trouble the 
+denominator approaches zero.
+
+Now if the total estimated mass flowrate is close to zero, and the 
+stipulated mass flowrate is a significant nonzero value, then it is 
+apparent that this method of calculating mass flowrates is not
+suitable.
+
+Major corrections are needed. And the underlying assumptions are 
+not correct.
+
+Programatically, we can just throw an exception if this occurs.
+
+The condition to throw this exception is that:
+
+$$\frac{\dot{m}_{totalEstimated}}{\dot{m}_{parallel}} < 0.01$$
+
+This would then cover situations where the flow would have reversed
+or we have zero flow.
+
+
+#### zero external flow
+
+When exactly zero external flow is expected, we have for the
+branch flowrates:
+
+$$\dot{m_i}= 
+A_{XSi}\sqrt{ \frac{\rho_i(0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
++ (- \rho_{parallel}+\rho_i )\rho_i g \Delta H_i)}
+{ 0.5(f_i \frac{L_i}{D_i} + K_i)}}$$
+
+$$\dot{m_i}= 
+A_{XSi}\sqrt{ \frac{ (- \rho_{parallel}+\rho_i )\rho_i g \Delta H_i}
+{ 0.5(f_i \frac{L_i}{D_i} + K_i)}}$$
+
+One can only hope they sum up to zero within some instrument error
+value.
+
+Otherwise, an exception will have to be thrown.
+
+
+### When natural convection dominates flow
+
+When natural convection dominates flow, eg. 100\% natural circulation
+where a heated area of the loop causes fluid to rise and a cooler
+area of the loop causes fluid to fall,
+
+We would still account for the natural convection by weighting our
+density properly and sum it all over the loop.
+
+However, the pressure loss across the parallel branches driving the flow
+will be vastly different compared to an external force driving the flow.
+
+If an external force drives a flow across a heat producing region with
+bypass regions, all branches have some degree of flow. But if said heat
+producing region is driving the flow, then the bypass regions would have
+little flow going through those regions as there is little fluid going 
+through them. They may not sink so much because the temperature of
+those branches is high enough not to let it flow downwards,
+but the flow through them may be minimal as the fluid in the tee region
+is relatively similar in temperature to them.
+
+
+One can only hope this algorithm works well enough to correct for the
+fLDK factors. Programatically speaking, we can just throw an exception
+and wait for further notice if this occurs, or perform a series of
+tests in order to ascertain if the correction algorithm is good enough.
+
+This will be the subject of a study in itself. 
+
+In a sense, this method will have to be validated on a system by 
+system basis.
+
+## Problem 2b: Estimating fLDK for the parallel subcircuit so we can obtain mass flowrate in the first place
+
+Now, in order to calculate the fLDK factors, we often used the 
+assumption that 
 
 
 ## Problem 3: deriving how to average nondimensional parameters
