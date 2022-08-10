@@ -520,9 +520,57 @@ the effects of individual hydrostatic pressures on the net hydrostatic
 pressure exerted by this parallel assembly of components.
 
 If anything else, the user should then judiciously choose the correct
-hydrostatic cross sectional area.
+hydrostatic cross sectional area. But it should minimise the tee 
+height and the user must use a plane with the normal parallel to 
+direction of gravitational acceleration, and cut the pipe using that 
+plane. The projected areas upon the plane will provide the area of 
+weightage for this method.
+
+Fortunately, this only has to be done once and only once for a parallel
+pipe branch. After a single calculation, perhaps by hand, then 
+the user can move on to using other parts of the code.
+
+If anything else, and if there are pumps in the parallel setup, one
+can again use a force balance and cross sectional
+areas to give weights for the average density.
+
+### Program design implications
+Programatically speaking, each parallel branch must be able to supply
+a hydrostatic pressure and a corresponding hydrostatic area with which
+to weight density.
+
+The code will then perform averaging using this formula:
+
+$$\rho_{Parallel}  A_{XSparallel} 
+= \sum_i^n \rho_i  A_{XSparalleli}$$
+
+To supply the average density of this system.
+
+
 
 ## Problem 2: Solving the issue of Aiding and Opposing Mixed Convection
+
+Now we have decided to weight density by the cross sectional area.
+In a simplifying assumption, that cross sectional area would be
+the hydraulic cross sectional area, but more often than not, it will
+not be the case. And it's up to the user to judiciously decide.
+
+However, we shall not consider that issue here.
+
+The scenario now is that we have determined the driving force supplied
+by this parallel pipe section due to buoyancy factors.
+
+$$\Delta P_{totalChange} = - 0.5 \frac{1}{\rho} (f \frac{L}{D} + K)
+\frac{\dot{m}^2 }{A_{XS}^2 } + \rho g \Delta H$$
+
+$$-\Delta P_{totalChange} +\rho g \Delta H = 0.5 \frac{1}{\rho} 
+(f \frac{L}{D} + K) \frac{\dot{m}^2 }{A_{XS}^2 } $$
+
+
+The fact is that we want 
+
+
+
 
 
 
@@ -575,12 +623,6 @@ pressure drop rather than a pressure change across the pipe. This is because
 we neglect hydrostatic pressure. So in actuality,
 
 
-$$\Delta P_{totalChange} = 0.5 \frac{1}{\rho} (f \frac{L}{D} + K)
-\frac{\dot{m}^2 }{A_{XS}^2 } - \rho g \Delta H$$
-
-$$\Delta P_{totalChange} +\rho g \Delta H = 0.5 \frac{1}{\rho} 
-(f \frac{L}{D} + K) \frac{\dot{m}^2 }{A_{XS}^2 } $$
-Let's make the mass flowrate the subject
 
 
 $$\frac{\dot{m}^2}{A_{XS}^2} = 
