@@ -55,8 +55,115 @@ For such circuits, we can easily obtain mass flowrates given a pressure drop sin
 the solver will just apply the same pressure drop to each branch and obtain
 the mass flowrate.
 
-Getting it the other way round sometimes requires iteration however. And that slows
-things down.
+Getting it the other way round sometimes requires iteration however. 
+And that slows things down. A typical iteration of a 
+FluidParallelSubCircuit containing three isothermal pipes within
+a FluidSeriesCircuit containing only this FluidParalleSubCircuit
+takes about 1 minute to solve.
+
+## nested iteration algorithm slows things down
+
+Each isothermal pipe contains an explcit function to derive a pressure 
+drop given a mass flowrate. To obtain mass flowrate from a given 
+pressure loss term (excluding hydrostatic pressure changes), a mass
+flowrate is guessed, and a pressure drop is obtained. The mass flowrate
+is changed iteratively using MathNet's algorithm library until the 
+desired pressure drop is reached. It is a hybrid algorithm that is 
+based on newton raphson and other methods but falls back to bisection
+so that if a solution exists within the bounds, convergence is 
+guaranteed.
+
+With hydrostatic pressure change however, we then need to add the
+$\Delta h \rho g$ value to the dynamic pressure loss term obtained
+to get the total pressure change from start to end of the pipe.
+
+When connected in series, and one wants to find the pressure loss terms
+one can guess a mass flowrate through the series of pipes, and then
+iteratively find a pressure loss value that matches the desired pressure
+drop across this pipe system using the same mathnet algorithm.
+
+Now when it comes to a parallel pipe system having multiple flow paths
+each branch would have at least one fluid component. And each component
+would use an iterative algorithm to find mass flowrate from pressure 
+drop. In this case using MathNet's C\# libraries. 
+
+Now parallel subsystems or subcircuits would be part of a larger series
+circuit. And the larger series circuit would normally iteratively guess
+the mass flowrate values to obtain a specified pressure drop. 
+
+The algorithm would be:
+
+1. Take the specified pressure added by some pump
+2. Add the hydrostatic contributions by summing $\Delta h \rho g$ 
+around the loop
+3. Use this total pressure change as the specified pressure, and 
+obtain the mass flowrate using iterations of guessing mass flowrate
+until specified pressure is achieved.
+
+Now when parallel circuits are involved in this series circuit, 
+the overall fluid series circuit solver would need to know the pressure
+loss for a parallel subcircuit given a mass flowrate. Moreover, we need
+to know the hydrostatic contribution $\Delta h \rho g$ of this 
+parallel subcircuit so that we can use that to obtain a suitable overall
+mass flowrate of the loop.
+
+The problem is for a non isothermal case, densities will differ across
+each branch, and so the $\Delta h \rho g$ will differ depending on 
+which branch one is looking at. So this is one major issue to solve.
+
+
+Assuming we do solve it, the next problem would then be to guess
+a pressure drop given a specified external mass flowrate.
+
+The parallel subcircuit algorithm would be:
+
+1. Take the specified mass flowrate specified by the external series 
+circuit
+2. Guess presusre drop by guessing a pressure change term across each 
+branch obtain mass flowrates of each branch, 
+and keep iterating the pressure change the until the sum of mass flowrates equals the external specified mass flowrate
+
+Now each parallel subcircuit would not only contain one pipe within 
+each branch, but possibly a series of pipes and components. Each of
+which guesses mass flowrate given a specified pressure drop iteratively
+as well.
+
+The series subcircuit within the parallel subcircuit algorithm will be:
+
+
+1. Take the specified pressure change across the branch 
+2. Add the hydrostatic contributions by summing $\Delta h \rho g$ 
+around the loop
+3. Use this total pressure change as the specified pressure, and 
+obtain the mass flowrate using iterations of guessing mass flowrate
+until specified pressure is achieved.
+
+This would mean we would have nested iterative methods to obtain a
+simple pressure loss term over a series of pipes with a parallel branch.
+If we have multiple parallel subcircuits nested within the main parallel
+subcircuits, the iteration time would increase exponentially.
+
+## time requirements for a realtime simulation
+
+Thus, even for a simple of three isothermal pipes within a parallel 
+subcircuit, and that within a series circuit, it took 1 minute to
+calculate pressure loss term given a mass flowrate value. However
+for a simulation expected to run in real time, where we expect mass 
+flowrate to be calculated in millesecond intervals, this is not 
+acceptable. For such a simulation, both mass flowrate and heat transfer
+calculations should occur within <50 ms, because should we want 
+mass flowrates to be updated realistically, eg. every 90-100 ms, we 
+would not only need time for calculating mass flowrates, we would 
+also need to calculate heat transfer rates and temperature distributions
+for each component. Not only that, we would then need to take time to
+upload these results to some server, and broadcast it to a piece of 
+control or Supervisory Contorl and Data Acquisition (SCADA) software
+via OPCUA.
+
+All of this needs to happen every 100 ms or 0.1 s at the very most.
+
+Thus, we will need some methods to speed up these iterative calculations
+significantly so that this time requirement can be met.
 
 ## interpolation methods
 
