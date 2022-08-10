@@ -879,6 +879,10 @@ it to situations where forced flow dominates the parallel subcircuit,
 the flow is not driven by natural convection. That is if we want
 the flow estimates here to be accurate.
 
+We should add a caveat that the flow through the loop cannot be driven
+by a source within the parallel subcircuit; another algorithm must
+be used to solve such problems.
+
 
 ## Problem 3: deriving how to average nondimensional parameters
 
