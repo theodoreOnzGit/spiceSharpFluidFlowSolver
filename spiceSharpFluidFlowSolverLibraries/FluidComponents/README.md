@@ -849,15 +849,52 @@ This will be the subject of a study in itself.
 In a sense, this method will have to be validated on a system by 
 system basis.
 
+The only boon to this step is that it can provide estimates rather
+quickly and without iteration.
+
 ## Problem 2b: Estimating fLDK for the parallel subcircuit so we can obtain mass flowrate in the first place
 
-Now, in order to calculate the fLDK factors, we often used the 
-assumption that 
+Now, in order to calculate the pressure losses given a mass flowrate,
+we have to calculate the mass flowrate first assuming a pressure loss
+in the wider series circuit.
+
+This involved the use of estimating fLDK for the branch in parallel when
+natural convection is negligible. Thereafter we could plot this fLDK
+and use it as an initial guess in order to apply some correction step
+to estimate branch flowrates and also overall pressure loss within
+the parallel subcircuit.
+
+We assumed an fLDK for this parallel sub circuit and estimated an
+external mass flowrate. 
+However, correcting pressure loss terms for buoyancy and
+therefore fLDK would cause the prevailing mass flowrate to change,
+and which would then necessitate iterating for yet another
+pressure loss and fLDK within this parallel subcircuit until
+the mass flowrate and pressure losses somehow converge.
+
+This is not ideal..
+
+We then have to limit the capabilites of this algorithm, and limit
+it to situations where forced flow dominates the parallel subcircuit,
+the flow is not driven by natural convection. That is if we want
+the flow estimates here to be accurate.
 
 
 ## Problem 3: deriving how to average nondimensional parameters
 
-Firstly, what are the parameters we need to use to nondimensionalise pressure
+Recall that we want to nondimensionalise this equation:
+
+$$\Delta P_{totalChange} = 0.5 \frac{1}{\rho_{parallel}} 
+(f_{parallel} \frac{L_{parallel}}{D_{parallel}} + K_{parallel}) 
+\frac{\dot{m}_{parallel}^2 }{A_{XS{parallel}}^2 }
+ - \rho_{parallel} g \Delta H_{parallel}$$
+into 
+
+$$Be_{Dparallel} = 0.5 Re_{parallel}^2 (
+	f_{parallel }  \frac{L_{parallel } }
+	{D_{parallel } } +K_{parallel } )$$
+
+Lastly, what are the parameters we need to use to nondimensionalise pressure
 drop and mass flowrate?
 
 1. hydraulic diameter $D_H$
