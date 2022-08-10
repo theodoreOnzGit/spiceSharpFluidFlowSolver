@@ -308,9 +308,227 @@ pipe system.
 
 The main issue then is how dynamic viscosity $\mu$ is calculated.
 
-## 
+## Problem 1: Determining Hydrostatic Pressure Contributions
 
-### deriving how to average nondimensional parameters
+Now suppose we had a normal pipe which was slightly elevated,
+if we were to have fluid flowing through the pipe at a fixed mass
+flowrate, we would have some pressure drop due to frictional losses
+and some pressure increase due to elevation.
+
+The total change in pressure will be the sum of the pressure loss 
+term and the pressure increase
+
+$$\Delta P_{change} =  - 0.5 \frac{\dot{m}^2}{A_{XS}^2 \rho} 
+(f_{darcy}\frac{L}{D_H}  + K) + \rho g \Delta h
+$$
+
+The friction term i will just refer to as fLDK from now on.
+The fLDK term is the pressure loss term which is nondimensionalised 
+using $Be_D$
+
+$$Be_D = 0.5 Re^2 (f_{darcy}\frac{L}{D_H}  + K)$$
+
+In counting hydrostatic pressure for a column of fluid,
+ we would think about the weight 
+exerted by a column of fluid and divide that by the area of contact.
+
+If we want to establish the hydrostatic pressure of the fluid upon
+the fluid below the pipe system, we can think about the weight of
+the fluid and divide it accordingly by the cross sectional area.
+
+How can we do so?
+
+Let us first write down a force balance. We can say that the 
+hydrostatic force exerted by the fluid within a parallel subcircuit
+on the fluid below is the sum of all the hydrostatic forces exerted
+by each of the branches.
+
+$$F_{hydrostaticParallel} = \sum_i^n F_{hydrostatic i}$$
+
+Hydrostatic forces can be thought of as the product of 
+hydrostatic pressure multiplied by the area:
+
+$$P_{hydrostaticParallel}A_{hydrostaticParallel} 
+= \sum_i^n P_{hydrostatic i}A_{hydrostatici}$$
+
+
+$$\rho_{Parallel} g \Delta H A_{hydrostaticParallel} 
+= \sum_i^n \rho_i g \Delta H A_{hydrostatici}$$
+
+given that g and $\Delta H$ are the same
+
+$$\rho_{Parallel}  A_{hydrostaticParallel} 
+= \sum_i^n \rho_i  A_{hydrostatici}$$
+
+We can then see that the weighted average of fluid density
+should be by the cross sectional area
+
+$$\rho_{Parallel}   
+= \frac{\sum_i^n \rho_i  A_{hydrostatici}}{A_{hydrostaticParallel}}$$
+
+$$\rho_{Parallel}   
+= \frac{\sum_i^n \rho_i  A_{XSi}}{\sum_i^n A_{XSi}}$$
+
+This of course assumes that the area of contact exerted by each pipe is
+the cross sectional area.
+
+However, when pipes merge, it is not usually done at a flat angle. 
+Usually pipes are bent:
+
+![pipe photo](https://images.pexels.com/photos/3626605/pexels-photo-3626605.jpeg?cs=srgb&dl=pexels-daria-shevtsova-3626605.jpg&fm=jpg)
+photo credits: pexels royalty free image usable without attribution
+
+In these cases, we can see a main pipe branch splitting off into several branches. How then can we consider the hydrostatic pressure
+contributions in such a way?
+
+If a pipe is angled such that it is parallel to the ground, we need
+not really worry about pressure drop contributions as much of the weight
+of the fluid is supported by the pipe itself, not the fluid below it.
+
+To the contribution of pressure at 90 degrees is:
+
+$$\Delta h = D_H \sin \theta = D_H$$
+
+$\theta$ is the angle of the pipe compared to the normal.
+
+How should the hydrostatic area vector be considered? For the case
+of the column of fluid lying flat on the ground, the cross sectional
+area would be zero as we need only consider the pressure exerted by the 
+fluid above the pipe junction.
+
+So the cross sectional area varies like the cosine of inclined angle
+
+
+$$A_{parallelBranch} = A_{XS} \cos \theta$$
+
+And the total height of the said branch should be 
+
+$$\Delta h = D_H \sin \theta + L cos \theta$$
+
+The force is then:
+
+$$F_{hydrostaticBranch} = \Delta h \rho g A_{parallelBranch}$$
+$$F_{hydrostaticBranch} = (D_H \sin \theta + L cos \theta) 
+\rho g A_{XS} \cos \theta$$
+
+
+$$F_{hydrostaticBranch} = (D_H \sin \theta \cos \theta 
++ L cos^2 \theta) 
+\rho g A_{XS} $$
+
+$$F_{hydrostaticBranch} = (D_H \sin \theta \cos \theta 
++ L cos^2 \theta) 
+\rho g A_{XS} $$
+
+$$F_{hydrostaticBranch} = 0.5(D_H \sin 2 \theta  
++ L (cos 2 \theta +1))
+\rho g A_{XS} $$
+
+We can simply things noting that unless the parallel branch is really
+short,
+
+$$L >> D_H$$
+
+Our equation then simplifies to:
+
+$$F_{hydrostaticBranch} = 0.5( L(cos 2 \theta +1))
+\rho g A_{XS} $$
+
+$$F_{hydrostaticBranch} =  L(cos^2 \theta)
+\rho g A_{XS} $$
+
+
+$$F_{hydrostaticBranch} =  Lcos \theta
+\rho g A_{XS} \cos \theta$$
+
+$$F_{hydrostaticBranch} =  h
+\rho g A_{XS} \cos \theta$$
+
+Now this means that in general we should always weigh our cross 
+sectional area by the angle at which contact is made
+
+
+$$\rho_{Parallel}   
+= \frac{\sum_i^n \rho_i  A_{XSi} \cos \theta_i}
+{\sum_i^n A_{XSi} \cos \theta_i}$$
+
+Now of course, if we want to be exact, then we must also include 
+pressure contributions at the tee of the pipe, and depending how the
+tee is shaped, we have to apply different formulas.
+
+For simplicity, i opt to ignore the tee area as we might just consider 
+it in a separate component.
+
+However, suppose we have a 90 degree bend at the pipe junction,
+and the parallel pipe segment bends upwards at 90 degrees.
+
+![pipe photo](https://images.pexels.com/photos/3626605/pexels-photo-3626605.jpeg?cs=srgb&dl=pexels-daria-shevtsova-3626605.jpg&fm=jpg)
+photo credits: pexels royalty free image usable without attribution
+
+The formula above suggests we should ignore such a pipe because at the
+junction, the angle of contact is 90 degrees. Thus, this formula can
+only apply for special cases of pipes and tees.
+
+To avoid such cases, we can simply use:
+
+$$\rho_{Parallel}  A_{XSparallel} 
+= \sum_i^n \rho_i  A_{XSi}$$
+
+Such a case would account for all the possible bends within the pipe,
+even if such bends go below and then above the tee junction area.
+
+
+
+And now for the next part, what if the piping system is asymmetric?
+And the cross sectional area at the top and bottom of the pipe would 
+differ? For hydrostatic pressure, we are not considering the pressure
+of the fluid column above the pipe, but rather below,
+
+we should be using the cross sectional areas which are closer to the
+ground for reference, regardless of flow path.
+
+
+#### General principle for obtaining cross sectional areas
+In general
+, even if we have several pipe bends, and the pipes differ in
+cross sectional area throughout the system, the general principle
+if one were to use this kind of force balance is to insert a plane
+parallel to the ground, and then take the cross sectional areas
+of the pipes projected on such a plane. We shall then weigh the 
+hydrostatic pressures by those cross sectional areas.
+
+
+$$\rho_{Parallel}  A_{XSparallel} 
+= \sum_i^n \rho_i  A_{XSparalleli}$$
+
+In general 
+
+$$A_{XSparallel} \neq A_{XS}$$
+
+
+By convention we use entrance cross sectional area to calculate a 
+representative reynold's number. So for a general pipe or component
+we need to use two different cross sectional areas if possible.
+
+#### Simplifying assumption: Constant cross section area in pipe branch.
+Otherwise, a simplifying assumption would be to assume these areas
+are the same. As long as we use the same area to weight our density always, shouldn't be too much of an issue.
+
+
+So this way to weighting densities should in theory capture
+the effects of individual hydrostatic pressures on the net hydrostatic
+pressure exerted by this parallel assembly of components.
+
+If anything else, the user should then judiciously choose the correct
+hydrostatic cross sectional area.
+
+## Problem 2: Solving the issue of Aiding and Opposing Mixed Convection
+
+
+
+
+
+## Problem 3: deriving how to average nondimensional parameters
 
 Firstly, what are the parameters we need to use to nondimensionalise pressure
 drop and mass flowrate?
@@ -979,64 +1197,6 @@ While our density was chosen at some arbitrary isothermal reference
 temperature, it may not make sense if we were to set it at a fixed 
 value for our representative fLDK component.
 
-We want to squish the entire pipe network into one kind of component.
-And we want to capture the net effect of buoyancy forces on the 
-external flowrate.
-
-How can we do so?
-
-One thing is that we can scale the density using a force balance
-
-$$F_{hydrostaticParallel} = \sum_i^n F_{hydrostatic i}$$
-
-Now we can split fBuoyancy up into pressure and area
-
-
-$$P_{hydrostaticParallel}A_{hydrostaticParallel} 
-= \sum_i^n P_{hydrostatic i}A_{hydrostatici}$$
-
-
-$$\rho_{Parallel} g \Delta H A_{hydrostaticParallel} 
-= \sum_i^n \rho_i g \Delta H A_{hydrostatici}$$
-
-given that g and $\Delta H$ are the same
-
-$$\rho_{Parallel}  A_{hydrostaticParallel} 
-= \sum_i^n \rho_i  A_{hydrostatici}$$
-
-Unless a pipe is angled 90 degrees, it is not likely hydrostatic area
-is equal to cross sectional area.
-
-How should the hydrostatic area vector be considered. 
-
-We should consider that the hydrostatic force that we are interested
-in is in the direction of the flow. So indeed using cross sectional
-area would be fine. And shall we use the entrance or exit cross section
-area?
-
-$$\rho_{Parallel}  A_{XSparallel} 
-= \sum_i^n \rho_i  A_{XSi}$$
-
-By convention we use entrance cross sectional area to calculate a 
-representative reynold's number. So for a general pipe or component
-we need to use two different cross sectional areas if possible.
-Otherwise, a simplifying assumption would be to assume these areas
-are the same.
-
-As long as we use the same area to weight our density always, shouldn't
-be too much of an issue
-
-$$\rho_{Parallel}  A_{XSparallel} 
-= \sum_i^n \rho_i  A_{XSi}$$
-
-So this way to weighting densities should in theory capture
-the effects of individual hydrostatic pressures on the net hydrostatic
-pressure exerted by this parallel assembly of components.
-
-
-
-We also note that it's likely the entrance and exit of the pipe
-have different areas. 
 
 
 
