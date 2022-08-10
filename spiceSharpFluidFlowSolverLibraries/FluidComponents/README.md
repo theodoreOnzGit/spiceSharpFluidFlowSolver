@@ -172,41 +172,143 @@ nondimensionalised pressure drop $Be_D$ with respect to Re. This would be in
 a similar manner we want to get explicit relationship of getting a Re from
 Be in a pipe scenario. 
 
-We first map out Be vs Re by sampling points of Re and getting Be. And then
-we use those points to construct an interpolation object, a graph if you will
-in the programming sense. 
+For a singular pipe component, we can take out the iterative part
+of obtaining mass flowrate from a given pressure drop (taking into 
+account buoyancy).
 
-This would help us get a graph of:
+This is because given a pressure loss term, whether or not buoyancy
+is a part of it, the following relationship for the fluid component
+would remain the same regardless of temperature.
 
 $$ Be_D = 0.5(f_{darcy} \frac{L}{D} + K) Re^2
 $$
 
-We assume that this nondimensionalised relationship remains the same for all 
-values of Be and Re.
+The only temperature dependent terms are Re and $Be_D$. So we can 
+essentially build a database of $Be_D$ vs Re prior to setting the
+simulation up, and then when the pressure loss term is
+requested given a mass flowrate, we can obtain a reynold's number, 
+and interpolate a Bejan number given this mass flowrate. And 
+so we can obtain a pressure loss or pressure drop term given Re.
 
-Similarly for pipe systems in parallel, a nondimensionalised relationship
-could be thought up
+This is done programatically by:
 
-$$Be_D = f(Re)$$
 
-or 
+1. We first map out Be vs Re by sampling points of Re and getting Be. 
+2. we use those points to construct an interpolation object, using the
+MatNet interpolation library
+3. When pressure loss is requested Be will be interpolated from Re
 
-$$Re = f^{-1} (Be_D) $$
-$$Re = \frac{ flowrate}{ A_{XS}} \frac{D_H}{\mu}$$
+This is essentially using the program to draw a graph of Be vs Re 
+before the simulation starts, and reading Be from Re programmatically
+during simulation. In that regard, all the iterations are done before
+the simulation starts, not during the simulation.
+
+This was done for a single pipes. We could do the same for series 
+circuits and series subcircuits. The question is can we apply this 
+same method for a paralle subcircuit as well?
+
+This would mean assuming that the paralle subcircuit can be represented
+by a singular fluid component and obtaining for this component:
+
+$$ Be_D = 0.5(f_{darcy} \frac{L}{D} + K) Re^2
+$$
+
+We then assume that this nondimensionalised relationship 
+remains the same for all values of Be and Re.
+
+### challenges for using the interpolation methods with parallel subscircuits
+
+To do this properly, we will need to overcome these challenges:
+
+#### Obtaining a representative hydrostatic pressure change term 
+
+As discussed previously, we will need to obtain a representative 
+hydrostatic pressure change term across the branch of parallel 
+branches.
+
+The problem is how do we find a suitable average across each of these
+branches if the buoyancy forces are unequal?
+
+
+Buoyancy is quantified in hydrostatic pressure
+
+$$\Delta h \rho g $$
+
+the change in height for this system is obvious, the height difference
+between entrance an exit regions is the same for all parallel branches.
+Gravitional Acceleration is also constant.
+
+The question is how to detemrine an average density?
+
+
+#### Temperature distributions will affect pressure loss terms
+The next challenge for doing this for 
+parallel circuits is because buoyancy
+affects each branch differently for a differing temperature 
+distribution. Thus for a given mass flowrate, the apparent 
+pressure loss terms across each branch may differ 
+for a differing temperature distribution.
+
+In this regard, fluid flowing up an isothermal pipe may feel more 
+resistance compared to fluid flowing up a similar pipe with buoyancy
+forces aiding the flow. This is known as aiding mixed convection.
+
+In opposing mixed convection flow, where buoyancy forces oppose the 
+direction of forced flow, then an opposite phenomena occurs. Thus the
+net pressure loss terms over each pipe will differ. 
+
+Similarly for pipe systems in parallel, a 
+nondimensionalised relationship could be thought up.
+
+
+
+#### Choosing a consistent way to nondimensionalise mass flowrate and pressure loss terms
+
+Not only that, even if we could sort out the problem of differing 
+temperature distributions, we still have to nondimensionalise our
+terms properly. 
+
+We have Re and Be defined as follows:
+
+$$Re = \frac{\dot{m}}{ A_{XS}} \frac{D_H}{\mu}$$
 $$Be_D = \frac{\Delta p D_H^2}{\nu^2} = \frac{\Delta P D_H^2}{\mu \nu}$$
 
-the question is, how can we nondimensionalise it such that the relationship
-remains constant regardless of Re and $Be_D$? Or even temperature profiles
-across this parallel pipe?
+While some of these parameters are obvious, eg.
 
-We have multiple lengthscales and velocities to choose from. How can we pick
-one that represents our case?
+1. mass flowrate of the parallel pipe system is sum of mass flowrates 
+through each branch
+2. presusre loss term is the pressure change over each branch (which 
+must be the same), minus the hydrostatic pressure change of the
+entire pipe system, should we solve for a representative hydrostatic
+pressure change 
+3. Cross sectional area is the total cross sectional area of the 
+entrance region of the pipe. Or if reverse flow is of concern, we can
+take the average of the sum of cross sectional areas in both entrance
+and exit regions
 
-We normally have massflowrates and pipe cross sectional areas to help us
-compute reynold's numbers.
 
-It is quite intuitive that mass flowrates should be added up, and likewise
-cross sectional areas can be added up as well.
+However, we need to find the following:
+
+1. We have multiple lengthscales $D_H$ and L to choose from. We can 
+use $A_{XS}$, the cross sectional area to find $D_H$. But finding a 
+suitable L may also be of importance as we may find out later.
+How can we pick one that represents our case? 
+
+
+2. Dynamic Viscosity $\mu$ needs to be averaged out as well
+
+3. Density needs to be averaged out too so we can find kinematic 
+viscosity $\nu$
+
+Thankfully for us, in mainly liquid phase flow, density doesn't change
+so much. So the boussinesq approximation can apply. The representative
+density of the system should be the same as the representative density
+used to calculate hydrostatic pressure contributions of this parallel
+pipe system. 
+
+The main issue then is how dynamic viscosity $\mu$ is calculated.
+
+## 
 
 ### deriving how to average nondimensional parameters
 
