@@ -442,3 +442,54 @@ to 120C, this is dowtherm i'm talking about.
 Liquid phase flows in general do not change density too much. So
 no matter how accurately i weigh the average densities, it won't yield
 as much bang for buck as when i spend effort elsewhere.
+
+## Code Validation Tests
+
+To ensure this fluidSeriesSubCircuit is working correctly, I shall begin
+by first designing a therminol based pipe. And test those things out.
+
+Assuming that is done, I want to have a few validation cases:
+
+
+1. Isothermal pressure loss validation test (is precalculation working
+correctly?)
+2. Isothermal pressure loss time tests, for a subcircuit of 20 components
+my time per calculation for mass flow from pressure loss should be less
+than 5 ms for the timestep calculation
+3. Changing Temperature tests, after temperature changing perhaps 10 out
+of 20 components within the temperature range, does my pressure loss term
+equal that of the pressure loss term when found iteratively? At least within 1% error.
+4. For a series of pipes check if the correct height change is supplied
+5. For a series of pipes, check if the correct hydrostatic pressure is 
+supplied
+
+### Code basic function tests
+
+At the function levels, i need to make sure that my code is returning
+the correct averaged quantities for a series of non uniform temperature
+pipes.
+
+1. Density tests
+2. cross section area tests
+3. Hydraulic diameter tests
+4. fLDK summation tests
+5. nondimensionalisation tests for Re and Be
+6. redimensionalisation tests
+7. ICloneable tests, in case we need to make copies of the object
+for use in thread safe parallel calculations.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
