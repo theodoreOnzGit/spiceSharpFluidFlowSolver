@@ -66,7 +66,55 @@ $$Be_{Dseries} = 0.5 Re_{series}^2 (f_{darcySeries}
 This would require us to judiciously find values to nondimensionalise
 the flow well.
 
+## Summary of how to find characteristic quantities for series pipes
 
+For the nondimensionalised precalculation strategy, we wish to plot:
+
+$$Be_D = \frac{\Delta P D_H^2}{\nu \mu}$$
+
+$$Re = \frac{\dot{m} D_H}{A_{XS} \mu}$$
+
+
+### 1. Density
+
+Assumption: Boussinesq approximation, density averaged by summing
+buoyancy forces.
+
+$$\Delta H_{series} \rho_{series}  = \sum_i^n \Delta H_i \rho_i $$
+
+$$\Delta H_{series}   = \sum_i^n \Delta H_i $$
+
+### 2. Cross sectional area and Hydraulic mean diameter
+
+Assumptions: fully turbulent flow bounding case, density calculated
+using boussinesq approximation
+
+$$ \frac{\sum_i^n (k_{darcyi} \frac{L_i}{D_i} + K_i)}
+{\rho_{series}A_{XSseries}^2 } 
+= \sum_i^n  \frac{k_{darcyi} \frac{L_i}{D_i} + K_i}{\rho_i A_{XSi}^2} 
+   $$
+Where:
+$$\frac{1}{\sqrt{k_{darcyi}}} = 
+-2 \log_{10} (\frac{\varepsilon_i/D_i}{3.7})$$
+
+$$A_{XSSeries} = \frac{\pi}{4}D_{series}^2$$
+
+Note: for asymmetric components, we can use average of entrance and 
+exit cross sectional areas so that correlation is ambivalent to flow
+direction.
+
+### 3. Dynamic Viscosity
+
+Assumptions: Stokes regime bounding case, density calculated using
+boussinesq approximation, area weighted according to fully turbulent
+flow assumption
+
+$$\frac{\mu_{series} 
+L_{series} }{\rho_{series} A_{XS{series}}^2} 
+= \sum_i^n  \frac{\mu_i L_i }{\rho_i A_{XSi}^2} 
+   $$
+Where:
+$$L_{series} = \sum_i^n L_i$$
 
 ## Derivations for finding a nondimensionalised correlation which holds at different temperature distribution
 
@@ -117,7 +165,7 @@ So in essence, the density of the system will be averaged by height
 changes.
 
 
-####  Viscosity, Length
+####  Viscosity, Length, Cross Sectional Area and Diameter
 
 Averaging viscosity in such a way that the system Reynold's number
 produces an accurate estimate of the pressure loss term will require
@@ -240,170 +288,143 @@ $$f_{darcy} = \frac{64}{Re}$$
 
 $$f_{darcy} = \frac{64 A_{XS}\mu}{\dot{m} D_H}$$
 
+We also have
+
+$$f_{darcyi} \frac{L_i}{D_i} + K_i \approx
+f_{darcyi} \frac{L_i}{D_i} $$
+$$f_{darcy{series}} \frac{L_{series}}{D_{series}} + K_{series} \approx
+f_{darcy{series}} \frac{L_{series}}{D_{series}} $$
+
 we can substitute this in here:
 
-$$w_i = \frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
-{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-$$
-
-so that:
-$$w_i = \frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i} + K_i)}
-{(\frac{64 A_{XSseries}\mu_{series}}{\dot{m} D_{series}} \frac{L_{series}}{D_{series}} + K_{series})} 
-$$
-
-In this limiting case we can ignore K.
-
-$$w_i =\frac{(\frac{64 A_{XS}\mu}{\dot{m} D_H} \frac{L_i}{D_i} )}
-{(\frac{64 A_{XSseries}\mu_{series}}{\dot{m} D_{series}} 
-\frac{L_{series}}{D_{series}} )} 
-$$
-
-we can cancel out the 64 and mass flowrate since mass flowrate across
-a series of fluid components ought to be constant
-
-$$w_i = \frac{(\frac{ A_{XS}\mu}{ D_H} \frac{L_i}{D_i} )}
-{(\frac{ A_{XSseries}\mu_{series}}{ D_{series}} 
-\frac{L_{series}}{D_{series}} )} 
- $$
-
-We note that cross sectional area
-
-$$A_{XS} = \frac{\pi}{4} D_H^2$$
-
-So we can effectively cancel out the effect of hydraulic diameter
-and cross sectional area since the constant of difference between them
-is $\pi/4$
-
-We are then left with this simple setup for weighting factor:
-
-$$w_i =\frac{\mu_i L_i} {\mu_{series}L_{series}} 
- $$
-
- This will be quite exact for very low Reynold's numbers.
-
-Now this presumes we know $\mu_{series}$ and $L_{series}$.
-
-One way to ensure the weighting factors sum up to 1 is this:
-
-$$\mu_{series} = \frac{1}{L_{series}} \sum_{i=1}^n L_i \mu_i$$
-
-Where
-
-$$L_{series} = \sum_i^n L_i$$
-
-Taking the lengthscale of the series to be the sum of constituent lengthscales
-would make intuitive sense.
-
-$$\mu_{series} = \frac{\sum_{i=1}^n L_i \mu_i}{\sum_i^n L_i} $$
+$$ \frac{f_{darcySeries} \frac{L_{Series}}{D_{series}} 
+}{\rho_{series}A_{XSseries}^2 } 
+= \sum_i^n  \frac{f_{darcyi} \frac{L_i}{D_i} }{\rho_i A_{XSi}^2} 
+   $$
 
 
+$$ \frac{f_{darcySeries} \frac{L_{Series}}{D_{series}} 
+}{\rho_{series}A_{XSseries}^2 } 
+= \sum_i^n  \frac{\frac{64 A_{XSi}\mu_i}{\dot{m}_i D_i} \frac{L_i}{D_i} }{\rho_i A_{XSi}^2} 
+   $$
 
-This ensures that the weighting factors are normalised. Also it forces 
-us to weigh viscosity using the relative lengthscales of the system.
+We use 
 
-Effectively the series lengthscale should be the sum of all the pipes
-in that series. And the dynamic viscosity of the series is the length
-weighted average of all the viscosities. Which should make sense,
+$$A_{XSi} = \frac{\pi D_i^2}{4}$$
 
-a longer pipe section has a larger kinematic viscosity effect.
-Now this is somewhat of a handwavy way of averaging kinematic viscosity. But
-it would make intuitive sense.
+$$ \frac{f_{darcySeries} \frac{L_{Series}}{D_{series}} 
+}{\rho_{series}A_{XSseries}^2 } 
+= \sum_i^n  \frac{\frac{64 A_{XSi}\mu_i}{\dot{m}_i D_i} \frac{L_i}{D_i} }{\rho_i A_{XSi}^2} 
+   $$
+
+$$ \frac{f_{darcySeries} \frac{L_{Series}}{D_{series}} 
+}{\rho_{series}A_{XSseries}^2 } 
+= \sum_i^n  \frac{\frac{16\mu_i}{\dot{m}_i \pi} L_i }{\rho_i A_{XSi}^2} 
+   $$
 
 
-A better way if we really want to take viscous forces into account at low
-Re is this:
+Doing the same thing for the series circuit:
+$$\frac{\frac{16\mu_{series}}
+{\dot{m}_{series} \pi} 
+L_{series} }{\rho_{series} A_{XS{series}}^2} 
+= \sum_i^n  \frac{\frac{16\mu_i}{\dot{m}_i \pi} L_i }{\rho_i A_{XSi}^2} 
+   $$
+
+We can cancel out the mass flowrates and constants to obtain:
+
+$$\frac{\mu_{series} 
+L_{series} }{\rho_{series} A_{XS{series}}^2} 
+= \sum_i^n  \frac{\mu_i L_i }{\rho_i A_{XSi}^2} 
+   $$
+
+$$\frac{\mu_{series} 
+L_{series} }{\rho_{series} A_{XS{series}}^2} 
+= \sum_i^n  \frac{\mu_i L_i }{\rho_i A_{XSi}^2} 
+   $$
+
+Thus, we can find a way to weight viscosity using cross sectional
+area, density, and characteristic component lengthscales.
+
+$$\frac{\mu_{series} 
+L_{series} }{\rho_{series} A_{XS{series}}^2} 
+= \sum_i^n  \frac{\mu_i L_i }{\rho_i A_{XSi}^2} 
+   $$
+
+Unfortunately, we still don't have a way to find a weighted
+average of cross sectional areas; we need another correlation.
 
 
-### turbulent flow restrictions in finding series parameters
+##### turbulent flow restrictions in finding series parameters
+
+Here we shall go to our other bounding case: full turbulence.
+
 
 For fully turbulent flow, $f_{darcy} =  k_{darcy}$
 
 
 From the [colebrook correlation](https://www.sciencedirect.com/book/9781856178303/transmission-pipeline-calculations-and-simulations-manual):
 
-For fully rough pipes:
-$$\frac{1}{\sqrt{f_{darcy}}} = -2 \log_{10} (\frac{\varepsilon/D}{3.7})$$
 
-This is very convenient for us since this is indepdenent of both
-flowrates and temperatures (pipe expansion neglected).
+For fully turbulent flow through rough pipes:
+$$\frac{1}{\sqrt{k_{darcyi}}} = 
+-2 \log_{10} (\frac{\varepsilon_i/D_i}{3.7})$$
 
-The constant will depend on the roughness ratio of the pipe. This
-is a constant property of each pipe.
 
-This is towards the right hand side of the moody chart. We can 
-substitute this in here:
+$$ \frac{k_{darcySeries} \frac{L_{Series}}{D_{series}} + 
+K_{series}}{\rho_{series}A_{XSseries}^2 } 
+= \sum_i^n  \frac{k_{darcyi} \frac{L_i}{D_i} + K_i}{\rho_i A_{XSi}^2} 
+   $$
 
-$$w_i = \frac{(f_{darcyi} \frac{L_i}{D_i} + K_i)}
-{(f_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
+In this equation, all terms on the RHS are assumed to be known. Whereas
+the methods of averaging $k_{darcySeries}$, $K_{series}$ and 
+$D_{series}$ are unknowns. 
+
+$$A_{XSSeries} = \frac{\pi}{4}D_{series}^2$$
+
+We shall require two other equations in 
+order to fully specify our system.
+
+We shall take them from intuition, in the sense that $A_{XSSeries}$ is
+some weighted average of the areas. And form losses should of course
+stack additively.
+
+Knowing that, we can just define this constraint which suits our
+intuition:
+
+
+$$\sum_i^n (k_{darcyi} \frac{L_i}{D_i} + K_i) =
+k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series}
 $$
 
-$$w_i = \frac{(k_{darcyi} \frac{L_i}{D_i} + K_i)}
-{(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-$$
+Knowing this, we can simply substitute out two of our current unknowns:
 
-We can cancel out the other form losses and the darcy friction
-factors which at this point are more or less constant.
+###### Weighting Cross Sectional Area:
+$$ \frac{\sum_i^n (k_{darcyi} \frac{L_i}{D_i} + K_i)}
+{\rho_{series}A_{XSseries}^2 } 
+= \sum_i^n  \frac{k_{darcyi} \frac{L_i}{D_i} + K_i}{\rho_i A_{XSi}^2} 
+   $$
 
-Now how shall we ensure that this is normalised?
+In this way, we find that the areas are a weighted average
+such that it will yield the correct loss coefficients in a fully
+turbulent case.
 
-$$\sum (k_{darcyi} \frac{L_i}{D_i} + K_i) =
-(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})
-$$
+Hydraulic diameter is to be found using:
 
-Now to start us off, we can use a very intuitive way of finding $K_{series}$
-
-$$K_{series} = \sum_{i=1}^n K_i$$
-
-
+###### Finding Hydraulic Mean Diameter
+$$A_{XSSeries} = \frac{\pi}{4}D_{series}^2$$
 
 
-Subtracting this term from both sides,
-$$k_{darcySeries} \frac{L_{series}}{D_{series}} 
- = \sum_{i=1}^n k_{darcyi} \frac{L_i}{D_i}$$
+With this cross sectional area, we can effectively weight our
+viscosity so that it will yield the correct loss terms in stokes
+regimes.
 
-Now we know how $L_{series}$ is calculated. What is left for us is to calculate
-$D_{series}$.
+###### Weighting Viscosity:
+$$\frac{\mu_{series} 
+L_{series} }{\rho_{series} A_{XS{series}}^2} 
+= \sum_i^n  \frac{\mu_i L_i }{\rho_i A_{XSi}^2} 
+   $$
 
-Now it seems the friction factor of the series is also some weighted average
-of the individual components.
-
-We have yet another seti of weighting factors here:
-
-
-$$w_{kDarcyi} =\frac{( \frac{L_i}{D_i} )}{ (\frac{L_{series}}{D_{series}} )} $$
-
-To ensure that the weighting factors all sum up to one, we can use:
-$$\frac{L_{series}}{D_{series}} =  \sum_{i=1}^n 
-\frac{L_i}{D_i}$$
-
-
-
-$$\frac{L_{series}}{ \sum_{i=1}^n 
-\frac{L_i}{D_i}} = D_{series}$$
-
-When we substiute the above values back into here, we shall get:
-$$k_{darcySeries}  
- =\frac{D_{series}}{L_{series}} \sum_{i=1}^n k_{darcyi} \frac{L_i}{D_i}$$
-
-This is of course
-provided that the darcy friction factor actually provides some friction
-factor, and it is not some valve where there is no pipe friction factor.
-
-### Summary viscosity, area and hydraulic diameter scaling for series of components
-
-For length:
-$$L_{series} = \sum_i^n L_i$$
-
-Dynamic viscosity:
-$$\mu_{series} = \frac{\sum_{i=1}^n L_i \mu_i}{\sum_i^n L_i} $$
-
-For hydraulic diameter:
-
-$$D_{series} = \frac{L_{series}}{ \sum_{i=1}^n 
-\frac{L_i}{D_i}} $$
-
-
-### now back to our density (Liquid phase only, <10% thermal expansion)
+### Checking Boussinesq Approximation for Therminol from 20-120C
 
 So far we have found out suitable ways of finding a representative
 dynamic viscosity $\mu_{series}$ for a series system of pipes
@@ -421,38 +442,3 @@ to 120C, this is dowtherm i'm talking about.
 Liquid phase flows in general do not change density too much. So
 no matter how accurately i weigh the average densities, it won't yield
 as much bang for buck as when i spend effort elsewhere.
-
-Nevertheless, here's what i have.
-
-What remains is now for us to find out how to weigh $\rho_{series}$ in
-order to find an average.
-
-$$ \rho_{series}A_{XSseries}^2 =  \frac{f_{darcySeries} \frac{L_{Series}}{D_{series}} + 
-K_{series}}
-{\sum_{i=1}^n\frac{f_{darcyi} 
-\frac{L_i}{D_1} + K_i}{\rho_i A_{XSi}^2}}$$
-
-We have already shown two ways of weighting the density, one in a laminar bounding
-case, and one in the fully turbulent bounding case.
-
-All other cases in between are some mixture of both cases.
-
-For laminar case:
-$$w_i =\frac{\mu_i L_i} {\mu_{series}L_{series}} 
- $$
-
-For turbulent case:
-
-$$w_i = \frac{(k_{darcyi} \frac{L_i}{D_i} + K_i)}
-{(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})} 
-$$
-
-$$\sum (k_{darcyi} \frac{L_i}{D_i} + K_i) =
-(k_{darcySeries} \frac{L_{series}}{D_{series}} + K_{series})
-$$
-
-Since the weighting factors for density don't matter as much (density doesn't
-even change more than 8%). 
-
-I can just take a ensemble average of these two weighting factors and it won't 
-matter all that much.
