@@ -221,7 +221,7 @@ namespace SpiceSharp.Components
 			return Re;
 		}
 
-		public Pressure getDynamicPressureDropFromBe(double Be){
+		public override Pressure getDynamicPressureDropFromBe(double Be){
 			// Be_D = \DeltaP D^2 / (mu * nu)
 			// Delta P = Be_D *mu * nu / D^2
 			
@@ -538,7 +538,7 @@ namespace SpiceSharp.Components
 			return _totalKinematicViscosity/numberOfBranches;
 		}
 
-		public DynamicViscosity getFluidDynamicViscosity(){
+		public override DynamicViscosity getFluidDynamicViscosity(){
 			return this.getFluidKinematicViscosity() * this.getFluidDensity();
 		}
     }

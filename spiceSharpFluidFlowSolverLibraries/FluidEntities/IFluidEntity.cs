@@ -28,5 +28,24 @@ namespace SpiceSharp.Entities
 		Density getFluidDensity();
 
 		KinematicViscosity getFluidKinematicViscosity();
+
+		IList<EngineeringUnits.Temperature> temperatureList { get; set; }
+
+		DynamicViscosity getFluidDynamicViscosity();
+
+		Pressure getHydrostaticPressureChange();
+
+		Length getZ();
+
+		(Length, Length, Length) getCoordinateChange();
+
+		double getBejanFromPressureDrop(
+				Pressure pressureDrop);
+
+		Pressure getDynamicPressureDropFromBe(double Be);
+
+		double getReFromMassFlow(MassFlow flowrate);
+
+		MassFlow getMassFlowRateFromRe(double Re);
     }
 }

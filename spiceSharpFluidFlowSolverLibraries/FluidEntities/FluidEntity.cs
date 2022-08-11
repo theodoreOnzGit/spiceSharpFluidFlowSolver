@@ -38,6 +38,25 @@ namespace SpiceSharp.Entities
 		public abstract Density getFluidDensity();
 
 		public abstract KinematicViscosity getFluidKinematicViscosity();
+
+		public abstract IList<EngineeringUnits.Temperature> temperatureList { get; set; }
+
+		public abstract DynamicViscosity getFluidDynamicViscosity();
+
+		public abstract Pressure getHydrostaticPressureChange();
+
+		public abstract Length getZ();
+
+		public abstract (Length, Length, Length) getCoordinateChange();
+
+		public abstract double getBejanFromPressureDrop(
+				Pressure pressureDrop);
+
+		public abstract Pressure getDynamicPressureDropFromBe(double Be);
+
+		public abstract double getReFromMassFlow(MassFlow flowrate);
+
+		public abstract MassFlow getMassFlowRateFromRe(double Re);
     }
 
     /// <summary>
@@ -75,5 +94,24 @@ namespace SpiceSharp.Entities
 		public abstract Density getFluidDensity();
 
 		public abstract KinematicViscosity getFluidKinematicViscosity();
+
+		public abstract IList<EngineeringUnits.Temperature> temperatureList { get; set; }
+
+		public abstract DynamicViscosity getFluidDynamicViscosity();
+
+		public abstract Pressure getHydrostaticPressureChange();
+
+		public abstract Length getZ();
+
+		public abstract (Length, Length, Length) getCoordinateChange();
+
+		public abstract double getBejanFromPressureDrop(
+				Pressure pressureDrop);
+
+		public abstract Pressure getDynamicPressureDropFromBe(double Be);
+
+		public abstract double getReFromMassFlow(MassFlow flowrate);
+
+		public abstract MassFlow getMassFlowRateFromRe(double Re);
     }
 }

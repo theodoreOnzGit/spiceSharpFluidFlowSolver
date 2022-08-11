@@ -90,5 +90,81 @@ namespace SpiceSharp.Components
 		public KinematicViscosity getFluidKinematicViscosity(){
 			return Parameters.fluidKinViscosity;
 		}
+
+		public IList<EngineeringUnits.Temperature> temperatureList { 
+			get{
+				throw new NotImplementedException();
+			}
+			set{
+				throw new NotImplementedException();
+			}
+		}
+
+		public DynamicViscosity getFluidDynamicViscosity(){
+			return Parameters.fluidViscosity;
+		}
+
+		public Pressure getHydrostaticPressureChange(){
+			return Parameters.hydrostaticPressureChange();
+		}
+
+		public Length getZ(){
+			Length heightChange =
+				Parameters.pipeLength * Math.Sin(Parameters.inclineAngle.As(
+							AngleUnit.Radian));
+			return heightChange;
+		}
+
+
+		public (Length, Length, Length) getCoordinateChange(){
+			throw new NotImplementedException();
+		}
+
+		public double getBejanFromPressureDrop(Pressure pressureDrop){
+			double Be;
+			Be = pressureDrop.As(PressureUnit.Pascal);
+			Be *= Math.Pow(this.getHydraulicDiameter().As(LengthUnit.Meter
+						,2.0));
+			Be /= this.getFluidDynamicViscosity().As(DynamicViscosityUnit.
+					PascalSecond);
+			Be /= this.getFluidKinematicViscosity().As(KinematicViscosityUnit.
+					SquareMeterPerSecond);
+
+			return Be;
+		}
+
+		public Pressure getDynamicPressureDropFromBe(double Be){
+
+			Pressure finalPressure =  
+				this.getFluidDynamicViscosity().
+				AsUnit(DynamicViscosityUnit.PascalSecond) *
+				this.getFluidKinematicViscosity().
+				AsUnit(KinematicViscosityUnit.SquareMeterPerSecond) /
+				this.getHydraulicDiameter().
+				AsUnit(LengthUnit.Meter) / 
+				this.getHydraulicDiameter().
+				AsUnit(LengthUnit.Meter);
+
+			finalPressure *= Be;
+
+			return finalPressure;
+
+		}
+
+		public double getReFromMassFlow(MassFlow flowrate){
+			return Parameters.getReynoldsNumber(flowrate);
+		}
+
+		public MassFlow getMassFlowRateFromRe(double Re){
+			MassFlow finalMassFlow;
+			finalMassFlow = this.getXSArea().AsUnit(AreaUnit.SquareMeter) *
+				this.getFluidDynamicViscosity().
+				AsUnit(DynamicViscosityUnit.Pascal) /
+				this.getHydraulicDiameter.
+				AsUnit(LengthUnit.Meter) *
+				Re;
+
+			return finalMassFlow;
+		}
     }
 }

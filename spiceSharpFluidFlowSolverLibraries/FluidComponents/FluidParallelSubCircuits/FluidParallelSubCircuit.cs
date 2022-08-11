@@ -324,6 +324,40 @@ namespace SpiceSharp.Components
 			return _fluidEntityCollection;
 		}
 
+		public override IList<EngineeringUnits.Temperature> temperatureList { 
+			get{
+				throw new NotImplementedException();
+			}
+			set{
+				throw new NotImplementedException();
+			}
+		}
+
+		public override Pressure getHydrostaticPressureChange(){
+			throw new NotImplementedException();
+		}
+
+		public override Length getZ(){
+			throw new NotImplementedException();
+		}
+
+
+		public override (Length, Length, Length) getCoordinateChange(){
+			throw new NotImplementedException();
+		}
+
+		public override double getBejanFromPressureDrop(Pressure pressureDrop){
+			throw new NotImplementedException();
+		}
+
+
+		public override double getReFromMassFlow(MassFlow flowrate){
+			throw new NotImplementedException();
+		}
+
+		public override MassFlow getMassFlowRateFromRe(double Re){
+			throw new NotImplementedException();
+		}
 
         /// <summary>
         /// Gets the node map.
