@@ -47,7 +47,7 @@ a IFluidEntity just like before, and then sum up their pressureDrops.
 
 Or for parallel case, currents. 
 
-# FluidParallelSubCircuit
+## FluidParallelSubCircuit
 
 To handle fluid flow in parallel pipes, i use the FluidParallelSubCircuit class.
 
@@ -61,9 +61,28 @@ FluidParallelSubCircuit containing three isothermal pipes within
 a FluidSeriesCircuit containing only this FluidParalleSubCircuit
 takes about 1 minute to solve.
 
+Therefore, the approach to get it solving in real time is to precalculate
+the nondimensionalised pressure losses, assuming they can be decoupled
+from buoyancy forces.
+
 In the fluidParallelSubCircuit documentation, i detail the derivations
 of the nondimensionalisation of it, certain assumptions I make, as well
 as how the code should be tested.
+
+## FluidSeriesSubCircuits
+
+In every parallel circuit or subcircuit, there will exist a series of 
+pipes and flow components supplying some pressure source or pressure 
+losses.
+
+Now due to time constraints, it is perhaps wise to precalculate the 
+nondimensionalised pressure losses so as to estimate the pressure
+losses given any flowrate and any temperature distribution.
+
+This is the job of FluidSeriesSubCircuits, where i have to place several
+components in series, and test the pressure losses of them given mass 
+flowrates. I then nondimensionalise them using averaged values of 
+lengthscale, viscosity and density for the system.
 
 ## Nested tests with FluidSeriesCircuits (work in progress)
 
