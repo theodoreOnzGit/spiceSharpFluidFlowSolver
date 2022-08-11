@@ -1392,268 +1392,62 @@ For such a case, i will assume the system behaves like a component
 $$(f \frac{L}{D} +K)_{parallel} = (k_{parallel} + \frac{64}{Re} )
 \frac{L_{parallel}}{D_{parallel}} +K_{parallel} $$
 
+Where: 
+$$A_{XSparallel} = \sum_i^n A_{XSi}$$
+
+$$D_{parallel}^2 \frac{\pi}{4} = A_{XSparallel}$$
+$$ w_{XSareai} =\frac{A_{XSi}}{A_{XS{parallel}} }
+  $$
+
+
+
+$$\sum_i^n  \frac{w_{XSareai}^2}{L_i}   = 
+\frac{1}{ L_{parallel}}
+$$
+
+$$ K_{parallel} = \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{  K_i}} \right)^{-2}  
+$$
+
+
+$$k_{parallel} \frac{L_{parallel}}{D_{parallel}} 
+ = \left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{ (k_i \frac{L_i}{D_i} + K_i)}} \right)^{-2}  -
+\left(\sum_i^n w_{XSareai} 
+\sqrt{\frac{1}{  K_i}} \right)^{-2}  
+$$
 I use this because of simplicity and it's ability to handle both
-bounding cases.
-
-The following is legacy code, i'll have to correct this:
-
-```csharp
+bounding cases of creeping flow and fully turbulent flow.
 
 
-for (int i = 0; i < 500; i++)
-{
-	// first i decide on a number of values to give
-	double ReLogSpacing = 0.02;
-	double ReGuessValue = Math.Pow(10,ReLogSpacing * i);
-
-	// once we have a suitable Re, we need to get a Be
-	// value,
-	// so we convert Re into mass flowrate
-	//
-	// Now unfortunately, for the first round of iteration,
-	// we cannot guess Re from Be non iteratively.
-	// We have to guess Be first, and then from that get Re.
-	//
-	// Problem is i don't know what a typical Be range should be!
-	// Nor where the transtion region should be for any typical
-	// graph.
-	//
-	// Well one method we can try is this:
-	//
-	// we have a guess Reynold's number value, which we then
-	// feed into a pipe equation like churchill
-	// from that, we can guess a Bejan number to go with
-	// And from this Bejan number, we can guess the actual
-	// Reynold's number value
-
-	IFrictionFactor _frictionFactorObj = 
-		new ChurchillFrictionFactor();
-
-	// so bejan number is:
-	// Be = 0.5 *Re^2 (f L/D  + K)
-	//
-	// Now herein lines a problem,
-	// if we were to  use this method to guess,
-	// we need a proper L/D ratio too.
-	// To keep it once more in a similar order of
-	// magnitude, i would rather have L be the average
-	// of both branch lengths
-	//
-	// I assume the cubic spline would take care of 
-	// any variation due to K, what i'm watching out for
-	// so i assume K = 0
-	//
-	// more importantly is modelling the transition region
-	// or interpolating it with sufficient points
-	// to get L/D ratio, we need the average branch lengths
-	// and average hydraulic diameters
-
-	double lengthToDiameter = this.getComponentLength().
-		As(LengthUnit.Meter) / 
-		this.getHydraulicDiameter().
-		As(LengthUnit.Meter);
-
-	// my roughness ratio here is guessed based on 
-	// assuming cast iron pipes, just a guestimation
-	// so not so important
-
-	Length absoluteRoughness = new Length(
-			0.15, LengthUnit.Millimeter);
-
-
-	double roughnessRatio = absoluteRoughness.As(LengthUnit.Meter)/ 
-		this.getHydraulicDiameter().As(LengthUnit.Meter);
-
-
-	double darcyFrictionFactor = _frictionFactorObj.
-		darcy(ReGuessValue, roughnessRatio);
-
-	// i shall now shove these values in to obtain my Bejan number
-	// Be_d = 0.5*Re(guess)^2 *f * L/D
-	double bejanNumber = 0.5 * 
-		Math.Pow(ReGuessValue,2.0) *
-		lengthToDiameter *
-		darcyFrictionFactor;
-	// once we have this we can add the bejan number
-	BeValues.Add(bejanNumber);
-
-}
-```
-
-So this is how i will gues bejan number.
+So this is how i will guess bejan number.
 
 ### Guessing Pressure Drop from Bejan number (parallel case)
 
+Now that Bejan number is guessed, we have to obtain a pressure
+drop with which to test the parallel pipe setup.
 
 
-$$Be_D = \frac{\Delta P D^2}{\nu \mu}$$
+$$Be_D = \frac{\Delta P D_H^2}{\nu \mu}$$
 
-To understand how we got here, we should visit the underlying equations
-This is for the pipe:
+From our derivations previously, and based on boussinesq approximation:
 
-$$Be_D = 0.5 (\frac{L}{D} f_{darcy} + K) Re^2$$
+$$A_{XSparallel} = \sum_i^n A_{XSi}$$
 
-$$Be_D = 0.5 (\frac{L}{D} f_{darcy} + K) Re^2$$
+$$D_{parallel}^2 \frac{\pi}{4} = A_{XSparallel}$$
+$$ w_{XSareai} =\frac{A_{XSi}}{A_{XS{parallel}} }
+  $$
+$$\mu_{parallel} = \frac{\sum_i^n  \frac{w_{XSareai}^2}{L_i} }
+{ \sum_i^n  \frac{w_{XSareai}^2}{L_i} \frac{1}{\mu_i }} 
+$$
 
-$$ \frac{\Delta p D^2}{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K) Re^2$$
+$$\rho_{Parallel}   
+= \frac{\sum_i^n \rho_i  A_{XSi}}{\sum_i^n A_{XSi}}$$
 
-$$ \frac{\Delta p D^2}{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K)
-\frac{\dot{m}^2}{A_{xs}^2} \frac{D_H^2}{\mu^2}$$
+Thus we obtain a series of pressure changes with which to test each 
+branch
 
-$$ \frac{\Delta p }{\nu^2} = 0.5 (\frac{L}{D} f_{darcy} + K)
-\frac{\dot{m}^2}{A_{xs}^2} \frac{1}{\mu^2}$$
-
-$$ \Delta p = 0.5 (\frac{L}{D} f_{darcy} + K)
-\frac{\dot{m}^2}{A_{xs}^2} \frac{1}{\rho^2}$$
-
-For this case, we can see when it comes to viscosity, as long as the terms
-can cancel out like this, it doesn't matter.
-
-If the components were in series, we would simply sum up pressre drops across
-all of them. However, we cannot since they are in parallel.
-
-Instead, a single bejan number would give rise to multiple mass flowrates.
-
-
-This will keep the average Re and hopefully Be as well to be in the same
-order of magnitude.
-
-With these scaling parameters, we should be able to get our pressure drops pretty
-decently well. 
-
-
-The area of the parallel setup is the sum of areas of each branch,
-the mass flowrate is the sum  of mass flowrates of each branch,
-hydraulic diameter is the ensemble average of hydraulic diameter of each branch,
-kinematic viscosity is the ensemble average of kinematic viscosity of each branch,
-finally, the density is weighted by area of each respective branch.
-
-Therefore we need a way to return the areas, and densities of each pipe branch
-or each fluid entity. So that the averaging can occur.
-
-Also kinematic viscosity too.
-
-I'll probably want to do a series of tests to confirm if the paralleSubCircuit
-is obtaining the quantities as shown above. 
-
-okay tests complete, here's one such example:
-
-
-```csharp
-[Theory]
-[InlineData(0.5,0.1,0.3, 1.5,1.0,0.5)]
-[InlineData(0.4,0.2,0.3, 0.9,0.88,1.3)]
-public void WhenParallelSubCkt_getDensity_expectAreaWeightedSum(
-		double diameter1,
-		double diameter2,
-		double diameter3,
-		double kinVis1,
-		double kinVis2,
-		double kinVis3){
-
-
-	// Setup
-	//
-	// First let's get the lengths and kinematic Viscosities
-	//
-	// Because my testpipe obtains density by finding ratios of 
-	// kinematicViscosity to dynamic Viscosity
-	// i will just randomly switch up the kinematic viscosity up
-
-	Length hydraulicDiameter1 = new Length(diameter1, LengthUnit.Meter);
-	Length hydraulicDiameter2 = new Length(diameter2, LengthUnit.Meter);
-	Length hydraulicDiameter3 = new Length(diameter3, LengthUnit.Meter);
-
-	KinematicViscosity kinViscosity1 = 
-		new KinematicViscosity(kinVis1, 
-				KinematicViscosityUnit.Centistokes);
-	KinematicViscosity kinViscosity2 = 
-		new KinematicViscosity(kinVis2, 
-				KinematicViscosityUnit.Centistokes);
-	KinematicViscosity kinViscosity3 = 
-		new KinematicViscosity(kinVis3, 
-				KinematicViscosityUnit.Centistokes);
-
-
-	// next let's setup the pipes
-
-	Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
-	IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
-	testPipe.Parameters.hydraulicDiameter = hydraulicDiameter1;
-	testPipe.Parameters.fluidKinViscosity = kinViscosity1;
-	testPipe.Connect("parallelIn","parallelOut");
-
-	preCastPipe = new IsothermalPipe("isothermalPipe2","out","0");
-	IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
-	testPipe2.Parameters.hydraulicDiameter = hydraulicDiameter2;
-	testPipe2.Parameters.fluidKinViscosity = kinViscosity2;
-	testPipe2.Connect("parallelIn","parallelOut");
-
-	preCastPipe = new IsothermalPipe("isothermalPipe3","out","0");
-	IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
-	testPipe3.Parameters.hydraulicDiameter = hydraulicDiameter3;
-	testPipe3.Parameters.fluidKinViscosity = kinViscosity3;
-	testPipe3.Connect("parallelIn","parallelOut");
-
-	// let me get my total area from these pipes
-	Area expectedTotalArea =
-		(testPipe.getXSArea() + 
-		 testPipe2.getXSArea() + 
-		 testPipe3.getXSArea());
-
-	// the above area will help me weight my densities
-	// now let's get the expected density
-	// were
-	// sqrt(rho_avg) = 1/totalArea * (area1*sqrt(rho1) +
-	// area2*sqrt(rho2) + area3*sqrt(rho3))
-
-	Density _expectedAverageDensity;
-
-	{
-		double sqrtDensity;
-		sqrtDensity = 
-			testPipe.getXSArea().As(AreaUnit.SI) *
-			Math.Pow(testPipe.getFluidDensity().As(DensityUnit.SI),0.5) +
-			testPipe2.getXSArea().As(AreaUnit.SI) *
-			Math.Pow(testPipe2.getFluidDensity().As(DensityUnit.SI),0.5) +
-			testPipe3.getXSArea().As(AreaUnit.SI) *
-			Math.Pow(testPipe3.getFluidDensity().As(DensityUnit.SI),0.5);
-
-		sqrtDensity /= expectedTotalArea.As(AreaUnit.SI);
-		double densityValue = 
-			Math.Pow(sqrtDensity,2.0);
-
-		_expectedAverageDensity = new Density(
-				densityValue, DensityUnit.KilogramPerCubicMeter);
-	}
-
-
-
-	var subckt = new SubcircuitDefinition(new Circuit(
-				testPipe,
-				testPipe2,
-				testPipe3),
-			"parallelIn", "parallelOut");
-
-	FluidParallelSubCircuit fluidSubCkt
-		= new FluidParallelSubCircuit("X1", subckt);
-	fluidSubCkt.Connect("out" , "0");
-
-	//Act
-	//
-	Density _actualAverageDensity = 
-		fluidSubCkt.getFluidDensity();
-
-
-	// Assert
-
-	Assert.Equal(_expectedAverageDensity.As(DensityUnit.SI),
-			_actualAverageDensity.As(DensityUnit.SI),1
-			);
-
-}
-
-```
+### Testing for ParallelSubCkts
 Now for parallelSubCkts with this setup, what tests do we need?
 Assume that each branch has been condensed into a single component.
 
@@ -1692,135 +1486,10 @@ For Isothermal pipe it isn't implemented properly and for fluidparallel subckt
 it's not even implemented.
 
 
-### Hybrid Bejan number and buoyancy correction method
-
-The trouble with the Bejan number method is that it becomes very 
-confusing as to how to weigh density, friction factors and lengthscales.
-
-When buoyancy forces come in, the equation becomes very messy.
-
-The other way is to simply iterate our way through, seeing that our
-setup is parallel. 
-
-Problem is, with nested parallel loops, this will take a long time.
-
-#### An initial guess for iteration
-
-There are several ways to speed this up given that the pressure change
-(not form losses) across each parallel branch are equal.
-
-Suppose i have the $\dot{m}_{total}$ mass flowrate through the whole
-pipe. Now i force it through onemass any one branch of the pipe.
-
-I will then get an appropriate pressure drop pretty quickly.
-
-I then apply this pressure drop across the whole parallel setup to
-got a guess $\dot{m}_{totalGuess}$ guessed mass flowrate. Of course,
-the guessed mass flowrate will be several times bigger than
-the set total mass flowrate.
-
-Since this is so, i have a ratio of the guessed mass flowrate to the
-total mass flowrate. I will take the branch mass flowrate in the initial
-pipe to be the ratio of the total mass flowrate to this initial guess
-mass flowrate.
-
-I will then obtain a new pressure change, and apply this uniformly 
-across the entire pipe system. I then iterate until a set tolerance,
-perhaps 1 or 2\% will suffice. The key here is speed. As the simulation
-is planned to happen in almost realtime, but accuracy needs to be
-sufficient but perhaps within instrument error (one standard deviation
-of the flowmeter reading).
-
-
-If we just leave things at one iteration, i can get an estimate of
-a pressure drop very quickly. Neverthless, the relative flow 
-ratios of the mass flowrates for the pipe may not apply 
-at both of these flowrates.
-
-Since that is the case, it may be better to have another way of 
-guessing this initial mass flowrate.
-
-
-Suppose again that i have a set mass flowrate $\dot{m}_{total}$.
-
-I can map out the
-pressure losses using the bejan number method described before and
-completely ignore buoyancy forces. I would then have a set pressure
-drop unaffected by buoyancy forces.
-
-I can estimate the pressure change by adding this pressure drop to
-the mean hydrostatic pressure across the pipes. 
-
-$$\Delta P_{change} = \Delta P_{loss} + h\rho g$$
-
-
-And again i take one
-branch as a reference branch, and I check the mass flowrate 
-$\dot{m}_{branch}$
-
-Now i apply this pressure change $\Delta P_{change}$ to 
-all branches of the pipe WITH
-buoyancy forces. I would then get an iterated total mass flowrate.
-$\dot{m}_{totalGuess}$
-This value may be more or less than the total mass flowrate.
-
-Suppose that natural convection is aiding flow for all branches, 
-for a set pressure change across the branch, the branch flowrate with
-natural convection will be more than branch flowrate neglecting 
-natural convection so that:
-
-
-$$\dot{m}_{totalGuess} > \dot{m}_{total}$$
-
-In this setup we must then reduce the branch mass flowrate slightly
-to correct for the natural convection aiding flow
-
-What i then do is to correct the branch mass flowrate
-
-$$\dot{m}_{branchCorrected} = \dot{m}_{branch} 
-\frac{\dot{m}_{total}}{\dot{m}_{totalGuess}}$$
-
-We would then get buoyancy corrected branch flowrate for this branch
-and we can then estimate the pressure change across the branch. And
-obtain a guessed total mass flowrate, which should me much closer 
-to the set total mass flowrate.
-
-We cna then return the pressure change to the environment, and use the
-pre-exising derivaitons of fLDK formulas to calculate the net 
-pressure drop. And then we subtract this pressure drop from the 
-pressure change to obtain a net hydrostatic pressure increase or 
-decrease.
-
-
-This is one iteration. Here, so long as the forced convection is much
-greater than natural convection, the ratios of the mass flowrate 
-in the branch should. Otherwise we can keep iterating until we stop.
-
-
-### what if natural convection dominates the flow?
-For zero total mass flowrate however, we won't be doing good with this
-method since $\dot{m}_{total} = 0$ and there is no means for us to
-guess mass flowrate.
-
-In this regard, we should set the pressure change in each branch as
-the hydrostatic pressure drop across the whole parallel pipe system.
-
-In general, there would be branches with posistive and negative flows,
-they should all sum to zero however.
-
-But that's another problem for another time.
 
 
 
-
-
-
-
-
-
-
-
-## Nested tests with FluidSeriesCircuits
+## Nested tests with FluidSeriesCircuits (work in progress)
 
 Now after the interpolation strategy, things seem to be working out for the 
 most part. The code runs a lot faster. And the only significant time taken
