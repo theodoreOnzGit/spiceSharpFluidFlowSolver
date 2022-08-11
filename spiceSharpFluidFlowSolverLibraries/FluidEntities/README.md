@@ -15,7 +15,7 @@ component when it comes to a pressure drop.
 Such components are then put in series, and the pressure drop of the entire system
 is then the sum of pressure drops of these components.
 
-# Calculation strategy
+### Calculation strategy
 
 Suppose we have 10 pipes in series. Obtaining pressure drop is rather easy task,
 just put in a fixed mass flowrate, they get converted into a Reynold's number of 
@@ -66,7 +66,7 @@ How then can we calculate these pressure drops in real time as needed for a digi
 twin? We need these calculations to be done in 100 ms or less, or better yet
 10ms or less.
 
-## Preplotting the system curve
+### Preplotting the system curve
 
 Well suppose we had a simple pipe, how can we prevent this long set of iterations
 from occuring? 
@@ -135,7 +135,7 @@ The methodology will be assume there is one representative component that produc
 the same pressure drop for a given mass flowrate as a series of pipes and 
 components. 
 
-## Nondimensionalising a series of fluid components
+### Nondimensionalising a series of fluid components
 
 Now it appears we can't really run away with nondimensionalising a 
 fluidSeriesCircuit. Whether we use iteration or interpolation, we will have
@@ -578,3 +578,112 @@ even change more than 8%).
 
 I can just take a ensemble average of these two weighting factors and it won't 
 matter all that much.
+
+
+## FluidParallelCircuits
+
+### issues with fluidseriesCircuits and FluidParallelSubCircuits
+
+#### 1. nested iteration
+Now the problem with fluidSeriesCircuits is that one has to employ 
+nested iteration strategies to deal with parallel flow. This is 
+problematic because it is time consuming to solve, and also
+that parallel sub circuits are not easily nondimensionalised when
+buoyancy forces come into play.
+
+#### 2. preplotting interpolation strategy difficult to employ
+
+For parallel subcircuits, buoyancy forces are not easily decoupled
+from their the respective branch's loss terms because those are
+quite Re dependent.
+
+
+#### Inspiration to avoid nested iteration
+
+However, each branch can essentially be one pipe or a series of fluid
+components. And obtaining a total mass flowrate from a pressure drop
+across these series of pipes is quite okay given that a fluidSeries
+Subcircuit is coded properly.
+
+##### zero flow through parallel subcircuits
+If the flow through a parallel subcircuit is zero, then we have a special
+case: flow can upwards through one branch and downwards through other 
+branches.
+
+However, this special case essentially allows us to solve very simple
+parallel flow setups.
+
+
+### Converting a simple parallel and series circuit into a fully parallel circuit
+
+Suppose we have a pipe reigme like similar to a power plant:
+
+1. we have a main pipe branch which pumps coolant 
+through a heat exchanger
+2. we branch off into three separate parallel branches, one perhaps 
+contains a heater, and another contains a secondary cooling loop and
+a bypass flow
+3. These three branches combine and go through a pump.
+
+
+This could be thought of as a series circuit with the main branch 
+splitting into three parallel branches and back.
+
+However, if one were to take the tees as the points of reference,
+this circuit could essentially be converted into a parallel circuit
+with four branches. Thus, we can use the parallel circuit setup to solve
+for the flow through the four branches.
+
+The pressure loss calculations could be easily calculated for each branch
+provided they can be represented by a series of fluid components.
+
+So suppose we have a pump in one of these branches, with natural 
+convection, and some components. In another branch we have natural
+convection sources also.
+
+The Be vs Re graph for each could be decoupled 
+from the driving forces within the circuit.
+
+
+To solve for the flow within each branch, one should apply the same
+pressure change to each branch, and then iterate accordingly until
+the sum of flowrates across the tees become zero.
+
+The program setup could be as follows:
+
+1. Construct Four FluidSeriesSubCircuits, 
+precalculate Be vs Re for each
+2. Place these four fluidSeriesSubCircuits into the FluidParallelCircuit
+3. Iterate the pressure changes across each branch (which must be the
+same) the sum of mass flowrates across each branch becomes zero, use 
+MathNet's algorithms.
+
+
+In this way, we have only one iterative solver solving for mass flowrate
+equals to zero across this loop. The iterative bits for each fluidSeries
+Circuit would have already been precalculated via nondimensionalisation.
+
+Thus, solving for the flow through each branch now is very fast and
+computationally efficient. However, this solver is only applicable
+to a specialised subset of cases, eg. series circuits and series circuits
+with one set of pipes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
