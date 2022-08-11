@@ -898,7 +898,11 @@ $$Be_{Dparallel} = 0.5 Re_{parallel}^2 (
 	f_{parallel }  \frac{L_{parallel } }
 	{D_{parallel } } +K_{parallel } )$$
 
-Lastly, what are the parameters we need to use to nondimensionalise pressure
+These are how the Re and Be are defined:
+$$Re = \frac{\dot{m}}{ A_{XS}} \frac{D_H}{\mu}$$
+$$Be_D = \frac{\Delta p D_H^2}{\nu^2} = \frac{\Delta P D_H^2}{\mu \nu}$$
+
+What are the parameters we need to use to nondimensionalise pressure
 drop and mass flowrate?
 
 1. hydraulic diameter $D_H$
@@ -906,58 +910,107 @@ drop and mass flowrate?
 3. dynamic viscosity $\mu$
 4. density $\rho$
 
-With this, we can always guess the pressure drop given a mass flowrate.
+
+### 3a. Mass flowrate
+
+the mass flowrate of the parallel subcircuit is the sum of mass
+flowrate through the branches
 
 
-For a series of parallel components, we have:
+$$\dot{m}_{parallel} = \sum_i^n \dot{m}_i $$
+
+### 3b. Characteristic hydraulic diameter and cross sectional area
+
+For cross sectioal area and hydraulic diameter, 
+ we shall define the 
+
+We shall define that the area of this parallel component is
+the sum of the constituent areas, for convenience. Plus it would make intuitive
+sense.
+
+$$A_{XSparallel} = \sum_i^n A_{XSi}$$
+
+Also, because of this, we can get a proper lengthscale for a representative
+hydraulic mean diameter.
+
+$$D_{parallel}^2 \frac{\pi}{4} = A_{XSparallel}$$
+
+
+
+### 3c. Density
+
+I am only devleoping this solver for mainly single phase 
+incompressible flow. The boussinseq approximation will therefore apply.
+
+To save on doing extra work, i shall define the density as the area
+weighted average density:
+
+$$\rho_{Parallel}  A_{XSparallel} 
+= \sum_i^n \rho_i  A_{XSparalleli}$$
+
+
+### 3d. Viscosity $\mu$
+
+To correctly find a weighted average of viscosity, we must first 
+consider where its effects are felt the most.
+
+We shall see that in the pressure loss equations, viscosity cancels
+out when we redeimensionalise our terms.
+
+For each branch in parallel we have:
 
 $$Be_{Di} = 0.5 Re_i^2 (f_i \frac{L_i}{D_i} +K_i)$$
 
+Can be reduced to:
 
-
-Let's get those dimensionless parameters out so we can expose the mass flowrate
-$$\frac{\Delta P D_H^2}{\nu \mu}= 0.5 (f \frac{L}{D} + K) Re^2$$
-
-
-$$\Delta P = 0.5 \frac{\nu^2 \rho}{D_H^2} (f \frac{L}{D} + K) Re^2$$
-
-Now let's perform some cancellations noting that:
-
-$$Re = \frac{\dot{m} D_H}{A_{XS} \mu}$$
-
-
-$$\Delta P = 0.5 \frac{\nu^2 \rho}{D_H^2} (f \frac{L}{D} + K)
-\frac{\dot{m}^2 D_H^2}{A_{XS}^2 \mu^2}$$
-
-Let's cancel out the diameters:
-$$\Delta P = 0.5 \frac{\nu^2 \rho}{\mu^2} (f \frac{L}{D} + K)
-\frac{\dot{m}^2 }{A_{XS}^2 }$$
+$$\Delta P_{loss-i} = 0.5 \frac{\nu^2 \rho}{\mu^2} 
+(f_i \frac{L_i}{D_i} +K)
+\frac{\dot{m}_i^2 }{A_{XSi}^2 }$$
 
 And now the  viscosities as well:
 
-$$\Delta P = 0.5 \frac{1}{\rho} (f \frac{L}{D} + K)
-\frac{\dot{m}^2 }{A_{XS}^2 }$$
+$$\Delta P_{loss-i} = 0.5 \frac{1}{\rho} (f_i \frac{L_i}{D_i} +K)
+\frac{\dot{m}_i^2 }{A_{XSi}^2 }$$
+
+Notice here that viscosity is not explicitly in the pressure loss
+equation. It is however, implicitly found in the darcy friction factor
+found here.
+
+We can then consider two extremes, 
+
+1. viscous forces dominate
+2. turbulent forces dominate
+
+#### Bounding case: full turbulence
+
+Under fully turbulent flow regime
+
+$$\frac{1}{\sqrt{f_{darcy}}} = -2 \log_{10} (\frac{\varepsilon/D}{3.7})$$
+
+Essentially, no matter how we choose viscosity, it has no bearing
+on the darcy friction factor.
+
+In this case, getting a mass flowrate is relatively simple:
+
 
 Now before we carry on, we should note that this equation pertains to a
-pressure drop rather than a pressure change across the pipe. This is because
+pressure drop rather than a pressure 
+change or loss term across the pipe. This is because
 we neglect hydrostatic pressure. So in actuality,
 
-
+$$ \Delta P_{totalChange} = \Delta H_i \rho_i g- \Delta P_{loss-i}  $$
 
 
 $$\frac{\dot{m}^2}{A_{XS}^2} = 
-\frac{(\Delta P_{totalChange} +\rho g \Delta H) 
-\rho}{0.5 (f \frac{L}{D} + K)}$$
+\frac{(- \Delta P_{totalChange} +\rho_i g \Delta H_i) 
+\rho_i}{0.5 (f_i \frac{L_i}{D_i} + K_i)}$$
 
-Square root:
-$$\frac{\dot{m}^2}{A_{XS}^2} = \frac{(\Delta P_{totalChange} +\rho g \Delta H)
- \rho}{0.5 (f \frac{L}{D} + K)}$$
+Rearranging to find mass flowrate:
+$$\dot{m}_i= 
+A_{XSi}\sqrt{ \frac{\rho_i(\Delta P_{totalChange} 
++\rho_i g \Delta H_i)}{0.5 (f_i \frac{L_i}{D_i} + K_i)}}$$
 
-$$\frac{\dot{m}}{A_{XS}} =\sqrt{ \frac{\rho(\Delta P_{totalChange} +\rho g
- \Delta H)}{0.5 (f \frac{L}{D} + K)}}$$
-
-$$\dot{m}= 
-A_{XS}\sqrt{ \frac{\rho(\Delta P_{totalChange} +\rho g \Delta H)}{0.5 (f \frac{L}{D} + K)}}$$
+[stopped here]
 
 In general for any branch eg. branch-i that can be represented as an fLDK 
 component, we have the correlation as follows:
@@ -1181,18 +1234,6 @@ weighted average of the pipe.
 If there are changes to the buoyancy forces, we will then factor that
 in by calculating the buoyancy term separately and without iteration.
 
-Next we shall set some constraints which amke intuitive sense:
-
-We shall define that the area of this parallel component is
-the sum of the constituent areas, for convenience. Plus it would make intuitive
-sense.
-
-$$A_{XSparallel} = \sum_i^n A_{XSi}$$
-
-Also, because of this, we can get a proper lengthscale for a representative
-hydraulic mean diameter.
-
-$$D_{parallel}^2 \frac{\pi}{4} = A_{XSparallel}$$
 
 
 The next part would have us make some assumptions:
@@ -1308,9 +1349,6 @@ $$ \left(\sum_i^n w_{XSareai}
 
 1. Fully turbulent flow regime
 
-Under fully turbulent flow regime
-
-$$\frac{1}{\sqrt{f_{darcy}}} = -2 \log_{10} (\frac{\varepsilon/D}{3.7})$$
 
 $$ \left(\sum_i^n w_{XSareai} 
 \sqrt{\frac{1}{ (k_i \frac{L_i}{D_i} + K_i)}} \right)^{-2}  = k_{parallel} \frac{L_{parallel}}{D_{parallel}} 
