@@ -9,9 +9,9 @@ using SharpFluids;
 
 namespace therminolPipeTest;
 
-public class SharpFluidsSandboxTests : testOutputHelper
+public class TherminolComparisonTests : testOutputHelper
 {
-	public SharpFluidsSandboxTests(ITestOutputHelper outputHelper):
+	public TherminolComparisonTests(ITestOutputHelper outputHelper):
 		base(outputHelper){
 
 		// this constructor is just here to load the test output helper
@@ -44,7 +44,7 @@ public class SharpFluidsSandboxTests : testOutputHelper
 		this.cout(therminol.Prandtl.ToString());
     }
 
-	[Theory(Skip = "redundant, see therminol comparison tests")]
+	[Theory]
 	[InlineData(0.5)]
 	[InlineData(2)]
 	[InlineData(3)]
@@ -86,7 +86,30 @@ public class SharpFluidsSandboxTests : testOutputHelper
 		
 	}
 
-	[Theory(Skip = "redundant, see therminolComparison")]
+	// want to check if the object value reflects the vendor
+	// value to within 2% for range of interest
+	// 20-180C
+	[Theory]
+	[InlineData(20,1064)]
+	[InlineData(30,1056)]
+	[InlineData(40,1048)]
+	[InlineData(50,1040)]
+	[InlineData(60,1032)]
+	[InlineData(70,1024)]
+	[InlineData(80,1015)]
+	[InlineData(90,1007)]
+	[InlineData(100,999)]
+	[InlineData(110,991)]
+	[InlineData(120,982)]
+	[InlineData(130,974)]
+	[InlineData(140,965)]
+	[InlineData(150,957)]
+	public void WhenTherminolObjectTestedExpectVendorDensityValue(
+			double tempValueC, double densityValueKgPerM3){
+
+	}
+
+	[Theory]
 	[InlineData(20)]
 	[InlineData(30)]
 	[InlineData(40)]
