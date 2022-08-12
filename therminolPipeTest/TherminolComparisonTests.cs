@@ -104,9 +104,48 @@ public class TherminolComparisonTests : testOutputHelper
 	[InlineData(130,974)]
 	[InlineData(140,965)]
 	[InlineData(150,957)]
+	[InlineData(160,948)]
+	[InlineData(180,931)]
 	public void WhenTherminolObjectTestedExpectVendorDensityValue(
-			double tempValueC, double densityValueKgPerM3){
+			double temperatureC, double densityValueKgPerM3){
 
+		//Setup
+
+
+		// set temperature and pressure for dowtherm and Therminol
+		Pressure referencePressure = new Pressure(1.1013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature 
+			= new EngineeringUnits.Temperature(temperatureC, 
+					TemperatureUnit.DegreeCelsius);
+
+		// get therminol VP-1 fluid object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+
+		// Act
+		therminol.UpdatePT(referencePressure, testTemperature);
+
+		Density resultDensity = therminol.Density;
+
+		// Assert 
+		//
+		// Check if densities are equal to within 0.5% of vendor data
+	
+		double errorMax = 0.2/100;
+		double resultDensityValueKgPerM3 = resultDensity.
+			As(DensityUnit.KilogramPerCubicMeter);
+		double error = Math.Abs(resultDensityValueKgPerM3 - 
+				densityValueKgPerM3)/densityValueKgPerM3;
+
+		if (error < errorMax){
+			return;
+		}
+		if (error > errorMax){
+
+		Assert.Equal(densityValueKgPerM3, 
+				resultDensity.As(DensityUnit.KilogramPerCubicMeter),
+				0);
+		}
+		
 	}
 
 	[Theory]
