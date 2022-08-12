@@ -259,6 +259,8 @@ public class TherminolComparisonTests : testOutputHelper
 		
 	}
 
+	// viscosity data"
+	// https://www.therminol.com/sites/therminol/files/documents/TF09A_Therminol_VP1.pdf
 	[Theory]
 	[InlineData(20)]
 	[InlineData(30)]
@@ -276,7 +278,7 @@ public class TherminolComparisonTests : testOutputHelper
 	[InlineData(160)]
 	[InlineData(170)]
 	[InlineData(180)]
-	public void WhenTemperatureVariedExpectTherminolAndDowthermPrandtlSame(
+	public void WhenTemperatureVariedExpectTherminolAndDowthermPrandtlWithin25Percent(
 			double temperatureC){
 
 		// Setup
@@ -307,8 +309,17 @@ public class TherminolComparisonTests : testOutputHelper
 
 		// Assert
 		//
+		double errorMax = 25.0/100;
+		double error = Math.Abs(testPrandtlNumber - 
+				referencePrandtlNumber)/referencePrandtlNumber;
+
+		if(error < errorMax){
+			return;
+		}
+		if(error > errorMax){
 		Assert.Equal(referencePrandtlNumber,testPrandtlNumber,
 				1);
+		}
 
 	}
 
