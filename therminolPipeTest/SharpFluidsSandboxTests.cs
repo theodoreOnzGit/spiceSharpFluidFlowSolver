@@ -45,13 +45,45 @@ public class SharpFluidsSandboxTests : testOutputHelper
     }
 
 	[Theory]
-	[InlineData(1)]
-	public void WhenTherminolChangePressureExpectInvariance(
+	[InlineData(0.5)]
+	[InlineData(2)]
+	[InlineData(3)]
+	[InlineData(4)]
+	[InlineData(5)]
+	public void WhenTherminolChangePressureExpectPrandtlInvariance(
 			double pressureBars){
+
+
+		// Setup
 
 		Pressure testPressure = Pressure.FromBar(pressureBars);
 		
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
 
+		// set temperature and pressure
+
+		Pressure referencePressure = new Pressure(1.1013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature roomTemperature 
+			= new EngineeringUnits.Temperature(293, TemperatureUnit.Kelvin);
+
+		// update PT of therminol
+		// updates the temperature and pressure of therminol
+
+		therminol.UpdatePT(referencePressure, roomTemperature);
+
+		// obtain prandtl number
+
+		double referencePrandtlNumber = therminol.Prandtl;
+
+		// Act
+		therminol.UpdatePT(testPressure, roomTemperature);
+
+		double testPrandtlNumber = therminol.Prandtl;
+
+		// Assert
+		//
+		Assert.Equal(referencePrandtlNumber,testPrandtlNumber);
+		
 	}
 
 
