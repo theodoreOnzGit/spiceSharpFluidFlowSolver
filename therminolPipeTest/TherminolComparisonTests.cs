@@ -211,6 +211,55 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 	[Theory]
+	[InlineData(80,1.28)]
+	[InlineData(90,1.12)]
+	[InlineData(100,0.985)]
+	[InlineData(110,0.875)]
+	[InlineData(120,0.784)]
+	public void ExpectTherminolObjectErrorLessThan1PercentWithinScalingRange(
+			double temperatureC, double viscosityRefValueCentiPoise){
+
+		//Setup
+
+
+		// set temperature and pressure for dowtherm and Therminol
+		Pressure referencePressure = new Pressure(1.1013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature 
+			= new EngineeringUnits.Temperature(temperatureC, 
+					TemperatureUnit.DegreeCelsius);
+
+		// get therminol VP-1 fluid object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+
+		// Act
+		therminol.UpdatePT(referencePressure, testTemperature);
+
+		DynamicViscosity resultDynamicViscosity = therminol.DynamicViscosity;
+
+		// Assert 
+		//
+		// Check if densities are equal to within 0.1% of vendor data
+		// within scaling range for flibe 80-120C 
+	
+		double errorMax = 0.1/100;
+		double resultDynamicViscosityValueKgPerM3 = resultDynamicViscosity.
+			As(DynamicViscosityUnit.Centipoise);
+		double error = Math.Abs(resultDynamicViscosityValueKgPerM3 - 
+				viscosityRefValueCentiPoise)/viscosityRefValueCentiPoise;
+
+		if (error < errorMax){
+			return;
+		}
+		if (error > errorMax){
+
+		Assert.Equal(viscosityRefValueCentiPoise, 
+				resultDynamicViscosity.As(DynamicViscosityUnit.Centipoise),
+				0);
+		}
+		
+	}
+
+	[Theory]
 	[InlineData(20)]
 	[InlineData(30)]
 	[InlineData(40)]
