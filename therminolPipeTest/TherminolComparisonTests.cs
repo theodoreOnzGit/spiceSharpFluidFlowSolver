@@ -89,6 +89,7 @@ public class TherminolComparisonTests : testOutputHelper
 	// want to check if the object value reflects the vendor
 	// value to within 2% for range of interest
 	// 20-180C
+	// https://www.therminol.com/sites/therminol/files/documents/TF09A_Therminol_VP1.pdf
 	[Theory]
 	[InlineData(20,1064)]
 	[InlineData(30,1056)]
@@ -128,7 +129,7 @@ public class TherminolComparisonTests : testOutputHelper
 
 		// Assert 
 		//
-		// Check if densities are equal to within 0.5% of vendor data
+		// Check if densities are equal to within 0.2% of vendor data
 	
 		double errorMax = 0.2/100;
 		double resultDensityValueKgPerM3 = resultDensity.
@@ -143,6 +144,67 @@ public class TherminolComparisonTests : testOutputHelper
 
 		Assert.Equal(densityValueKgPerM3, 
 				resultDensity.As(DensityUnit.KilogramPerCubicMeter),
+				0);
+		}
+		
+	}
+
+	// viscosity data"
+	// https://www.therminol.com/sites/therminol/files/documents/TF09A_Therminol_VP1.pdf
+	[Theory]
+	[InlineData(20,4.29)]
+	[InlineData(30,3.28)]
+	[InlineData(40,2.60)]
+	[InlineData(50,2.12)]
+	[InlineData(60,1.76)]
+	[InlineData(70,1.49)]
+	[InlineData(80,1.28)]
+	[InlineData(90,1.12)]
+	[InlineData(100,0.985)]
+	[InlineData(110,0.875)]
+	[InlineData(120,0.784)]
+	[InlineData(130,0.707)]
+	[InlineData(140,0.642)]
+	[InlineData(150,0.585)]
+	[InlineData(160,0.537)]
+	[InlineData(180,0.457)]
+	public void WhenTherminolObjectTestedExpectVendorDynamicViscosityValue(
+			double temperatureC, double viscosityRefValueCentiPoise){
+
+		//Setup
+
+
+		// set temperature and pressure for dowtherm and Therminol
+		Pressure referencePressure = new Pressure(1.1013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature 
+			= new EngineeringUnits.Temperature(temperatureC, 
+					TemperatureUnit.DegreeCelsius);
+
+		// get therminol VP-1 fluid object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+
+		// Act
+		therminol.UpdatePT(referencePressure, testTemperature);
+
+		DynamicViscosity resultDynamicViscosity = therminol.DynamicViscosity;
+
+		// Assert 
+		//
+		// Check if densities are equal to within 3.5% of vendor data
+	
+		double errorMax = 3.5/100;
+		double resultDynamicViscosityValueKgPerM3 = resultDynamicViscosity.
+			As(DynamicViscosityUnit.Centipoise);
+		double error = Math.Abs(resultDynamicViscosityValueKgPerM3 - 
+				viscosityRefValueCentiPoise)/viscosityRefValueCentiPoise;
+
+		if (error < errorMax){
+			return;
+		}
+		if (error > errorMax){
+
+		Assert.Equal(viscosityRefValueCentiPoise, 
+				resultDynamicViscosity.As(DynamicViscosityUnit.Centipoise),
 				0);
 		}
 		
