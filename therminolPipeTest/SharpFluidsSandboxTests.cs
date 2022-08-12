@@ -86,6 +86,60 @@ public class SharpFluidsSandboxTests : testOutputHelper
 		
 	}
 
+	[Theory]
+	[InlineData(20)]
+	[InlineData(30)]
+	[InlineData(40)]
+	[InlineData(50)]
+	[InlineData(60)]
+	[InlineData(70)]
+	[InlineData(80)]
+	[InlineData(90)]
+	[InlineData(100)]
+	[InlineData(120)]
+	[InlineData(130)]
+	[InlineData(140)]
+	[InlineData(150)]
+	[InlineData(160)]
+	[InlineData(170)]
+	[InlineData(180)]
+	public void WhenTemperatureVariedExpectTherminolAndDowthermPrandtlSame(
+			double temperatureC){
+
+		// Setup
+
+		// set temperature and pressure for dowtherm and Therminol
+		Pressure referencePressure = new Pressure(1.1013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature 
+			= new EngineeringUnits.Temperature(temperatureC, 
+					TemperatureUnit.DegreeCelsius);
+
+
+		double referencePrandtlNumber;
+		referencePrandtlNumber = this.getDowthermAViscosity(testTemperature) *
+			this.getDowthermAConstantPressureHeatCapacity(testTemperature) / 
+			this.getDowthermAThermalConductivity(testTemperature);
+		
+
+		// get therminol VP-1 fluid object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+
+
+
+
+		// Act
+		therminol.UpdatePT(referencePressure, testTemperature);
+
+		double testPrandtlNumber = therminol.Prandtl;
+
+		// Assert
+		//
+		Assert.Equal(referencePrandtlNumber,testPrandtlNumber,
+				1);
+
+	}
+
+
 
 	public Density getDowthermADensity(EngineeringUnits.Temperature fluidTemp){
 
@@ -110,7 +164,7 @@ public class SharpFluidsSandboxTests : testOutputHelper
 				DynamicViscosityUnit.PascalSecond);
 	}
 
-	public SpecificHeatCapacity getDowthermAConstantVolumeHeatCapacity(
+	public SpecificHeatCapacity getDowthermAConstantPressureHeatCapacity(
 			EngineeringUnits.Temperature fluidTemp){
 
 		this.rangeCheck(fluidTemp);
@@ -156,6 +210,7 @@ public class SharpFluidsSandboxTests : testOutputHelper
 			errorMsg = "Your fluid temperature \n";
 			errorMsg += "is too low :";
 			errorMsg += fluidTemp.ToString();
+			errorMsg += "C \n";
 			errorMsg += "\n the minimum is 20C";
 
 			throw new ArgumentException(errorMsg);
@@ -167,6 +222,7 @@ public class SharpFluidsSandboxTests : testOutputHelper
 			errorMsg = "Your fluid temperature \n";
 			errorMsg += "is too high :";
 			errorMsg += fluidTemp.ToString();
+			errorMsg += "C \n";
 			errorMsg += "\n the minimum is 180C";
 
 			throw new ArgumentException(errorMsg);
