@@ -460,7 +460,7 @@ public class TherminolComparisonTests : testOutputHelper
 			errorMsg += "is too high :";
 			errorMsg += fluidTemp.ToString();
 			errorMsg += "C \n";
-			errorMsg += "\n the minimum is 180C";
+			errorMsg += "\n the max is 180C";
 
 			throw new ArgumentException(errorMsg);
 		}
