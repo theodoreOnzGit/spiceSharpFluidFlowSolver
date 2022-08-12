@@ -124,7 +124,7 @@ namespace SpiceSharp.Components
 			double Be;
 			Be = pressureDrop.As(PressureUnit.Pascal);
 			Be *= Math.Pow(this.getHydraulicDiameter().As(LengthUnit.Meter
-						,2.0));
+						),2.0);
 			Be /= this.getFluidDynamicViscosity().As(DynamicViscosityUnit.
 					PascalSecond);
 			Be /= this.getFluidKinematicViscosity().As(KinematicViscosityUnit.
@@ -137,13 +137,13 @@ namespace SpiceSharp.Components
 
 			Pressure finalPressure =  
 				this.getFluidDynamicViscosity().
-				AsUnit(DynamicViscosityUnit.PascalSecond) *
+				ToUnit(DynamicViscosityUnit.PascalSecond) *
 				this.getFluidKinematicViscosity().
-				AsUnit(KinematicViscosityUnit.SquareMeterPerSecond) /
+				ToUnit(KinematicViscosityUnit.SquareMeterPerSecond) /
 				this.getHydraulicDiameter().
-				AsUnit(LengthUnit.Meter) / 
+				ToUnit(LengthUnit.Meter) / 
 				this.getHydraulicDiameter().
-				AsUnit(LengthUnit.Meter);
+				ToUnit(LengthUnit.Meter);
 
 			finalPressure *= Be;
 
@@ -157,11 +157,11 @@ namespace SpiceSharp.Components
 
 		public MassFlow getMassFlowRateFromRe(double Re){
 			MassFlow finalMassFlow;
-			finalMassFlow = this.getXSArea().AsUnit(AreaUnit.SquareMeter) *
+			finalMassFlow = this.getXSArea().ToUnit(AreaUnit.SquareMeter) *
 				this.getFluidDynamicViscosity().
-				AsUnit(DynamicViscosityUnit.Pascal) /
-				this.getHydraulicDiameter.
-				AsUnit(LengthUnit.Meter) *
+				ToUnit(DynamicViscosityUnit.PascalSecond) /
+				this.getHydraulicDiameter().
+				ToUnit(LengthUnit.Meter) *
 				Re;
 
 			return finalMassFlow;
