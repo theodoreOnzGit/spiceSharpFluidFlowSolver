@@ -259,7 +259,7 @@ public class TherminolComparisonTests : testOutputHelper
 		
 	}
 
-	// viscosity data"
+	// Prandtl Number data for Therminol VP-1
 	// https://www.therminol.com/sites/therminol/files/documents/TF09A_Therminol_VP1.pdf
 	[Theory]
 	[InlineData(20)]
@@ -323,6 +323,59 @@ public class TherminolComparisonTests : testOutputHelper
 
 	}
 
+	// Prandtl Number data for Therminol VP-1
+	// https://www.therminol.com/sites/therminol/files/documents/TF09A_Therminol_VP1.pdf
+	// This is the same test for Prandtl number
+	// but with a lower error tolerance in the range of scaling
+	[Theory]
+	[InlineData(80)]
+	[InlineData(90)]
+	[InlineData(100)]
+	[InlineData(120)]
+	public void ExpectDowthermAndTherminolPrandtlWithin10PercentInScalingRange(
+			double temperatureC){
+
+		// Setup
+
+		// set temperature and pressure for dowtherm and Therminol
+		Pressure referencePressure = new Pressure(1.1013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature 
+			= new EngineeringUnits.Temperature(temperatureC, 
+					TemperatureUnit.DegreeCelsius);
+
+
+		double referencePrandtlNumber;
+		referencePrandtlNumber = this.getDowthermAViscosity(testTemperature) *
+			this.getDowthermAConstantPressureHeatCapacity(testTemperature) / 
+			this.getDowthermAThermalConductivity(testTemperature);
+		
+
+		// get therminol VP-1 fluid object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+
+
+
+
+		// Act
+		therminol.UpdatePT(referencePressure, testTemperature);
+
+		double testPrandtlNumber = therminol.Prandtl;
+
+		// Assert
+		//
+		double errorMax = 9.5/100;
+		double error = Math.Abs(testPrandtlNumber - 
+				referencePrandtlNumber)/referencePrandtlNumber;
+
+		if(error < errorMax){
+			return;
+		}
+		if(error > errorMax){
+		Assert.Equal(referencePrandtlNumber,testPrandtlNumber,
+				1);
+		}
+
+	}
 
 
 	public Density getDowthermADensity(EngineeringUnits.Temperature fluidTemp){
