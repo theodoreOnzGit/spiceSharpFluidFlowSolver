@@ -4,6 +4,7 @@ using EngineeringUnits;
 using EngineeringUnits.Units;
 using System;
 
+Console.WriteLine("Hello, World!");
 // make a new therminol-VP1 fluid object
 
 Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
