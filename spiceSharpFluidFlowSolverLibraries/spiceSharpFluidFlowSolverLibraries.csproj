@@ -12,4 +12,13 @@
     <PackageReference Include="SpiceSharp" Version="3.1.5" />
   </ItemGroup>
 
+  <ItemGroup>
+	  <None Include="libCoolProp64.so" PackagePath="build\" Pack="true" />
+  <None Update="libCoolProp64.so">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  <PackagePath>build\</PackagePath>
+	  <Pack>true</Pack>
+  </None>
+  </ItemGroup>
+
 </Project>
