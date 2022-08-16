@@ -378,6 +378,9 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	// this test isn't actually a test, but just generates
+	// the csv data of temperature in C vs dowtherm A Pr
+	// and therminol Pr
 	[Fact]
 	public void generatePrandtlCSV(){
 
@@ -461,7 +464,98 @@ public class TherminolComparisonTests : testOutputHelper
 
 	}
 
+	// this isn't a test
+	// but generates a csv file of specific heat capacity 
+	// of Dowtherm A vs therminol VP1
+	// at 20 to 180C
+	// units are SI 
+	// J/kg/C
+	[Fact]
+	public void generateHeatCapacityCSV(){
 
+		List<double> temperatureList = new List<double>();
+		for (int i = 2; i < 19; i++)
+		{
+			//i'm adding temperature in degrees C 
+			//from 20 to 180 C
+			temperatureList.Add(10.0*i);
+		}
+
+		// now i want to generate a csv file with prandtl
+		// numbers of dowtherm A first,
+		// then therminol
+		//
+		// first let me generate my therminol object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+		Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature;
+
+		// now let me generate a list of 
+		// double, double, double
+		// the first number being temperature in degC
+		// second is heatCapacity number in dowthermA
+		// third is heatCapacity number in Therminol VP1
+		// this is a list of tuples.
+		List<(double, double, double)> heatCapacityData =
+			new List<(double,double,double)>();
+
+		double dowthermAheatCapacityNumber;
+		double therminolVP1heatCapacityNumber;
+		foreach (double tempCValue in temperatureList)
+		{
+			
+			// here i get my temperature object
+			testTemperature = new EngineeringUnits.
+				Temperature(tempCValue, 
+						TemperatureUnit.DegreeCelsius);
+
+
+			// then i get my dowtherm heatCapacity data
+			dowthermAheatCapacityNumber = 
+				this.getDowthermAConstantPressureHeatCapacity(testTemperature).
+				As(SpecificHeatCapacityUnit.JoulePerKilogramKelvin);
+
+			// then i get my therminol heatCapacity number data
+			therminol.UpdatePT(referencePressure, 
+					testTemperature);
+			therminol.UpdatePT(referencePressure, testTemperature);
+			therminolVP1heatCapacityNumber = therminol.Cp.As(
+					SpecificHeatCapacityUnit.JoulePerKilogramKelvin);
+
+			// i'll make the dataset tuple
+			(double, double, double) dataSet = 
+				(tempCValue, dowthermAheatCapacityNumber, therminolVP1heatCapacityNumber);
+
+			// then i add it to the heatCapacityData tuple list
+			heatCapacityData.Add(dataSet);
+		}
+
+		// now it's time to write the code into a directory
+		//
+	
+		string heatCapacityDataSet ="tempC, dowthermA SpecificHeatCapacity " +
+			"JoulePerKilogramKelvin," +
+			"therminolVP1 SpecificHeatCapacity JoulePerKilogramKelvin"  +
+		   "\n";
+		foreach (var dataSet in heatCapacityData)
+		{
+			string tempCString = dataSet.Item1.ToString();
+			string dowthermheatCapacityString = dataSet.Item2.ToString();
+			string therminolheatCapacityString = dataSet.Item3.ToString();
+
+			heatCapacityDataSet += tempCString + "," +
+					dowthermheatCapacityString + "," +
+					therminolheatCapacityString + "\n";
+		}
+		
+		using (System.IO.StreamWriter csvFile = 
+				new System.IO.StreamWriter("heatCapacityData.csv"))
+		{
+			csvFile.WriteLine(heatCapacityDataSet);
+		}
+
+
+	}
 
 
 
