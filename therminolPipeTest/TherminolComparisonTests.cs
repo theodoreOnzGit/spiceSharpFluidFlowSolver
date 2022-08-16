@@ -739,6 +739,98 @@ public class TherminolComparisonTests : testOutputHelper
 
 
 	}
+
+
+	// this is not a test but rather generates a file of temperature
+	// vs density for both Dowtherm A and TherminolVP1
+	[Fact]
+	public void generateDensityCSV(){
+
+		List<double> temperatureList = new List<double>();
+		for (int i = 2; i < 19; i++)
+		{
+			//i'm adding temperature in degrees C 
+			//from 20 to 180 C
+			temperatureList.Add(10.0*i);
+		}
+
+		// now i want to generate a csv file with prandtl
+		// numbers of dowtherm A first,
+		// then therminol
+		//
+		// first let me generate my therminol object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+		Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature;
+
+		// now let me generate a list of 
+		// double, double, double
+		// the first number being temperature in degC
+		// second is density number in dowthermA
+		// third is density number in Therminol VP1
+		// this is a list of tuples.
+		List<(double, double, double)> densityData =
+			new List<(double,double,double)>();
+
+		double dowthermAdensityNumber;
+		double therminolVP1densityNumber;
+		foreach (double tempCValue in temperatureList)
+		{
+			
+			// here i get my temperature object
+			testTemperature = new EngineeringUnits.
+				Temperature(tempCValue, 
+						TemperatureUnit.DegreeCelsius);
+
+
+			// then i get my dowtherm density data
+			dowthermAdensityNumber = 
+				this.getDowthermADensity(testTemperature).
+				As(DensityUnit.KilogramPerCubicMeter);
+
+			// then i get my therminol density number data
+			therminol.UpdatePT(referencePressure, 
+					testTemperature);
+			therminol.UpdatePT(referencePressure, testTemperature);
+			therminolVP1densityNumber = therminol.Density.As(
+					DensityUnit.KilogramPerCubicMeter);
+
+			// i'll make the dataset tuple
+			(double, double, double) dataSet = (tempCValue, 
+					dowthermAdensityNumber, 
+				 therminolVP1densityNumber);
+
+			// then i add it to the densityData tuple list
+			densityData.Add(dataSet);
+		}
+
+		// now it's time to write the code into a directory
+		//
+	
+		string densityDataSet ="tempC, dowthermA Density " +
+			"KilogramPerCubicMeter," +
+			"therminolVP1 Density KilogramPerCubicMeter"  +
+		   "\n";
+		foreach (var dataSet in densityData)
+		{
+			string tempCString = dataSet.Item1.ToString();
+			string dowthermdensityString = dataSet.Item2.ToString();
+			string therminoldensityString = dataSet.Item3.ToString();
+
+			densityDataSet += tempCString + "," +
+					dowthermdensityString + "," +
+					therminoldensityString + "\n";
+		}
+		
+		using (System.IO.StreamWriter csvFile = 
+				new System.IO.StreamWriter("densityData.csv"))
+		{
+			csvFile.WriteLine(densityDataSet);
+		}
+
+
+	}
+	
 	// the following section contains correlations for 
 	// Dowtherm A
 	//
