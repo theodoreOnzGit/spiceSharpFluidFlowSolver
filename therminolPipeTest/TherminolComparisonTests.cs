@@ -378,6 +378,103 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	[Fact]
+	public void generatePrandtlCSV(){
+
+		List<double> temperatureList = new List<double>();
+		for (int i = 2; i < 19; i++)
+		{
+			//i'm adding temperature in degrees C 
+			//from 20 to 180 C
+			temperatureList.Add(10.0*i);
+		}
+
+		// now i want to generate a csv file with prandtl
+		// numbers of dowtherm A first,
+		// then therminol
+		//
+		// first let me generate my therminol object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+		Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature;
+
+		// now let me generate a list of 
+		// double, double, double
+		// the first number being temperature in degC
+		// second is Prandtl number in dowthermA
+		// third is Prandtl number in Therminol VP1
+		// this is a list of tuples.
+		List<(double, double, double)> prandtlData =
+			new List<(double,double,double)>();
+
+		double dowthermAPrandtlNumber;
+		double therminolVP1PrandtlNumber;
+		foreach (double tempCValue in temperatureList)
+		{
+			
+			// here i get my temperature object
+			testTemperature = new EngineeringUnits.
+				Temperature(tempCValue, 
+						TemperatureUnit.DegreeCelsius);
+
+
+			// then i get my dowtherm prandtl data
+			dowthermAPrandtlNumber = this.getDowthermAViscosity(testTemperature) *
+				this.getDowthermAConstantPressureHeatCapacity(testTemperature) / 
+				this.getDowthermAThermalConductivity(testTemperature);
+
+			// then i get my therminol prandtl number data
+			therminol.UpdatePT(referencePressure, 
+					testTemperature);
+			therminol.UpdatePT(referencePressure, testTemperature);
+			therminolVP1PrandtlNumber = therminol.Prandtl;
+
+			// i'll make the dataset tuple
+			(double, double, double) dataSet = 
+				(tempCValue, dowthermAPrandtlNumber, therminolVP1PrandtlNumber);
+
+			// then i add it to the prandtlData tuple list
+			prandtlData.Add(dataSet);
+		}
+
+		// now it's time to write the code into a directory
+		//
+	
+		string PrandtlDataSet ="";
+		foreach (var dataSet in prandtlData)
+		{
+			string tempCString = dataSet.Item1.ToString();
+			string dowthermPrandtlString = dataSet.Item2.ToString();
+			string therminolPrandtlString = dataSet.Item3.ToString();
+
+			PrandtlDataSet += tempCString + "," +
+					dowthermPrandtlString + "," +
+					therminolPrandtlString + "\n";
+		}
+		
+		using (System.IO.StreamWriter csvFile = 
+				new System.IO.StreamWriter("prandtlData.csv"))
+		{
+			csvFile.WriteLine(PrandtlDataSet);
+		}
+
+
+	}
+
+
+
+
+
+	// the following section contains correlations for 
+	// Dowtherm A
+	//
+	// 
+	//
+	//
+	//
+	//
+
+
 	public Density getDowthermADensity(EngineeringUnits.Temperature fluidTemp){
 
 		this.rangeCheck(fluidTemp);
