@@ -443,7 +443,7 @@ public class TherminolComparisonTests : testOutputHelper
 		// now it's time to write the code into a directory
 		//
 	
-		string PrandtlDataSet ="";
+		string PrandtlDataSet ="tempDegreeC , dowthermAPrandtlNumber , therminolVP1PrandtlNumber \n ";
 		foreach (var dataSet in prandtlData)
 		{
 			string tempCString = dataSet.Item1.ToString();
@@ -558,6 +558,95 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	// this isn't a test, but rather generates a file
+	// for dynamic viscosity data
+	[Fact]
+	public void generateDynamicViscosityCSV(){
+
+		List<double> temperatureList = new List<double>();
+		for (int i = 2; i < 19; i++)
+		{
+			//i'm adding temperature in degrees C 
+			//from 20 to 180 C
+			temperatureList.Add(10.0*i);
+		}
+
+		// now i want to generate a csv file with prandtl
+		// numbers of dowtherm A first,
+		// then therminol
+		//
+		// first let me generate my therminol object
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+		Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature;
+
+		// now let me generate a list of 
+		// double, double, double
+		// the first number being temperature in degC
+		// second is dynamicViscosity number in dowthermA
+		// third is dynamicViscosity number in Therminol VP1
+		// this is a list of tuples.
+		List<(double, double, double)> dynamicViscosityData =
+			new List<(double,double,double)>();
+
+		double dowthermAdynamicViscosityNumber;
+		double therminolVP1dynamicViscosityNumber;
+		foreach (double tempCValue in temperatureList)
+		{
+			
+			// here i get my temperature object
+			testTemperature = new EngineeringUnits.
+				Temperature(tempCValue, 
+						TemperatureUnit.DegreeCelsius);
+
+
+			// then i get my dowtherm dynamicViscosity data
+			dowthermAdynamicViscosityNumber = 
+				this.getDowthermAViscosity(testTemperature).
+				As(DynamicViscosityUnit.PascalSecond);
+
+			// then i get my therminol dynamicViscosity number data
+			therminol.UpdatePT(referencePressure, 
+					testTemperature);
+			therminol.UpdatePT(referencePressure, testTemperature);
+			therminolVP1dynamicViscosityNumber = therminol.DynamicViscosity.As(
+					DynamicViscosityUnit.PascalSecond);
+
+			// i'll make the dataset tuple
+			(double, double, double) dataSet = 
+				(tempCValue, dowthermAdynamicViscosityNumber, 
+				 therminolVP1dynamicViscosityNumber);
+
+			// then i add it to the dynamicViscosityData tuple list
+			dynamicViscosityData.Add(dataSet);
+		}
+
+		// now it's time to write the code into a directory
+		//
+	
+		string dynamicViscosityDataSet ="tempC, dowthermA DynamicViscosity " +
+			"PascalSecond," +
+			"therminolVP1 DynamicViscosity PascalSecond"  +
+		   "\n";
+		foreach (var dataSet in dynamicViscosityData)
+		{
+			string tempCString = dataSet.Item1.ToString();
+			string dowthermdynamicViscosityString = dataSet.Item2.ToString();
+			string therminoldynamicViscosityString = dataSet.Item3.ToString();
+
+			dynamicViscosityDataSet += tempCString + "," +
+					dowthermdynamicViscosityString + "," +
+					therminoldynamicViscosityString + "\n";
+		}
+		
+		using (System.IO.StreamWriter csvFile = 
+				new System.IO.StreamWriter("dynamicViscosityData.csv"))
+		{
+			csvFile.WriteLine(dynamicViscosityDataSet);
+		}
+
+
+	}
 
 	// the following section contains correlations for 
 	// Dowtherm A
