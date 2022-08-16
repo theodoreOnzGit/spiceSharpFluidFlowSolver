@@ -23,7 +23,7 @@ To ensure that it is working properly, the first set of tests
 is to see if the therminol fluid functions have the same 
 thermophysical property values as the values given by the vendor.
 
-(Data)[https://www.eastman.com/Literature_Center/T/TF9141.pdf] 
+[Data](https://www.eastman.com/Literature_Center/T/TF9141.pdf)
 from the vendor will be compared against the data from the 
 therminol fluid object. If things work out then great!
 
@@ -88,7 +88,78 @@ Also perhaps compare the percentage differences between Re of
 Dowtherm and Re of Therminol at different temperatures and see
 the error.
 
+The correlations used in Dowtherm A are as follows (valid for 20-180C):
 
+Density:
+$$\rho (kg/m^23) = 1078-0.85*T(C)$$
+
+Dynamic Viscosity
+$$\mu (Pa \ s)= \frac{0.130}{T^{1.072} (C)}$$
+
+
+Specific Heat Capacity
+$$Cp(\frac{J}{kg \ K}) = 1518 + 2.82*T(C)$$
+
+
+Thermal Conductivity:
+$$k (\frac{W}{m K}) = 0.142 - 0.00016 * T(C)$$
+
+### Prandtl Number
+
+For most temperatures, the Prandtl number of Therminol VP1 is within
+15% of Dowtherm A. For 80-160C, error is less than 10%.
+
+But we have one big outlier in the data point at 20C, where error is
+21%.
+
+$$error = \frac{|Pr_{dowthermA}-Pr_{TVP1}|}{PR_{dowthermA}} *100%$$
+
+![Prandtl Number Of Dowtherm A vs Therminol VP1](./dowthermAvsTherminolComparisonData/prandtlNumberDowthermAvsTherminol.png)
+
+
+### Density
+
+The maximum error here is 0.651%, density data is almost equal for
+both Dowtherm A and Therminol VP 1.
+
+![Density of DowthermA vs TherminolVP1](./dowthermAvsTherminolComparisonData/densityDowthermAvsTherminol.png)
+
+Error fromula is similar to prandtl number error, ie the dowtherm A 
+property is in the denominator.
+### Dynamic Viscosity
+
+Dynamic viscosity has a 21% error at 20C but from 90C to 180C, the
+viscosity has a 10% discrepancy compared to dowtherm A. 
+
+And for the rest of the temperatures, it is within 13%.
+
+![Dynamic Viscosity of DowthermA vs TherminolVP1](./dowthermAvsTherminolComparisonData/DynamicViscosityDowthermAvsTherminol.png)
+
+
+Error fromula is similar to prandtl number error, ie the dowtherm A 
+property is in the denominator.
+
+
+### Specific Heat Capacity
+
+The max error here is 2%. But therminol VP1 is consistently 2% below
+dowtherm A.
+
+![Specific heat Capacity Viscosity of DowthermA vs TherminolVP1](./dowthermAvsTherminolComparisonData/specificHeatCapacityDowthermAvsTherminol.png)
+
+
+Error fromula is similar to prandtl number error, ie the dowtherm A 
+property is in the denominator.
+
+### Thermal Conductivity
+
+The max error here is 3.3%.
+
+Below 60C, Dowtherm A has a higher thermal conductivity than Therminol 
+VP1. Above 60C, therminolVP1 has a higher thermal conductivity than
+Dowtherm A.
+
+![Thermal Conductivity Viscosity of DowthermA vs TherminolVP1](./dowthermAvsTherminolComparisonData/thermalConductivityDowthermAvsTherminol.png)
 
 
 

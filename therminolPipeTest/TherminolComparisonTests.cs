@@ -427,8 +427,6 @@ public class TherminolComparisonTests : testOutputHelper
 				this.getDowthermAThermalConductivity(testTemperature);
 
 			// then i get my therminol prandtl number data
-			therminol.UpdatePT(referencePressure, 
-					testTemperature);
 			therminol.UpdatePT(referencePressure, testTemperature);
 			therminolVP1PrandtlNumber = therminol.Prandtl;
 
