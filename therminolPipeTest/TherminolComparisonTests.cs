@@ -840,8 +840,6 @@ public class TherminolComparisonTests : testOutputHelper
 				As(DensityUnit.KilogramPerCubicMeter);
 
 			// then i get my therminol density number data
-			therminol.UpdatePT(referencePressure, 
-					testTemperature);
 			therminol.UpdatePT(referencePressure, testTemperature);
 			therminolVP1densityNumber = therminol.Density.As(
 					DensityUnit.KilogramPerCubicMeter);

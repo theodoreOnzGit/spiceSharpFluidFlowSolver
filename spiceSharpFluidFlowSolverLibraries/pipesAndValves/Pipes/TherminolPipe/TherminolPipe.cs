@@ -172,56 +172,89 @@ namespace SpiceSharp.Components
 
 		// here are methods and properties to implement IHeatTransferFluidEntity
 
-		public int numberOfNodes { get; set; }
+		public abstract int numberOfNodes { get; set; }
 
 
-		// also i make sure this method cannot be overwritten
+		// now for this i'm going to initiate a new therminol class
+		// return the density
+		// and then delete everything
+		//
+		// this may not be efficient, but in case of multithreading,
+		// it's more thread safe
+
+		// basically i'm making a therminol object and finding the
+		// properties at atmospheric pressure and specific fluid Temp
+		// i've already tested that the fluid properties are pressure
+		// invariant so that's ok
 		public Density getFluidDensity(EngineeringUnits.Temperature 
 				fluidTemp){
-			// now for this i'm going to initiate a new therminol class
-			// return the density
-			// and then delete everything
-			//
-			// this may not be efficient, but in case of multithreading,
-			// it's more thread safe
-
 			Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
 			Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
-			EngineeringUnits.Temperature testTemperature;
+			therminol.UpdatePT(referencePressure, fluidTemp);
+			return therminol.Density.ToUnit(DensityUnit.KilogramPerCubicMeter);
 		}
 
 		public KinematicViscosity getFluidKinematicViscosity(EngineeringUnits.Temperature 
 				fluidTemp){
-			
+			KinematicViscosity fluidKinematicViscosity;
+			fluidKinematicViscosity = this.getFluidDynamicViscosity(fluidTemp)/ 
+				this.getFluidDensity(fluidTemp);
+			return fluidKinematicViscosity;
 		}
 
 		public DynamicViscosity getFluidDynamicViscosity(EngineeringUnits.Temperature 
 				fluidTemp){
-			
+			Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+			Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+			therminol.UpdatePT(referencePressure, fluidTemp);
+			return therminol.DynamicViscosity.ToUnit(DynamicViscosityUnit.
+					PascalSecond);
 		}
+
+		// the fluid ThermalConductivity should be abstract since if we
+		// want to find average prandtl number, it should be defined on a per
+		// component basis
+		public abstract ThermalConductivity getFluidThermalConductivity();
 
 
 		public ThermalConductivity getFluidThermalConductivity(
 				EngineeringUnits.Temperature fluidTemp){
+
+			Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+			Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+			therminol.UpdatePT(referencePressure, fluidTemp);
+			return therminol.Conductivity.ToUnit(ThermalConductivityUnit.
+					WattPerMeterKelvin);
 		}
 
-		public ThermalConductivity getFluidThermalConductivity(){
-		}
 
-		public SpecificHeatCapacity getFluidHeatCapacity(){
-		}
+		// the fluid SpecificHeatCapacity should be abstract since if we
+		// want to find average prandtl number, it should be defined on a per
+		// component basis
+		public abstract SpecificHeatCapacity getFluidHeatCapacity();
 
 		public SpecificHeatCapacity getFluidHeatCapacity(EngineeringUnits.Temperature 
 				fluidTemp){
+			Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+			Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+			therminol.UpdatePT(referencePressure, fluidTemp);
+			return therminol.Cp.ToUnit(SpecificHeatCapacityUnit.
+					JoulePerKilogramKelvin);
 		}
 
 
 
-		public double getFluidPrandtl(){
-		}
+		// the fluid prandtl number should be abstract since if we
+		// want to find average prandtl number, it should be defined on a per
+		// component basis
+		public abstract double getFluidPrandtl();
 
 		public double getFluidPrandtl(EngineeringUnits.Temperature 
 				fluidTemp){
+			Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+			Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+			therminol.UpdatePT(referencePressure, fluidTemp);
+			return therminol.Prandtl;
 		}
 
 
