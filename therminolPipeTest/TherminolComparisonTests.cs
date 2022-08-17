@@ -411,6 +411,15 @@ public class TherminolComparisonTests : testOutputHelper
 		therminol.UpdatePT(referencePressure, testTemperature);
 		double referencePrandtlNumber = therminol.Prandtl;
 		double testPrandtlNumber;
+		// let's make  a mockTherminolPipe which inherits from the 
+		// therminolPipe Abstract class but implements all methods with
+		// throw new NotImplementedException()
+
+		TherminolPipe testPipe = new mockTherminolPipe("mockTherminolPipe",
+				"0","out");
+
+		testPrandtlNumber = testPipe.getFluidPrandtl(testTemperature);
+
 		// Act
 
 
