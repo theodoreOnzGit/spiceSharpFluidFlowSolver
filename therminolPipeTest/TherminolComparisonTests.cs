@@ -394,7 +394,7 @@ public class TherminolComparisonTests : testOutputHelper
 	[InlineData(160)]
 	[InlineData(170)]
 	[InlineData(180)]
-	public void WhenTemperatureVariedExpectPrandtlEqual(
+	public void WhenAbstractTherminolPipeTemperatureVariedExpectPrandtl(
 			double tempCValue){
 		// this test checks if the functions returning prandtl number
 		// from the therminol pipe abstract class 
