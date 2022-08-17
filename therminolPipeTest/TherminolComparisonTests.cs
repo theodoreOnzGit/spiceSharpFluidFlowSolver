@@ -483,6 +483,74 @@ public class TherminolComparisonTests : testOutputHelper
 		Assert.Equal(referenceSpecificHeatCapacity, testSpecificHeatCapacity);
 
 	}
+
+
+	[Theory]
+	[InlineData(20)]
+	[InlineData(30)]
+	[InlineData(40)]
+	[InlineData(50)]
+	[InlineData(60)]
+	[InlineData(70)]
+	[InlineData(80)]
+	[InlineData(90)]
+	[InlineData(100)]
+	[InlineData(120)]
+	[InlineData(130)]
+	[InlineData(140)]
+	[InlineData(150)]
+	[InlineData(160)]
+	[InlineData(170)]
+	[InlineData(180)]
+	public void WhenAbstractTherminolPipeTemperatureVariedExpectDensity(
+			double tempCValue){
+		// this test checks if the functions returning prandtl number
+		// from the therminol pipe abstract class 
+		// will return the correct prandtl number
+		
+		
+		// Setup
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+		Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature;
+		testTemperature = new EngineeringUnits.
+			Temperature(tempCValue, TemperatureUnit.DegreeCelsius);
+
+		therminol.UpdatePT(referencePressure, testTemperature);
+		double referenceDensity = therminol.Density.As(
+				DensityUnit.KilogramPerCubicMeter);
+		double testDensity;
+		// let's make  a mockTherminolPipe which inherits from the 
+		// therminolPipe Abstract class but implements all methods with
+		// throw new NotImplementedException()
+
+		TherminolPipe testPipe = new mockTherminolPipe("mockTherminolPipe",
+				"0","out");
+
+		testDensity = testPipe.getFluidDensity(
+				testTemperature).As(DensityUnit.KilogramPerCubicMeter);
+
+		// Act
+
+
+		// Assert
+		//
+		Assert.Equal(referenceDensity, testDensity);
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 	/*******************
 	 * The following section has Fact tests,
 	 * but they are primarily used for generating csv files.
