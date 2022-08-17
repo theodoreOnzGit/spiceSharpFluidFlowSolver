@@ -377,6 +377,14 @@ public class TherminolComparisonTests : testOutputHelper
 
 	}
  
+	// here i need to test the therminol pipe abstract class for five things
+	// 1) double Pr
+	// 2) SpecificHeatCapacity Cp
+	// 3) Density rho
+	// 4) DynamicViscosity mu
+	// 5) ThermalConductivity k
+	//
+	// Test (1/5)
 	[Theory]
 	[InlineData(20)]
 	[InlineData(30)]
@@ -429,6 +437,15 @@ public class TherminolComparisonTests : testOutputHelper
 
 	}
 
+	//
+	// here i need to test the therminol pipe abstract class for five things
+	// 1) double Pr
+	// 2) SpecificHeatCapacity Cp
+	// 3) Density rho
+	// 4) DynamicViscosity mu
+	// 5) ThermalConductivity k
+	//
+	// Test (2/5)
 	[Theory]
 	[InlineData(20)]
 	[InlineData(30)]
@@ -485,6 +502,14 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	// here i need to test the therminol pipe abstract class for five things
+	// 1) double Pr
+	// 2) SpecificHeatCapacity Cp
+	// 3) Density rho
+	// 4) DynamicViscosity mu
+	// 5) ThermalConductivity k
+	//
+	// Test (3/5)
 	[Theory]
 	[InlineData(20)]
 	[InlineData(30)]
@@ -540,6 +565,14 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	// here i need to test the therminol pipe abstract class for five things
+	// 1) double Pr
+	// 2) SpecificHeatCapacity Cp
+	// 3) Density rho
+	// 4) DynamicViscosity mu
+	// 5) ThermalConductivity k
+	//
+	// Test (4/5)
 	[Theory]
 	[InlineData(20)]
 	[InlineData(30)]
@@ -595,6 +628,14 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	// here i need to test the therminol pipe abstract class for five things
+	// 1) double Pr
+	// 2) SpecificHeatCapacity Cp
+	// 3) Density rho
+	// 4) DynamicViscosity mu
+	// 5) ThermalConductivity k
+	//
+	// Test (5/5)
 	[Theory]
 	[InlineData(20)]
 	[InlineData(30)]
