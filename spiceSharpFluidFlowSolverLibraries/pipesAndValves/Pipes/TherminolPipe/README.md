@@ -41,6 +41,8 @@ pressure losses.
 Doing so, we can speed up calculations still using the precalculation 
 technique.
 
+
+
 ## Interfaces
 
 ### IFluidEntity
@@ -74,6 +76,34 @@ sounds like Be and Re should be more like properties with different
 get and set functions. But i'd prefer a functional style of programming
 to avoid calculations being dependent on object state as far as possible.
 
+Now problem is for this, if i want to return a fluid property, i must
+define a temperature, and one temperature may not be sufficient to describe
+the entire system. So accessing fluid properties using a function must
+come by supplying a temperature beforehand so that we don't have to always
+average out the temperatures before supplying the fluid temperature.
+
+Then again, a lot of legacy code has the interface of using a representative
+value to get temperature. It's probably unwise to get have a function getting
+fluid properties here based on temperature.
+
+### IHeatTransferFluidEntity
+
+The therminol pipe should also be able to return important properties for
+heat transfer, eg. Prandtl number.
+
+However, prandtl number access should not be put under FluidEntity because
+for isothermal fluids, you don't really need that. So under interface 
+segregation, i may make another interface for this.
+
+This heat transfer fluid entity must also have a temperaturelist which
+shows temperature distribution in the component.
+
+1. returnPr(Temperature)
+2. returnThermalConductivity(Temperature)
+3. returnDensity(Temperature)
+4. returnDynamicViscosity(Temperature)
+5. returnSpecificHeatCapacity(Temperature)
+6. temperatureList
 
 ## Definition of Pipe via inheriting from Abstract class
 

@@ -29,8 +29,6 @@ namespace SpiceSharp.Entities
 
 		KinematicViscosity getFluidKinematicViscosity();
 
-		IList<EngineeringUnits.Temperature> temperatureList { get; set; }
-
 		DynamicViscosity getFluidDynamicViscosity();
 
 		Pressure getHydrostaticPressureChange();
