@@ -1,5 +1,5 @@
 ﻿using SpiceSharp.Behaviors;
-using SpiceSharp.Components.therminolPipe34Behaviors;
+using SpiceSharp.Components.mockTherminolPipeBehaviors;
 using SpiceSharp.ParameterSets;
 using SpiceSharp.Simulations;
 using EngineeringUnits;
@@ -12,7 +12,7 @@ namespace SpiceSharp.Components
     /// A nonlinear resistor.
     /// </summary>
     /// <seealso cref="Component" />
-    public class therminolPipe34 : TherminolPipe,
+    public class mockTherminolPipe : TherminolPipe,
         IParameterized<BaseParameters>
     {
 
@@ -22,17 +22,26 @@ namespace SpiceSharp.Components
         public BaseParameters Parameters { get; set; } = new BaseParameters();
 
 		// copied this from the nonlinear resistor, don't change!
-        public therminolPipe34(string name, string nodeA, string nodeB) 
+        public mockTherminolPipe(string name, string nodeA, string nodeB) 
 			: base(name, nodeA, nodeB)
         {
         }
 
 		// Now, I want a constructor that can work without connecting
 		// node A to B
-        public therminolPipe34(string name) : base(name){
+        public mockTherminolPipe(string name) : base(name){
 		}
 
 
+		// copied this from the nonlinear resistor, don't change!
+        public override void CreateBehaviors(ISimulation simulation)
+        {
+            var behaviors = new BehaviorContainer(Name);
+            var context = new ComponentBindingContext(this, simulation, behaviors);
+            if (simulation.UsesBehaviors<IBiasingBehavior>())
+                behaviors.Add(new BiasingBehavior(Name, context));
+            simulation.EntityBehaviors.Add(behaviors);
+        }
 
 		public override ThermalConductivity getFluidThermalConductivity(){
 			throw new NotImplementedException();
@@ -72,7 +81,6 @@ namespace SpiceSharp.Components
 		public override Density getFluidDensity(){
 			throw new NotImplementedException();
 		}
-
 
     }
 }

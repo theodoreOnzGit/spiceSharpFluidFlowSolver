@@ -5,7 +5,7 @@ using System;
 using EngineeringUnits;
 using EngineeringUnits.Units;
 
-namespace SpiceSharp.Components.therminolPipe34Behaviors
+namespace SpiceSharp.Components.mockTherminolPipeBehaviors
 {
     /// <summary>
     /// Load behavior for a <see cref="NonlinearResistor"/>
@@ -179,6 +179,5 @@ namespace SpiceSharp.Components.therminolPipe34Behaviors
                 // RHS-vector
                 nodeARHSTerm, nodeBRHSTerm);
         }
-
     }
 }
