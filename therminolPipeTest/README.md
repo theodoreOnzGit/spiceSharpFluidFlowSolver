@@ -74,6 +74,20 @@ height? and Produce the correct coordinate change?
 With these, we can then have some level of confidence that
 our therminolPipe abstract class works.
 
+## Results for Therminol Pipe temperature variability tests
+
+I created an abstract class therminol pipe with partially 
+implemented methods for Pr, $\mu$, Cp, k and $\rho$.
+
+The abstract class cannot be instantiated on its own, so i
+created a mockTherminolPipe class with which to instantiate 
+the class. The implementation for all abstract classes are
+throw new NotImplementedException().
+
+I varied the temperature from 20C to 180C and saw that the
+mockTherminolPipe was able to return all the quantities correctly
+in comparison to the underlying coolprop libraries.
+
 ## Results for Therminol and Dowtherm A Properties comparison.
 
 Dowtherm A and therminol VP1 are very close in composition
