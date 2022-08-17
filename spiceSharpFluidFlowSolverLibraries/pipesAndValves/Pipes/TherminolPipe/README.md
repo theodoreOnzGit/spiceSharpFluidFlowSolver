@@ -10,7 +10,8 @@ The pipe will form the basis of all therminol based components.
 The only things the user must define are
 
 1. Fluid Temperature (from this all fluid properties are calculated)
-2. Pipe dimensions
+2. Pipe or component dimensions, Length, hydraulic diameter and 
+incline angle
 3. fLDK factors
 
 This itself is an abstract class from which all therminol type pipes are
