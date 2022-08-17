@@ -376,6 +376,59 @@ public class TherminolComparisonTests : testOutputHelper
 		}
 
 	}
+ 
+	[Theory]
+	[InlineData(20)]
+	[InlineData(30)]
+	[InlineData(40)]
+	[InlineData(50)]
+	[InlineData(60)]
+	[InlineData(70)]
+	[InlineData(80)]
+	[InlineData(90)]
+	[InlineData(100)]
+	[InlineData(120)]
+	[InlineData(130)]
+	[InlineData(140)]
+	[InlineData(150)]
+	[InlineData(160)]
+	[InlineData(170)]
+	[InlineData(180)]
+	public void WhenTemperatureVariedExpectPrandtlEqual(
+			double tempCValue){
+		// this test checks if the functions returning prandtl number
+		// from the therminol pipe abstract class 
+		// will return the correct prandtl number
+		
+		
+		// Setup
+		Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+		Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+		EngineeringUnits.Temperature testTemperature;
+		testTemperature = new EngineeringUnits.
+			Temperature(tempCValue, TemperatureUnit.DegreeCelsius);
+
+		therminol.UpdatePT(referencePressure, testTemperature);
+		double referencePrandtlNumber = therminol.Prandtl;
+		double testPrandtlNumber;
+		// Act
+
+
+		// Assert
+		//
+		Assert.Equal(referencePrandtlNumber, testPrandtlNumber);
+
+	}
+
+	/*******************
+	 * The following section has Fact tests,
+	 * but they are primarily used for generating csv files.
+	 *
+	 *
+	 *
+	 *
+	 *
+	 *************************************************************/
 
 
 	// this test isn't actually a test, but just generates

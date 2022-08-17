@@ -4,6 +4,7 @@ using SpiceSharp.ParameterSets;
 using SpiceSharp.Simulations;
 using EngineeringUnits;
 using EngineeringUnits.Units;
+using SharpFluids;
 
 namespace SpiceSharp.Components
 {
@@ -173,53 +174,54 @@ namespace SpiceSharp.Components
 
 		public int numberOfNodes { get; set; }
 
-		public IList<EngineeringUnits.Temperature> temperatureList { get; set; } = 
-			new List<EngineeringUnits.Temperature>();
 
-
+		// also i make sure this method cannot be overwritten
 		public Density getFluidDensity(EngineeringUnits.Temperature 
 				fluidTemp){
-			throw new NotImplementedException();
+			// now for this i'm going to initiate a new therminol class
+			// return the density
+			// and then delete everything
+			//
+			// this may not be efficient, but in case of multithreading,
+			// it's more thread safe
+
+			Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+			Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+			EngineeringUnits.Temperature testTemperature;
 		}
 
 		public KinematicViscosity getFluidKinematicViscosity(EngineeringUnits.Temperature 
 				fluidTemp){
-			throw new NotImplementedException();
+			
 		}
 
 		public DynamicViscosity getFluidDynamicViscosity(EngineeringUnits.Temperature 
 				fluidTemp){
-			throw new NotImplementedException();
+			
 		}
 
 
 		public ThermalConductivity getFluidThermalConductivity(
 				EngineeringUnits.Temperature fluidTemp){
-			throw new NotImplementedException();
 		}
 
 		public ThermalConductivity getFluidThermalConductivity(){
-			throw new NotImplementedException();
 		}
 
 		public SpecificHeatCapacity getFluidHeatCapacity(){
-			throw new NotImplementedException();
 		}
 
 		public SpecificHeatCapacity getFluidHeatCapacity(EngineeringUnits.Temperature 
 				fluidTemp){
-			throw new NotImplementedException();
 		}
 
 
 
 		public double getFluidPrandtl(){
-			throw new NotImplementedException();
 		}
 
 		public double getFluidPrandtl(EngineeringUnits.Temperature 
 				fluidTemp){
-			throw new NotImplementedException();
 		}
 
 
