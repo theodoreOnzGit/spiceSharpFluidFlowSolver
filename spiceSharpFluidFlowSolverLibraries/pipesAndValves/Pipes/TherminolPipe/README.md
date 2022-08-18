@@ -43,6 +43,127 @@ Doing so, we can speed up calculations still using the precalculation
 technique.
 
 
+### Methodology of Nodalisation
+
+How can we now ensure nodalisation is done correctly so that 
+the correct pressure loss is achieved?
+
+Suppose we have a list of 10 nodes or volumes within the pipe,
+and each node has a unique temperature, and each node within itself
+behaves like an isothermal pipe.
+
+We have already derived from our FluidSeriesSubCircuit how to obtain
+the averaged dynamic viscosity, densities, lengthscales etc. 
+
+Our objective now is to write this into code, and then test it by
+implementing it as a default means of nodalisation.
+
+From the FluidSeriesSubCircuits derivations, we find that we can
+weigh viscosity such that it will yield the correct pressure loss
+terms for stokes flow regimes:
+
+$$\frac{\mu_{series} 
+L_{series} }{\rho_{series} A_{XS{series}}^2} 
+= \sum_i^n  \frac{\mu_i L_i }{\rho_i A_{XSi}^2} 
+   $$
+
+Where:
+$$A_{XSi} = \frac{\pi D_i^2}{4}$$
+
+$$L_{Series} = \sum_i^n L_i $$
+
+And the density is weighted according to ensuring the correct
+hydrostatic pressure changes (boussinesq approximation):
+$$\Delta H_{series} \rho_{series}  = \sum_i^n \Delta H_i \rho_i $$
+
+Where:
+
+$$\Delta H_{series}   = \sum_i^n \Delta H_i $$
+
+And for entrance and exit regions of different areas, I can
+simply linearly interpolate the hydraulic mean diameter from its distance
+from the start and end points.
+
+$$D_i = \frac{D_{series} - D_{0}}{L_{series} - L_{0}} (L_i - L_{0})
++D_{0}$$
+
+$L_0$ refers to the length at the start of the pipe, which is essentially
+0m.
+
+$$D_i = \frac{D_{series} - D_{0}}{L_{series}} (L_i)
++D_{0}$$
+
+In the program, i can keep the formula as such, and just set $L_0$ = 0.
+
+$$D_i = \frac{D_{series} - D_{0}}{L_{series} - L_{0}} (L_i - L_{0})
++D_{0}$$
+
+However this will necessitate us to have a list of lengths by default.
+I do not need fluidEntities to enforce this, but it is essential for
+heat transfer fluid entities to have this list so that the calculation
+can be done.
+
+Also, the length $L_i$ being used to interpolate the diameter must
+be the midpoint of each segment.
+
+So i will have a list of lengthscales, and then a list of diameters
+and respective cross sectional areas will be calculated.
+
+I will also need a start and end diameter or cross sectional area
+which is set by the user. As diameter is more commonly used to 
+measure pipes, i will then use diameter as the default method
+of setting areas, rather than the other way round.
+
+So basically, i need a list of temperatures, for which it will 
+automatically calculate a list of densities, viscosities and
+thermal conductivities and heat capacities also.
+
+But one thing at a time though!
+
+So for segement lengths, tests must be as follows:
+
+1. Create a list of lengths within therminolpipe by default, 
+IHeatTransferFluidEntity must implement this interface. 
+2. By default, each of the lengths must equal 1/n times of the
+original length.
+3. When summed up, the segement lengths must equal the original
+length
+4. When zero segments are given, throw an error.
+5. When one segment given, it must be such that the length is
+the same as the original pipe.
+
+And then for segment diameters, test must be as follows:
+
+1. Segement Diameters must be autocalculated whenever the 
+list of lengths is set
+2. Segment diameter interpolation should be based on the midpoint
+of the list of lengths.
+
+
+#### Verification Methods
+
+Suppose this method has been conceived, how then do we test it?
+
+We must create a pipe object, split it up into 10 segments, and
+then we have an uneven temperature profile across this pipe.
+Then calculate the mass flow terms given a pressure loss iteratively
+using the MathNet Libraries. 
+
+This will be a reference flowrate.
+
+The nodalised pipe will use the Be vs Re method at an isothermal 
+temperature. However, it will then try to guess the pressure loss
+term using the quantities to nondimensionalise and redimensionalise
+the Be and Re.
+
+This will be the equations used above.
+
+I will include the full set of equations in here
+
+
+
+
+
 
 ## Interfaces
 

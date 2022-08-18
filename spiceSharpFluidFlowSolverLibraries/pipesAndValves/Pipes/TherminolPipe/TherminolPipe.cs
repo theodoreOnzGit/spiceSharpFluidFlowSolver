@@ -165,7 +165,7 @@ namespace SpiceSharp.Components
 
 		// here are methods and properties to implement IHeatTransferFluidEntity
 
-		public abstract int numberOfNodes { get; set; }
+		public abstract int numberOfSegments { get; set; }
 
 		public abstract IList<EngineeringUnits.Temperature> 
 			temperatureList { get; set; }

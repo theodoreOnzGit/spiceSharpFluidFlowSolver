@@ -21,7 +21,7 @@ namespace SpiceSharp.Entities
 
 		IList<EngineeringUnits.Temperature> temperatureList { get; set; }
 
-		int numberOfNodes { get; set; }
+		int numberOfSegments { get; set; }
 
 
 		// i also have overloads here with which to obtain fluid properties
