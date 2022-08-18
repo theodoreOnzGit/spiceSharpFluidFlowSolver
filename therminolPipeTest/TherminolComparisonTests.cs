@@ -795,6 +795,23 @@ public class TherminolComparisonTests : testOutputHelper
 		//
 	}
 
+	[Theory]
+	[InlineData(0)]
+	[InlineData(-1)]
+	public void WhenZeroSegmentsSetExpectDivideByZeroException(
+			int numberOfSegments){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(10.0, LengthUnit.Meter);
+
+		Assert.Throws<DivideByZeroException>(() => 
+				testPipe.numberOfSegments = numberOfSegments);
+
+	}
+
 
 	/*******************
 	 * The following section has Fact tests,

@@ -181,6 +181,8 @@ namespace SpiceSharp.Components
 				return this._numberOfSegments;
 			}
 			set {
+				if(value <= 0)
+					throw new DivideByZeroException("numberOfSegments <= 0");
 				this._numberOfSegments = value;
 				this.setLengthListUniform(value);
 			}
