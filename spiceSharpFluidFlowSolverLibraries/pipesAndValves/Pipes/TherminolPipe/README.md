@@ -123,7 +123,11 @@ But one thing at a time though!
 So for segement lengths, tests must be as follows:
 
 1. Create a list of lengths within therminolpipe by default, 
-IHeatTransferFluidEntity must implement this interface. 
+IHeatTransferFluidEntity need not implement this interface. Because
+i can simply use a for loop to cycle through each component for
+a FluidSeriesSubCircuit. But for each entity, i need a way of splitting 
+it up. Nevertheless, it may be a good idea anyhow so that it will help
+structure the code easier. Ie. patterns of coding are more consistent.
 2. By default, each of the lengths must equal 1/n times of the
 original length.
 3. When summed up, the segement lengths must equal the original

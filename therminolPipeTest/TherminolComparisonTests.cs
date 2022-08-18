@@ -693,7 +693,56 @@ public class TherminolComparisonTests : testOutputHelper
 
 
 
+	/***************************************************************
+	 * The following section outlines tests for nodalisation
+	 *
+	 *
+	 *
+	 *
+	 * ************************************************************/
 
+	[Fact]
+	public void WhenNumberOfNodesSetExpectEqualLength(){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(1.0, LengthUnit.Meter);
+		testPipe.numberOfSegments = 10;
+		// now let's retrieve the length list
+
+		IList<Length> testPipeLengthList = new List<Length>();
+
+		foreach (Length segmentLength in testPipe.lengthList)
+		{
+			testPipeLengthList.Add(segmentLength);
+		}
+
+		// so let me just get the first length off this list
+		Length firstLength = testPipeLengthList[0];
+
+		// Act
+
+		// then i'll go through a for loop whether the legnths are
+		// equal, if equal i will add to an integer known as the checksum
+		// if the interger in the checksum is equal to the 
+		// number of nodes, then the test passes
+		//
+		int checksum = 0;
+
+		foreach (Length segmentLength in testPipeLengthList)
+		{
+			if(firstLength.As(LengthUnit.Meter) ==
+					segmentLength.As(LengthUnit.Meter)){
+				checksum++;
+			}
+
+		}
+		// Assert
+		//
+		Assert.Equal(testPipe.numberOfSegments,checksum);
+	}
 
 
 

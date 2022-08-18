@@ -23,6 +23,7 @@ namespace SpiceSharp.Entities
 
 		int numberOfSegments { get; set; }
 
+		IList<Length> lengthList { get; set; }
 
 		// i also have overloads here with which to obtain fluid properties
 		// given a temperature, this is much easier to unit test.

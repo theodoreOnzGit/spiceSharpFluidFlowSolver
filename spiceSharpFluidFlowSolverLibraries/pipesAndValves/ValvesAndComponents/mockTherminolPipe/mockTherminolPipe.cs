@@ -59,12 +59,7 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
-		public override Length getComponentLength(){
-			throw new NotImplementedException();
-		}
-
-		public override int numberOfSegments { get; set; } = 5;
-
+		public override Length componentLength { get; set; } 
 
 		public override IList<EngineeringUnits.Temperature> 
 			temperatureList { get; set; } = 

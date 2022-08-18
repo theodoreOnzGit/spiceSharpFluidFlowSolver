@@ -30,6 +30,7 @@ namespace SpiceSharp.Components
         public TherminolPipe(string name, string nodeA, string nodeB) : base(name, 2)
         {
             Connect(nodeA, nodeB);
+			// i'm going to set some defaults for this system
         }
 
 		// Now, I want a constructor that can work without connecting
@@ -37,6 +38,7 @@ namespace SpiceSharp.Components
         public TherminolPipe(string name) : base(name, 2){
 			Console.WriteLine("\n Please Remember to call the Connect(inlet,outlet) method)\n");
 			Console.WriteLine("ie ObjectName.Connect('inletName','outletName'); \n");
+			// i'm going to set some defaults for this system
 		}
 
 
@@ -76,7 +78,12 @@ namespace SpiceSharp.Components
 			return Parameters.getMassFlowRate(dynamicPressureDrop);
 		}
 
-		public abstract Length getComponentLength();
+
+		public abstract Length componentLength { get; set; }
+
+		public virtual Length getComponentLength(){
+			return this.componentLength;
+		}
 
 		public abstract Length getHydraulicDiameter();
 
@@ -164,8 +171,42 @@ namespace SpiceSharp.Components
 		}
 
 		// here are methods and properties to implement IHeatTransferFluidEntity
+		//
+		// everytime i change the numberOfSegments within the therminolPipe
+		// a new list of segment lengths is generated
 
-		public abstract int numberOfSegments { get; set; }
+		private int _numberOfSegments;
+		public virtual int numberOfSegments { 
+			get {
+				return this._numberOfSegments;
+			}
+			set {
+				this._numberOfSegments = value;
+				this.setLengthListUniform(value);
+			}
+		}
+
+		public virtual IList<Length> lengthList { get; set; }
+
+		private void setLengthListUniform(int numberOfSegments){
+			// this function helps to evenly split a pipe into
+			// n segements given a number of segments
+			// so that the user doesn't have to manually set the
+			// list of lengths
+
+			Length segmentLength = this.getComponentLength()/ 
+				numberOfSegments;
+			// i will clear the lengthlist and make a new lengthlist
+			this.lengthList = null;
+			this.lengthList = new List<Length>();
+
+			for (int i = 0; i < numberOfSegments; i++)
+			{
+				this.lengthList.Add(segmentLength);
+			}
+
+			return;
+		}
 
 		public abstract IList<EngineeringUnits.Temperature> 
 			temperatureList { get; set; }

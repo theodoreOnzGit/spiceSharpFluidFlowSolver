@@ -50,9 +50,7 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
-		public override Length getComponentLength(){
-			throw new NotImplementedException();
-		}
+		public override Length componentLength { get; set; } 
 
 		public override int numberOfSegments { get; set; } = 5;
 
