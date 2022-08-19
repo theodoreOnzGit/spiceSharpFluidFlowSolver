@@ -198,7 +198,7 @@ namespace SpiceSharp.Components
 
 				// let's do a null check first:
 				if (value is null){
-					return;
+					throw new NullReferenceException("lengthList set to null");
 				}
 
 				// first i want to check if the 
@@ -232,8 +232,7 @@ namespace SpiceSharp.Components
 
 			Length segmentLength = this.getComponentLength()/ 
 				numberOfSegments;
-			// i will clear the lengthlist and make a new lengthlist
-			this.lengthList = null;
+
 			List<Length> tempLengthList = new List<Length>();
 
 
