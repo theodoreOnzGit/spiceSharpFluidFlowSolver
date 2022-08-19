@@ -277,6 +277,70 @@ public virtual int numberOfSegments {
 }
 ```
 
+##### 5. When one segment is given, the segment Length must equal component Length
+
+This is a special case of the general set of cases where i test if
+the length of the pipe is equal to the sum total of the segment lengths.
+Or else an exception is thrown.
+
+I will not code an entirely new exception for this, but rather, i'll
+test it in a unit test.
+
+Here is the unit test:
+
+```csharp
+[Theory]
+[InlineData(5,1.0)]
+[InlineData(50,10.0)]
+[InlineData(70,1.0)]
+[InlineData(1,2.0)]
+public void WhenNumberOfNodesSetLengthEqual1dividebyNoOfSegments(
+        int numberOfSegments, double componentLength){
+
+    // Setup
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+    testPipe.numberOfSegments = numberOfSegments;
+    Length expectedLength = testPipe.componentLength/numberOfSegments;
+    // now let's retrieve the length list
+
+    IList<Length> testPipeLengthList = new List<Length>();
+
+    foreach (Length segmentLength in testPipe.lengthList)
+    {
+        testPipeLengthList.Add(segmentLength);
+    }
+
+    // so let me just get the first length off this list
+    Length firstLength = testPipeLengthList[0];
+
+    // Act
+
+    // then i'll go through a for loop whether the legnths are
+    // equal, if equal i will add to an integer known as the checksum
+    // if the interger in the checksum is equal to the 
+    // number of nodes, then the test passes
+    //
+
+    foreach (Length segmentLength in testPipeLengthList)
+    {
+        // now i know for each length i'm not supposed to use
+        // so many assert.Equal in one test
+        // but i want the test to fail if even one of the lengths 
+        // isn't equal, so that's why i do it this way
+        // the lazy way
+        Assert.Equal(expectedLength.As(LengthUnit.Meter),
+                segmentLength.As(LengthUnit.Meter));
+    }
+    // Assert
+    //
+}
+```
+
+The last theory test asserts this case. 
+
 #### Verification Methods
 
 Suppose this method has been conceived, how then do we test it?
