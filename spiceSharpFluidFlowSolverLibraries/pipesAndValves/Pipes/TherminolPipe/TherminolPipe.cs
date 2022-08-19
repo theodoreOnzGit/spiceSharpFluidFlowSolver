@@ -188,7 +188,41 @@ namespace SpiceSharp.Components
 			}
 		}
 
-		public virtual IList<Length> lengthList { get; set; }
+		private IList<Length> _lengthList;
+		public virtual IList<Length> lengthList { 
+			get{
+				return this._lengthList;
+			}
+
+			set{
+
+				// let's do a null check first:
+				if (value is null){
+					return;
+				}
+
+				// first i want to check if the 
+				// total segment length is equal to the componentLength
+
+				Length totalLength = new Length(0.0, 
+						LengthUnit.Meter);
+				foreach (Length segmentLength in value)
+				{
+					totalLength += segmentLength;
+				}
+				if(totalLength.As(LengthUnit.Meter) !=
+						this.getComponentLength().As(LengthUnit.Meter)
+						){
+					string errorMsg = "The total length in your lengthList \n";
+					errorMsg += totalLength.ToString() + "\n";
+					errorMsg += "is not equal to the pipe length: \n";
+					errorMsg += this.getComponentLength().ToString() + "\n";
+					throw new InvalidOperationException(errorMsg);
+				}
+
+				this._lengthList = value;
+			}
+		}
 
 		private void setLengthListUniform(int numberOfSegments){
 			// this function helps to evenly split a pipe into
@@ -200,12 +234,14 @@ namespace SpiceSharp.Components
 				numberOfSegments;
 			// i will clear the lengthlist and make a new lengthlist
 			this.lengthList = null;
-			this.lengthList = new List<Length>();
+			List<Length> tempLengthList = new List<Length>();
+
 
 			for (int i = 0; i < numberOfSegments; i++)
 			{
-				this.lengthList.Add(segmentLength);
+				tempLengthList.Add(segmentLength);
 			}
+			this.lengthList = tempLengthList;
 
 			return;
 		}

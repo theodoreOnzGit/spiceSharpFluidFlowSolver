@@ -129,7 +129,7 @@ a FluidSeriesSubCircuit. But for each entity, i need a way of splitting
 it up. Nevertheless, it may be a good idea anyhow so that it will help
 structure the code easier. Ie. patterns of coding are more consistent.
 2. By default, each of the lengths must equal 1/n times of the
-original length.
+original length. 
 3. When summed up, the segement lengths must equal the original
 length
 4. When zero segments are given, throw an error.
@@ -143,6 +143,92 @@ list of lengths is set
 2. Segment diameter interpolation should be based on the midpoint
 of the list of lengths.
 
+##### 1 .List of Lengths
+Under TherminolPipe.cs, we have:
+```csharp
+public virtual IList<Length> lengthList { get; set; }
+```
+
+It's virtual in case you want to do other stuff with it.
+
+##### 2. By default, each length is equal to 1/n times original length
+
+Under TherminolPipe.cs, the numberOfSegments property by default
+will automatically create a new lengthList with segments of
+appropriate length:
+
+```csharp
+private int _numberOfSegments;
+public virtual int numberOfSegments { 
+    get {
+        return this._numberOfSegments;
+    }
+    set {
+        if(value <= 0)
+            throw new DivideByZeroException("numberOfSegments <= 0");
+        this._numberOfSegments = value;
+        this.setLengthListUniform(value);
+    }
+}
+```
+
+This is a virtual function, meaning to say you can override it.
+But don't have to if you don't want to change the default behavior.
+
+The method setLengthListUniform is:
+
+```csharp
+private void setLengthListUniform(int numberOfSegments){
+    // this function helps to evenly split a pipe into
+    // n segements given a number of segments
+    // so that the user doesn't have to manually set the
+    // list of lengths
+
+    Length segmentLength = this.getComponentLength()/ 
+        numberOfSegments;
+    // i will clear the lengthlist and make a new lengthlist
+    this.lengthList = null;
+    this.lengthList = new List<Length>();
+
+    for (int i = 0; i < numberOfSegments; i++)
+    {
+        this.lengthList.Add(segmentLength);
+    }
+
+    return;
+}
+```
+
+This is not overrideable, because you don't really need to override
+this function. If you want to change the default behavior, change
+the property numberOfSegments instead.
+
+As a quality of life improvement however, i'd like to have a compile
+time warning to ensure the user sets the number of segments, 
+or at least it defaults to something. eg. 1.
+
+
+
+
+##### 4. When zero segments are given, throw an error:
+
+When the numberOfSegments is set by default, it will throw an 
+exception if the value is 0 or less.
+
+A divide by zero error will be thrown.
+```csharp
+public virtual int numberOfSegments { 
+    get {
+        return this._numberOfSegments;
+    }
+    set {
+        if(value <= 0)
+            throw new DivideByZeroException("numberOfSegments <= 0");
+        this._numberOfSegments = value;
+        this.setLengthListUniform(value);
+    }
+}
+```
 
 #### Verification Methods
 
