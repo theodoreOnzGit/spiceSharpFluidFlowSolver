@@ -84,18 +84,18 @@ And for entrance and exit regions of different areas, I can
 simply linearly interpolate the hydraulic mean diameter from its distance
 from the start and end points.
 
-$$D_i = \frac{D_{series} - D_{0}}{L_{series} - L_{0}} (L_i - L_{0})
+$$D_i = \frac{D_{exit} - D_{0}}{L_{series} - L_{0}} (L_i - L_{0})
 +D_{0}$$
 
 $L_0$ refers to the length at the start of the pipe, which is essentially
 0m.
 
-$$D_i = \frac{D_{series} - D_{0}}{L_{series}} (L_i)
+$$D_i = \frac{D_{exit} - D_{0}}{L_{series}} (L_i)
 +D_{0}$$
 
 In the program, i can keep the formula as such, and just set $L_0$ = 0.
 
-$$D_i = \frac{D_{series} - D_{0}}{L_{series} - L_{0}} (L_i - L_{0})
+$$D_i = \frac{D_{exit} - D_{0}}{L_{series} - L_{0}} (L_i - L_{0})
 +D_{0}$$
 
 However this will necessitate us to have a list of lengths by default.
@@ -388,6 +388,69 @@ the diameter interpolation?
 I first need to find the diameter at both entrance and exit. These
 are properties which should be implemented in therminol pipe, either
 as abstract properties or virtual properties otherwise. 
+
+Now once i have these entrance and exit hydraulic diameters, what do i 
+do?
+
+Let's say i have 10 segments, and want to find the length of the first.
+
+$$L_{segment} = \frac{L_{total}}{n_{segments}}$$
+
+At midpoint, i will be having the length from the last node:
+
+$$L_{segmentI} = n_i*L_{segment} - 0.5 L_{segment}$$
+
+I will have a function to return this, note that i factorised out
+the segment Length.
+
+```csharp
+private Length getSegmentInterpolationLength(int segmentNumber){
+    return this.getComponentLength()/this.numberOfSegments 
+        *(segmentNumber - 0.5);
+}
+```
+
+The next part is to implement this equation:
+$$D_i = \frac{D_{exit} - D_{0}}{L_{series} - L_{0}} (L_i - L_{0})
++D_{0}$$
+
+The following properties and methods implement this:
+```csharp
+
+public abstract Length entranceHydraulicDiameter { get; set; }
+
+public abstract Length exitHydraulicDiameter { get; set; }
+
+private Length getSegmentInterpolationLength(int segmentNumber){
+    return this.getComponentLength()/this.numberOfSegments 
+        *(segmentNumber - 0.5);
+}
+
+private Length getSegmentLinearInterpolatedDiameter(int segmentNumber){
+    double interpolationSlope;
+    interpolationSlope = (this.exitHydraulicDiameter 
+            - this.entranceHydraulicDiameter)/(
+                this.getComponentLength() - 
+                this.entranceLengthValue);
+
+    Length interpolationLength = this.getSegmentInterpolationLength(
+            segmentNumber);
+
+    return (interpolationLength - 
+            this.entranceLengthValue)*interpolationSlope
+        + entranceHydraulicDiameter;
+
+}
+
+public virtual Length entranceLengthValue { get; set; } = 
+    new Length(0.0, LengthUnit.Meter);
+    
+```
+
+I force the user to define the entrance and exit hydraulic diameter,
+and then i use the method getSegmentLinearInterpolatedDiameter to help
+calculate the diameter given a segment number.
+
 
 
 

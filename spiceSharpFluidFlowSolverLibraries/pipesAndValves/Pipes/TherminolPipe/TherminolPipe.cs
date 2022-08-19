@@ -85,11 +85,45 @@ namespace SpiceSharp.Components
 			return this.componentLength;
 		}
 
+
+		public abstract Length getHydraulicDiameter();
+
+
+		/**********************************************************************
+		 * This section contains data to help deal with pipes which may have
+		 * different entrance and exit areas or hydraulic diameters.
+		 * 
+		 *
+		 *
+		 *
+		 * ********************************************************************/
 		public abstract Length entranceHydraulicDiameter { get; set; }
 
 		public abstract Length exitHydraulicDiameter { get; set; }
 
-		public abstract Length getHydraulicDiameter();
+		private Length getSegmentInterpolationLength(int segmentNumber){
+			return this.getComponentLength()/this.numberOfSegments 
+				*(segmentNumber - 0.5);
+		}
+
+		private Length getSegmentLinearInterpolatedDiameter(int segmentNumber){
+			double interpolationSlope;
+			interpolationSlope = (this.exitHydraulicDiameter 
+					- this.entranceHydraulicDiameter)/(
+						this.getComponentLength() - 
+						this.entranceLengthValue);
+
+			Length interpolationLength = this.getSegmentInterpolationLength(
+					segmentNumber);
+
+			return (interpolationLength - 
+					this.entranceLengthValue)*interpolationSlope
+				+ entranceHydraulicDiameter;
+
+		}
+
+		public virtual Length entranceLengthValue { get; set; } = 
+			new Length(0.0, LengthUnit.Meter);
 
 		public virtual Area getXSArea(){
 			Area xsArea = this.getHydraulicDiameter().Pow(2);
