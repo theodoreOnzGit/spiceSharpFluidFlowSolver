@@ -143,6 +143,7 @@ list of lengths is set
 2. Segment diameter interpolation should be based on the midpoint
 of the list of lengths.
 
+#### pipe segment Length code and tests
 ##### 1 .List of Lengths
 Under TherminolPipe.cs, we have:
 ```csharp
@@ -340,6 +341,55 @@ public void WhenNumberOfNodesSetLengthEqual1dividebyNoOfSegments(
 ```
 
 The last theory test asserts this case. 
+
+#### Pipe Diameter Segment Code and tests
+
+#### 1. Segement Diameters AutoCalculated when Length List is set
+```csharp
+set{
+
+    // let's do a null check first:
+    if (value is null){
+        throw new NullReferenceException("lengthList set to null");
+    }
+
+    // first i want to check if the 
+    // total segment length is equal to the componentLength
+
+    Length totalLength = new Length(0.0, 
+            LengthUnit.Meter);
+    foreach (Length segmentLength in value)
+    {
+        totalLength += segmentLength;
+    }
+    if(totalLength.As(LengthUnit.Meter) !=
+            this.getComponentLength().As(LengthUnit.Meter)
+            ){
+        string errorMsg = "The total length in your lengthList \n";
+        errorMsg += totalLength.ToString() + "\n";
+        errorMsg += "is not equal to the pipe length: \n";
+        errorMsg += this.getComponentLength().ToString() + "\n";
+        throw new InvalidOperationException(errorMsg);
+    }
+
+    this._lengthList = value;
+    this.generateHydraulicDiameterList();
+}
+```
+
+I have altered the lengthList set functions to invoke a script called
+generateHydraulicDiameterList whenever set.
+
+#### 2. Segment diameter interpolation 
+
+The interpolation scheme now becomes kind of tricky; how can i do
+the diameter interpolation?
+
+I first need to find the diameter at both entrance and exit. These
+are properties which should be implemented in therminol pipe, either
+as abstract properties or virtual properties otherwise. 
+
+
 
 #### Verification Methods
 

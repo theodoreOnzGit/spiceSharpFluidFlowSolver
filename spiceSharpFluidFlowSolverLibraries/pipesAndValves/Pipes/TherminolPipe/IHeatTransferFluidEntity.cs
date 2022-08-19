@@ -25,6 +25,9 @@ namespace SpiceSharp.Entities
 
 		IList<Length> lengthList { get; set; }
 
+		IList<Length> hydraulicDiameterList { get; }
+
+
 		// i also have overloads here with which to obtain fluid properties
 		// given a temperature, this is much easier to unit test.
 		Density getFluidDensity(EngineeringUnits.Temperature 

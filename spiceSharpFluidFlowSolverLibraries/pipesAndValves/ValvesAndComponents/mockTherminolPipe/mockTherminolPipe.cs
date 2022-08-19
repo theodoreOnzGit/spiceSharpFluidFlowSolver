@@ -69,6 +69,12 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
+		public override Length entranceHydraulicDiameter { get; set; } =
+			new Length(2.79e-2, LengthUnit.Meter);
+
+		public override Length exitHydraulicDiameter { get; set; } =
+			new Length(2.79e-2, LengthUnit.Meter);
+
 		public override KinematicViscosity getFluidKinematicViscosity(){
 			throw new NotImplementedException();
 		}

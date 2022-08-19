@@ -85,6 +85,10 @@ namespace SpiceSharp.Components
 			return this.componentLength;
 		}
 
+		public abstract Length entranceHydraulicDiameter { get; set; }
+
+		public abstract Length exitHydraulicDiameter { get; set; }
+
 		public abstract Length getHydraulicDiameter();
 
 		public virtual Area getXSArea(){
@@ -221,8 +225,15 @@ namespace SpiceSharp.Components
 				}
 
 				this._lengthList = value;
+				this.generateHydraulicDiameterList();
 			}
 		}
+
+		private void generateHydraulicDiameterList(){
+			return;
+		}
+		public virtual IList<Length> hydraulicDiameterList { get; private set; }
+
 
 		private void setLengthListUniform(int numberOfSegments){
 			// this function helps to evenly split a pipe into
