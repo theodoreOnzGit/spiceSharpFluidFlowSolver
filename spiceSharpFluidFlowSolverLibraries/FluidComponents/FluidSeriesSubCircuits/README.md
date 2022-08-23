@@ -38,6 +38,84 @@ given a mass flowrate, that too is implicit. And nested iterations
 are extremely costly. Even a simple three pipe setup took one minute
 to solve for the flow distribution because of this issue.
 
+### Time Requirements
+
+Now we would like the circuit to solve within 0.1s or less. This is
+the bare minimum should we want to provide fresh values for the control
+system every 0.1s.
+
+A more important time requirement is also needed however, it is the 
+Courant number.
+
+In computational fluid dynamics, a [Courant number](https://www.simscale.com/knowledge-base/what-is-a-courant-number/)
+below 1 is necessary
+for numerical stability and convergence. We should also follow this
+criteria even for nodalised calculation involving heat transfer.
+
+Therefore we may wish to do simple calculations to obtain the largest
+timestep possible to achieve Co below 1, ideally 0.7 and below.
+
+The formula is as follows:
+
+$$Co = u \frac{\Delta t}{\Delta x}$$
+
+We can calculate velocity using mass flowrate of 0.18 kg/s (typical
+experimental flowrate in CIET), and use the smallest area in CIET,
+about 3.64e-4 $m^2$, and the lowest density possible for Therminol VP1,
+950 $kg/m^3$ at about 155 &deg;C. Then we multiply that by a safety
+factor of about 2.
+
+$$u = \frac{0.18 kg/s}{950 kg/m^3 3.64e-4} *2 \approx 1.05 m/s$$
+
+The smallest segment length in the CTAH and Heater branch is about 
+0.1526 m.
+
+If we were to use a timestep of 0.1s, we could attain:
+
+$$Co = 1.05 \frac{0.1}{0.1526} \approx 0.688$$
+
+
+Thus, it is absolutely crucial for us to maintain this courant number 
+for forced circulation. By having minimum segment length 
+$\approx 0.1526 m$. Should we increase minimum segment length to 0.15m,
+we can get:
+
+
+$$Co = 1.05 \frac{0.1}{0.15} \approx 0.7$$
+
+This is well below 1.
+
+Other notable regions of concern for CIET are the heater top head 
+where segment length is 0.0891 m. Flow area here is also 3.64e-4:
+
+$$u = \frac{0.18 kg/s}{950 kg/m^3 3.64e-4} *2 \approx 1.05  m/s$$
+$$Co = 1.05 m/s * \frac{0.1}{0.0889} = 0.697 \approx 1.18$$
+
+Now of course, this is here because i introduced a safety factor of 2.
+If i reduce that same safety factor to 1.5:
+
+
+$$Co = 1.05 m/s * \frac{0.1}{0.0889} *1.5/2 = 0.878 $$
+
+All this means is that the maximum mass flowrate of the simulation has
+a safe upper bound of about 0.27 kg/s (1.5 times 0.18 kg/s).
+As long as segment lengths are at minimum 0.0889m and timestep is about
+0.1 s.
+
+
+
+All in all, it seems that meeting the timestep criteria of 0.1s is
+not just important for ensuring enough data flows from the simulation
+into the control system, but also it ensures that the simulation is
+numerically stable within the range of mass flowrates prescribed at
+these segment lengths of 0.0889m at flowrate of 0.27kg/s.
+
+Therefore it's absolutely crucial for the timestep to be at 0.1s and not
+any more. This means that the calculations must be done well below this
+time threshold in order to have numerical stability for this system.
+
+
+
 ## Precalculation Strategy
 
 To combat this issue, I wanted to have a nondimensionalised function

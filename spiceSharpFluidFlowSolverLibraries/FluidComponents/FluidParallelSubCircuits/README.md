@@ -117,6 +117,7 @@ All of this needs to happen every 100 ms or 0.1 s at the very most.
 Thus, we will need some methods to speed up these iterative calculations
 significantly so that this time requirement can be met.
 
+
 ## interpolation methods
 
 To help with this, we might try to map out a relationship of getting a 
