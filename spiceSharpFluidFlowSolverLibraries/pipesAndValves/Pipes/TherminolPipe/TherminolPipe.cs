@@ -264,9 +264,52 @@ namespace SpiceSharp.Components
 		}
 
 		private void generateHydraulicDiameterList(){
+			// this function generates a hydraulic diameter list
+			// according to the number of segments specified by the user
+			// and using those to interpolate the hydraulic diameters along
+			// the way linearly
+			IList<Length> tempHydraulicDiameterList = new List<Length>();
+			for (int segmentNumber = 0; 
+					segmentNumber < this.numberOfSegments; 
+					segmentNumber++)
+			{
+				Length segmentDiameter = 
+					getSegmentLinearInterpolatedDiameter(segmentNumber);
+				tempHydraulicDiameterList.Add(segmentDiameter);
+			}
+
+			this.hydraulicDiameterList = tempHydraulicDiameterList;
+
 			return;
 		}
-		public virtual IList<Length> hydraulicDiameterList { get; private set; }
+
+
+		private IList<Length> _hydraulicDiameterList;
+		public virtual IList<Length> hydraulicDiameterList { 
+			get{
+				return this._hydraulicDiameterList;
+			}
+			private set{
+				// first let me check if value is null
+				if (value is null){
+					throw new NullReferenceException(
+							"hydraulicDiameterList set to null");
+				}
+				// next i want to check the number of elements
+				// within this list
+				if(value.Count != this.numberOfSegments){
+					throw new InvalidOperationException(
+							"hydraulicDiameterList needs " +
+							this.numberOfSegments.ToString() + 
+							" segments, \n" +
+							"you only have " +
+							value.Count.ToString() +
+							" segments \n");
+				}
+
+				this._hydraulicDiameterList = value;
+			}
+		}
 
 
 		private void setLengthListUniform(int numberOfSegments){
