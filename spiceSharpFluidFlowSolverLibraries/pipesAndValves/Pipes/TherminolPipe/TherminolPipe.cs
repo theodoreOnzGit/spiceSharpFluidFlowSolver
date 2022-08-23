@@ -269,8 +269,8 @@ namespace SpiceSharp.Components
 			// and using those to interpolate the hydraulic diameters along
 			// the way linearly
 			IList<Length> tempHydraulicDiameterList = new List<Length>();
-			for (int segmentNumber = 0; 
-					segmentNumber < this.numberOfSegments; 
+			for (int segmentNumber = 1; 
+					segmentNumber < this.numberOfSegments + 1; 
 					segmentNumber++)
 			{
 				Length segmentDiameter = 

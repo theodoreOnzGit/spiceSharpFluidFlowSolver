@@ -813,6 +813,32 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	[Theory]
+	[InlineData(5,1.0)]
+	[InlineData(50,10.0)]
+	[InlineData(70,1.0)]
+	[InlineData(1,2.0)]
+	public void WhenNumberOfNodesSetExpectCorrectSegmentLength(
+			int numberOfSegments, double componentLength){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+
+		Length expectedDiameter = testPipe.entranceHydraulicDiameter;
+
+		IList<Length> diameterList = testPipe.hydraulicDiameterList;
+
+		foreach (Length diameter in diameterList)
+		{
+			Assert.Equal(expectedDiameter.As(LengthUnit.Meter)
+					, diameter.As(LengthUnit.Meter));
+		}
+
+	}
 	/*******************
 	 * The following section has Fact tests,
 	 * but they are primarily used for generating csv files.
