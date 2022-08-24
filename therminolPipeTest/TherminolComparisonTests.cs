@@ -857,7 +857,6 @@ public class TherminolComparisonTests : testOutputHelper
 
 		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
 
-		Length expectedDiameter = new Length (0.0, LengthUnit.Meter);
 		// Act
 		testPipe.numberOfSegments = numberOfSegments;
 

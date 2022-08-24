@@ -96,6 +96,7 @@ namespace SpiceSharp.Components
 			}
 		}
 
+		// you must set the componentLength property below
 		public abstract void setComponentLength();
 
 		public virtual Length getComponentLength(){
@@ -103,9 +104,15 @@ namespace SpiceSharp.Components
 		}
 
 
-		public abstract Length getHydraulicDiameter();
-
+		// you must set the entranceHydraulicDiameter and
+		// exitHydraulicDiameter properties in the method below...
 		public abstract void setHydraulicDiameters();
+
+		public virtual Length getHydraulicDiameter(){
+			return (this.entranceHydraulicDiameter + 
+					this.exitHydraulicDiameter)/2.0;
+		}
+
 
 
 		/**********************************************************************
