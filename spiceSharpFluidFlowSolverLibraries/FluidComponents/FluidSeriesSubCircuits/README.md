@@ -386,7 +386,7 @@ $$ \frac{f_{darcySeries} \frac{L_{Series}}{D_{series}}
 = \sum_i^n  \frac{\frac{64 A_{XSi}\mu_i}{\dot{m}_i D_i} \frac{L_i}{D_i} }{\rho_i A_{XSi}^2} 
    $$
 
-We use 
+We use to cancel out the diameters:
 
 $$A_{XSi} = \frac{\pi D_i^2}{4}$$
 

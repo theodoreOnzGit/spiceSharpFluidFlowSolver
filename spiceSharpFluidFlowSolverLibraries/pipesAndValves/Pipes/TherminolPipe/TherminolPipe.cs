@@ -109,8 +109,23 @@ namespace SpiceSharp.Components
 		public abstract void setHydraulicDiameters();
 
 		public virtual Length getHydraulicDiameter(){
-			return (this.entranceHydraulicDiameter + 
-					this.exitHydraulicDiameter)/2.0;
+			Length seriesHydraulicDiameter;
+			double summationLengthToDiameterRatios = 0.0;
+			IList<Length> hydraulicDiameterList = this.hydraulicDiameterList;
+			IList<Length> lengthList = this.lengthList;
+
+			for (int segmentNumber = 1; 
+					segmentNumber <= this.numberOfSegments; 
+					segmentNumber++)
+			{
+				summationLengthToDiameterRatios +=
+					lengthList[segmentNumber-1]/
+					hydraulicDiameterList[segmentNumber-1];
+			}
+			seriesHydraulicDiameter = this.getComponentLength()/
+				summationLengthToDiameterRatios;
+
+			return seriesHydraulicDiameter;
 		}
 
 
