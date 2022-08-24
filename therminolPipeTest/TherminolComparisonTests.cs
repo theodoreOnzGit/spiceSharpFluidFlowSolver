@@ -826,12 +826,14 @@ public class TherminolComparisonTests : testOutputHelper
 			new mockTherminolPipe("mockTherminolPipe", "0","out");
 
 		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		// Act
 		testPipe.numberOfSegments = numberOfSegments;
 
 		Length expectedDiameter = testPipe.entranceHydraulicDiameter;
 
 		IList<Length> diameterList = testPipe.hydraulicDiameterList;
 
+		// Assert
 		foreach (Length diameter in diameterList)
 		{
 			Assert.Equal(expectedDiameter.As(LengthUnit.Meter)
@@ -839,6 +841,92 @@ public class TherminolComparisonTests : testOutputHelper
 		}
 
 	}
+
+	[Theory]
+	[InlineData(5,1.0,1.5)]
+	[InlineData(50,10.0,2.0)]
+	[InlineData(70,1.0,0.5)]
+	[InlineData(1,2.0,0.9)]
+	public void WhenUnequalDiametersSetExpectCorrectCount(
+			int numberOfSegments, double componentLength,
+			double expansionRatio){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+
+		Length expectedDiameter = new Length (0.0, LengthUnit.Meter);
+		// Act
+		testPipe.numberOfSegments = numberOfSegments;
+
+		testPipe.exitHydraulicDiameter = testPipe.entranceHydraulicDiameter *
+			expansionRatio;
+
+
+
+		IList<Length> diameterList = testPipe.hydraulicDiameterList;
+
+		Assert.Equal(numberOfSegments,diameterList.Count);
+
+	}
+
+	[Theory]
+	[InlineData(5,1.0,1.5)]
+	[InlineData(50,10.0,2.0)]
+	[InlineData(70,1.0,0.5)]
+	[InlineData(1,2.0,0.9)]
+	public void WhenUnequalDiametersSetExpectCorrectDiameter(
+			int numberOfSegments, double componentLength,
+			double expansionRatio){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+
+		Length expectedDiameter = new Length (0.0, LengthUnit.Meter);
+
+		// here i 
+		Length getExpectedDiameter(int segmentNumber){
+			Length interpolationLength = 
+				testPipe.getComponentLength()/
+				numberOfSegments 
+				*(segmentNumber - 0.5);
+
+			double interpolationSlope;
+			interpolationSlope = (testPipe.exitHydraulicDiameter 
+					- testPipe.entranceHydraulicDiameter)/(
+						testPipe.getComponentLength() - 
+						testPipe.entranceLengthValue);
+
+
+			return (interpolationLength - 
+					testPipe.entranceLengthValue)*interpolationSlope
+				+ testPipe.entranceHydraulicDiameter;
+		}
+
+		// Act
+		testPipe.numberOfSegments = numberOfSegments;
+
+		testPipe.exitHydraulicDiameter = testPipe.entranceHydraulicDiameter *
+			expansionRatio;
+
+		
+
+
+		IList<Length> diameterList = testPipe.hydraulicDiameterList;
+
+		Assert.Equal(numberOfSegments,diameterList.Count);
+
+	}
+
+
+
+
+
 	/*******************
 	 * The following section has Fact tests,
 	 * but they are primarily used for generating csv files.
