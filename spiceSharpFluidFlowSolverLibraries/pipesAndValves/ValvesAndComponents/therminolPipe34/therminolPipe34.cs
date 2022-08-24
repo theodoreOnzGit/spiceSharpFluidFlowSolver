@@ -63,11 +63,14 @@ namespace SpiceSharp.Components
 			return 0.5*entranceHydraulicDiameter + 0.5*exitHydraulicDiameter;
 		}
 		
-		public override Length entranceHydraulicDiameter { get; set; } =
-			new Length(2.79e-2, LengthUnit.Meter);
+		public override void setHydraulicDiameters(){
+			this.entranceHydraulicDiameter = new Length(2.39e-2, LengthUnit.Meter);
+			this.exitHydraulicDiameter = new Length(2.39e-2, LengthUnit.Meter);
+		}
 
-		public override Length exitHydraulicDiameter { get; set; } =
-			new Length(2.79e-2, LengthUnit.Meter);
+		public override void setComponentLength(){
+			this.componentLength = new Length(0.55245, LengthUnit.Meter);
+		}
 
 		public override KinematicViscosity getFluidKinematicViscosity(){
 			throw new NotImplementedException();

@@ -32,7 +32,6 @@ namespace SpiceSharp.Components
         public mockTherminolPipe(string name) : base(name){
 		}
 
-
 		// copied this from the nonlinear resistor, don't change!
         public override void CreateBehaviors(ISimulation simulation)
         {
@@ -59,14 +58,21 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
-		public override Length componentLength { get; set; } 
-
 		public override IList<EngineeringUnits.Temperature> 
 			temperatureList { get; set; } = 
 			new List<EngineeringUnits.Temperature>();
 
 		public override Length getHydraulicDiameter(){
 			throw new NotImplementedException();
+		}
+
+		public override void setHydraulicDiameters(){
+			this.entranceHydraulicDiameter = new Length(2.39e-2, LengthUnit.Meter);
+			this.exitHydraulicDiameter = new Length(2.39e-2, LengthUnit.Meter);
+		}
+
+		public override void setComponentLength(){
+			this.componentLength= new Length(0.5, LengthUnit.Meter);
 		}
 
 

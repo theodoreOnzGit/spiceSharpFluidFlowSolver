@@ -30,12 +30,16 @@ namespace SpiceSharp.Components
         public TherminolPipe(string name, string nodeA, string nodeB) : base(name, 2)
         {
             Connect(nodeA, nodeB);
+			this.setComponentLength();
+			this.setHydraulicDiameters();
 			// i'm going to set some defaults for this system
         }
 
 		// Now, I want a constructor that can work without connecting
 		// node A to B
         public TherminolPipe(string name) : base(name, 2){
+			this.setComponentLength();
+			this.setHydraulicDiameters();
 			Console.WriteLine("\n Please Remember to call the Connect(inlet,outlet) method)\n");
 			Console.WriteLine("ie ObjectName.Connect('inletName','outletName'); \n");
 			// i'm going to set some defaults for this system
@@ -79,7 +83,20 @@ namespace SpiceSharp.Components
 		}
 
 
-		public abstract Length componentLength { get; set; }
+		private Length _componentLength;
+		public virtual Length componentLength { 
+			get{
+				return this._componentLength;
+			}
+			set{
+				if(value.As(LengthUnit.Meter) <= 0)
+					throw new InvalidOperationException("diameter <= 0 m");
+				this._componentLength = value;
+				this.setLengthListUniform(this.numberOfSegments);
+			}
+		}
+
+		public abstract void setComponentLength();
 
 		public virtual Length getComponentLength(){
 			return this.componentLength;
@@ -87,6 +104,8 @@ namespace SpiceSharp.Components
 
 
 		public abstract Length getHydraulicDiameter();
+
+		public abstract void setHydraulicDiameters();
 
 
 		/**********************************************************************
@@ -104,7 +123,7 @@ namespace SpiceSharp.Components
 		 *
 		 * ********************************************************************/
 
-		private Length _entranceHydraulicDiameter 
+		private Length _entranceHydraulicDiameter
 			= new Length(2.79e-2,LengthUnit.Meter);
 		public virtual Length entranceHydraulicDiameter { 
 			get{
@@ -118,7 +137,7 @@ namespace SpiceSharp.Components
 			}
 		}
 
-		private Length _exitHydraulicDiameter 
+		private Length _exitHydraulicDiameter
 			= new Length(2.79e-2, LengthUnit.Meter);
 		public virtual Length exitHydraulicDiameter { 
 			get{
@@ -244,7 +263,7 @@ namespace SpiceSharp.Components
 		// everytime i change the numberOfSegments within the therminolPipe
 		// a new list of segment lengths is generated
 
-		private int _numberOfSegments;
+		private int _numberOfSegments = 1;
 		public virtual int numberOfSegments { 
 			get {
 				return this._numberOfSegments;
@@ -343,7 +362,7 @@ namespace SpiceSharp.Components
 		}
 
 
-		private void setLengthListUniform(int numberOfSegments){
+		public void setLengthListUniform(int numberOfSegments){
 			// this function helps to evenly split a pipe into
 			// n segements given a number of segments
 			// so that the user doesn't have to manually set the
