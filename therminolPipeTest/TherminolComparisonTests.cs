@@ -886,10 +886,11 @@ public class TherminolComparisonTests : testOutputHelper
 			new mockTherminolPipe("mockTherminolPipe", "0","out");
 
 		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		testPipe.exitHydraulicDiameter = testPipe.entranceHydraulicDiameter *
+			expansionRatio;
 
-		Length expectedDiameter = new Length (0.0, LengthUnit.Meter);
-
-		// here i 
+		// here i return the expected diameter given a segment number
 		Length getExpectedDiameter(int segmentNumber){
 			Length interpolationLength = 
 				testPipe.getComponentLength()/
@@ -908,18 +909,22 @@ public class TherminolComparisonTests : testOutputHelper
 				+ testPipe.entranceHydraulicDiameter;
 		}
 
-		// Act
-		testPipe.numberOfSegments = numberOfSegments;
 
-		testPipe.exitHydraulicDiameter = testPipe.entranceHydraulicDiameter *
-			expansionRatio;
+		Length expectedDiameter = getExpectedDiameter(1);
+
+		// Act
 
 		
 
 
 		IList<Length> diameterList = testPipe.hydraulicDiameterList;
+		foreach (var item in diameterList)
+		{
+			this.cout(item.ToString());
+		}
 
-		Assert.Equal(numberOfSegments,diameterList.Count);
+		Assert.Equal(expectedDiameter.As(LengthUnit.Meter)
+				,diameterList[0].As(LengthUnit.Meter));
 
 	}
 

@@ -93,13 +93,44 @@ namespace SpiceSharp.Components
 		 * This section contains data to help deal with pipes which may have
 		 * different entrance and exit areas or hydraulic diameters.
 		 * 
+		 * i have two properties, entrance and exit hydraulic diameters,
+		 * i want it to autocalculate the diameterList once i set the properties
+		 * but at the same time i want a compiler error if the user doesn't
+		 * set it at all
 		 *
+		 * Thus i will just leave getHydraulicDiameter() as abstract
+		 * but entrance and exit hydraulic diameter is virtual
 		 *
 		 *
 		 * ********************************************************************/
-		public abstract Length entranceHydraulicDiameter { get; set; }
 
-		public abstract Length exitHydraulicDiameter { get; set; }
+		private Length _entranceHydraulicDiameter 
+			= new Length(2.79e-2,LengthUnit.Meter);
+		public virtual Length entranceHydraulicDiameter { 
+			get{
+				return this._entranceHydraulicDiameter;
+			}
+			set{
+				if(value.As(LengthUnit.Meter) <= 0)
+					throw new InvalidOperationException("diameter <= 0 m");
+				this._entranceHydraulicDiameter = value;
+				this.setLengthListUniform(this.numberOfSegments);
+			}
+		}
+
+		private Length _exitHydraulicDiameter 
+			= new Length(2.79e-2, LengthUnit.Meter);
+		public virtual Length exitHydraulicDiameter { 
+			get{
+				return this._exitHydraulicDiameter;
+			}
+			set{
+				if(value.As(LengthUnit.Meter) <= 0)
+					throw new InvalidOperationException("diameter <= 0 m");
+				this._exitHydraulicDiameter = value;
+				this.setLengthListUniform(this.numberOfSegments);
+			}
+		}
 
 		private Length getSegmentInterpolationLength(int segmentNumber){
 			return this.getComponentLength()/this.numberOfSegments 
