@@ -109,21 +109,15 @@ namespace SpiceSharp.Components
 		public abstract void setHydraulicDiameters();
 
 		public virtual Length getHydraulicDiameter(){
-			Length seriesHydraulicDiameter;
-			double summationLengthToDiameterRatios = 0.0;
-			IList<Length> hydraulicDiameterList = this.hydraulicDiameterList;
-			IList<Length> lengthList = this.lengthList;
 
-			for (int segmentNumber = 1; 
-					segmentNumber <= this.numberOfSegments; 
-					segmentNumber++)
-			{
-				summationLengthToDiameterRatios +=
-					lengthList[segmentNumber-1]/
-					hydraulicDiameterList[segmentNumber-1];
-			}
-			seriesHydraulicDiameter = this.getComponentLength()/
-				summationLengthToDiameterRatios;
+			// for this, we use the getXSarea method to get the weighted
+			// XS area with boussinesq approximation
+			//
+			// and then we get the hydraulic diameter
+			Area hydraulicDiameterSquared = 
+				this.getXSArea()*4.0/Math.PI;
+
+			Length seriesHydraulicDiameter = hydraulicDiameterSquared.Sqrt();
 
 			return seriesHydraulicDiameter;
 		}
@@ -198,9 +192,132 @@ namespace SpiceSharp.Components
 			new Length(0.0, LengthUnit.Meter);
 
 		public virtual Area getXSArea(){
-			Area xsArea = this.getHydraulicDiameter().Pow(2);
-			xsArea *= (1.0/4.0)*Math.PI;
+			// now to get cross sectional area, there are a few things i need
+			// to do
+			//
+			// first thing is calculate A^2, 
+			// this has units of AreaMomentOfInertia m^4
+			// so i can use that unit
+			// we also need the K_i value, K_series value and etc.
+			// we also need to weigh by density, but doesn't really matter
+			// due to boussinesq approximation.
+			// so i'm not going to bother getting density
+
+			// first i generate a list of darcy K values
+			IList<double> getDarcyKList(IList<Length> hydraulicDiameterList){
+				
+				IList<double> DarcyKList = new List<double>();
+				foreach (Length diameter in hydraulicDiameterList)
+				{
+					double roughnessRatio = this.getSurfaceRoughness()/
+						diameter;
+					double kDarcy = this.getFullyTurbulentDarcyK(roughnessRatio);
+					DarcyKList.Add(kDarcy);
+					
+				}
+				return DarcyKList;
+			}
+			IList<double> DarcyKList = getDarcyKList(this.hydraulicDiameterList);
+			
+			// secondly let me get a list of lengthToDiameter Ratios
+		
+			IList<Length> hydraulicDiameterList = this.hydraulicDiameterList;
+			IList<Length> lengthList = this.lengthList;
+
+
+			IList<double> getLengthToDiameterList(IList<Length> lengthList,
+					IList<Length> diameterList){
+
+				IList<double> lengthToDiameterList = new List<double>();
+
+				for (int segmentNumber = 1; 
+						segmentNumber <= this.numberOfSegments; 
+						segmentNumber++)
+				{
+					lengthToDiameterList.Add(
+						lengthList[segmentNumber-1]/
+						hydraulicDiameterList[segmentNumber-1]);
+				}
+				return lengthToDiameterList;
+			}
+
+			IList<double> lengthToDiameterList = 
+				getLengthToDiameterList(lengthList,hydraulicDiameterList);
+
+			// thirdly, the big K, which is for me, just K/noOfSegments
+			double kSegment = this.getFormLossCoefficientK()/
+				this.numberOfSegments;
+			// lastly, my list of area squared
+			//
+
+			IList<AreaMomentOfInertia> areaSqList;
+			IList<AreaMomentOfInertia> getAreaSqList(IList<Length>
+					diameterList){
+				IList<AreaMomentOfInertia> areaSqList = 
+					new List<AreaMomentOfInertia>();
+				foreach (Length diameter in diameterList)
+				{
+					Area xsArea;
+					xsArea = diameter.Pow(2);
+					xsArea *= (1.0/4.0)*Math.PI;
+					areaSqList.Add(xsArea.Pow(2));
+				}
+				return areaSqList;
+			}
+
+			areaSqList = getAreaSqList(hydraulicDiameterList);
+
+
+			// now we will get to calculate the xsArea finally
+			double xsAreaSqWeightingNumerator = 0.0;
+			for (int segmentNumber = 1; 
+					segmentNumber <= this.numberOfSegments; 
+					segmentNumber++)
+			{
+				xsAreaSqWeightingNumerator += DarcyKList[segmentNumber-1]*
+					lengthToDiameterList[segmentNumber-1]+
+					kSegment;
+			}
+
+			AreaMomentOfInertia getOneOverAreaSqDenonminator(){
+				AreaMomentOfInertia areaSqDimensionedOne = 
+					new AreaMomentOfInertia(1.0, AreaMomentOfInertiaUnit.
+							MeterToTheFourth);
+				double dimensionlessAreaSqDenominator = 0.0;
+				for (int segmentNumber = 1; 
+						segmentNumber <= this.numberOfSegments; 
+						segmentNumber++)
+				{
+					dimensionlessAreaSqDenominator += DarcyKList[segmentNumber-1]*
+						lengthToDiameterList[segmentNumber-1]+
+						kSegment/
+						areaSqList[segmentNumber-1]*
+						areaSqDimensionedOne;
+				}
+
+				AreaMomentOfInertia oneOverAreaSqDenominator = 
+					areaSqDimensionedOne/dimensionlessAreaSqDenominator;
+
+				return oneOverAreaSqDenominator;
+			}
+
+			AreaMomentOfInertia areaSq =
+				getOneOverAreaSqDenonminator()*
+				xsAreaSqWeightingNumerator;
+
+			Area xsArea = areaSq.Sqrt();
 			return xsArea;
+		}
+
+		public abstract Length getSurfaceRoughness();
+		public abstract double getFormLossCoefficientK();
+
+		public double getFullyTurbulentDarcyK(double roughnessRatio){
+			double oneOverSqrtK;
+			oneOverSqrtK = -2.0*Math.Log10(roughnessRatio/3.7);
+
+			return Math.Pow(oneOverSqrtK,-2.0);
+
 		}
 
 		public abstract Density getFluidDensity();

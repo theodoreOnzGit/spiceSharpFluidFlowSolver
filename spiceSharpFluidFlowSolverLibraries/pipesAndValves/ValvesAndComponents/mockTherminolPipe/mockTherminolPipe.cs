@@ -68,10 +68,20 @@ namespace SpiceSharp.Components
 			this.exitHydraulicDiameter = new Length(2.39e-2, LengthUnit.Meter);
 		}
 
+		public override Length getSurfaceRoughness(){
+			// using drawn copper aboslute roughness in mm
+			// from engineeringtoolbox.com
+			Length absoluteRoughness = new Length(0.002, LengthUnit.Meter);
+			return absoluteRoughness;
+		}
+
 		public override void setComponentLength(){
 			this.componentLength= new Length(0.5, LengthUnit.Meter);
 		}
 
+		public override double getFormLossCoefficientK(){
+			return 0.0;
+		}
 
 		public override KinematicViscosity getFluidKinematicViscosity(){
 			throw new NotImplementedException();

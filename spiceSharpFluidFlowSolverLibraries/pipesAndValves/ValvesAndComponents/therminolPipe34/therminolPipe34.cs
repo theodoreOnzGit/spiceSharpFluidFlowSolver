@@ -72,6 +72,17 @@ namespace SpiceSharp.Components
 			this.componentLength = new Length(0.55245, LengthUnit.Meter);
 		}
 
+		public override Length getSurfaceRoughness(){
+			// using drawn copper aboslute roughness in mm
+			// from engineeringtoolbox.com
+			Length absoluteRoughness = new Length(0.002, LengthUnit.Meter);
+			return absoluteRoughness;
+		}
+
+		public override double getFormLossCoefficientK(){
+			return 4.25;
+		}
+
 		public override KinematicViscosity getFluidKinematicViscosity(){
 			throw new NotImplementedException();
 		}
