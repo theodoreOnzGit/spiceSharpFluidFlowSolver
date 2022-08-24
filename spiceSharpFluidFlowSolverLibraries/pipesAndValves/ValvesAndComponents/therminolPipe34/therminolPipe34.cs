@@ -59,9 +59,6 @@ namespace SpiceSharp.Components
 			temperatureList { get; set; } = 
 			new List<EngineeringUnits.Temperature>();
 
-		public override Length getHydraulicDiameter(){
-			return 0.5*entranceHydraulicDiameter + 0.5*exitHydraulicDiameter;
-		}
 		
 		public override void setHydraulicDiameters(){
 			this.entranceHydraulicDiameter = new Length(2.39e-2, LengthUnit.Meter);
