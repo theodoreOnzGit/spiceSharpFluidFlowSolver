@@ -910,21 +910,36 @@ public class TherminolComparisonTests : testOutputHelper
 		}
 
 
-		Length expectedDiameter = getExpectedDiameter(1);
 
 		// Act
 
 		
-
-
 		IList<Length> diameterList = testPipe.hydraulicDiameterList;
-		foreach (var item in diameterList)
-		{
-			this.cout(item.ToString());
+
+		void printDiameterList(IList<Length> diameterList){
+						foreach (var item in diameterList)
+			{
+				this.cout(item.ToString());
+			}
+			return;
 		}
 
-		Assert.Equal(expectedDiameter.As(LengthUnit.Meter)
-				,diameterList[0].As(LengthUnit.Meter));
+		// Assert
+
+		for (int segmentNumber = 1; 
+				segmentNumber <= numberOfSegments; 
+				segmentNumber++
+				)
+		{
+			
+			Length expectedDiameter = getExpectedDiameter(segmentNumber);
+			if(expectedDiameter.As(LengthUnit.Meter) !=
+					diameterList[segmentNumber-1].As(LengthUnit.Meter)){
+				printDiameterList(diameterList);
+			}
+			Assert.Equal(expectedDiameter.As(LengthUnit.Meter)
+					,diameterList[segmentNumber-1].As(LengthUnit.Meter));
+		}
 
 	}
 
