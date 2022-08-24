@@ -942,6 +942,12 @@ public class TherminolComparisonTests : testOutputHelper
 
 	}
 
+	[Theory]
+	[InlineData()]
+	public void WhenGetHydraulicDiameterExpectCorrectAverage(){
+		throw new NotImplementedException();
+	}
+
 
 
 
