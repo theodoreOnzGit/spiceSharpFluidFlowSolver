@@ -403,6 +403,7 @@ namespace SpiceSharp.Components
 		//
 		// everytime i change the numberOfSegments within the therminolPipe
 		// a new list of segment lengths is generated
+		// this should NOT change during runtime
 
 		private int _numberOfSegments = 1;
 		public virtual int numberOfSegments { 
@@ -414,6 +415,7 @@ namespace SpiceSharp.Components
 					throw new DivideByZeroException("numberOfSegments <= 0");
 				this._numberOfSegments = value;
 				this.setLengthListUniform(value);
+				this.setTemperatureList(this.getInitialTemperature());
 			}
 		}
 
@@ -462,8 +464,7 @@ namespace SpiceSharp.Components
 			IList<Length> tempHydraulicDiameterList = new List<Length>();
 			for (int segmentNumber = 1; 
 					segmentNumber < this.numberOfSegments + 1; 
-					segmentNumber++)
-			{
+					segmentNumber++){
 				Length segmentDiameter = 
 					getSegmentLinearInterpolatedDiameter(segmentNumber);
 				tempHydraulicDiameterList.Add(segmentDiameter);
