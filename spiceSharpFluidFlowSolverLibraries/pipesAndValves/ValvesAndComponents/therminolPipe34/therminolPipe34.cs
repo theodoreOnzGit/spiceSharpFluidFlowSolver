@@ -88,6 +88,11 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
+        public override EngineeringUnits.Temperature getInitialTemperature()
+        {
+			return new EngineeringUnits.
+				Temperature(25.0, TemperatureUnit.DegreeCelsius);
+        }
 
     }
 }

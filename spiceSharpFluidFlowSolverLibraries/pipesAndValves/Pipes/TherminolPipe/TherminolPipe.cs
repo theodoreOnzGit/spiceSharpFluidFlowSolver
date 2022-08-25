@@ -522,8 +522,34 @@ namespace SpiceSharp.Components
 			return;
 		}
 
-		public abstract IList<EngineeringUnits.Temperature> 
-			temperatureList { get; set; }
+		/**********************************************************************
+		 * this section deals with the temperatureList property
+		 * by setting temperature list
+		 * i should expect some data validation (ie check if you're supplying
+		 * a nonsense value for temperature list)
+		 * and also automatically set viscosity and density
+		 * upon changing temperature
+		 *
+		 *
+		 * I will also force the user to set an initial temperature
+		 * for the system to initialise
+		 *
+		 * ********************************************************************/
+		private IList<EngineeringUnits.Temperature> _temperatureList;
+		public virtual IList<EngineeringUnits.Temperature> 
+			temperatureList { 
+				get{
+					return this._temperatureList;
+				}
+				set{
+					// add validation
+					// add setting viscosity method
+					// add setting density method
+					this._temperatureList = value;
+				}
+			}
+
+		public abstract EngineeringUnits.Temperature getInitialTemperature();
 
 		// now for this i'm going to initiate a new therminol class
 		// return the density
