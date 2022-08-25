@@ -859,25 +859,5 @@ namespace SpiceSharp.Components
 			return therminol.Prandtl;
 		}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }
