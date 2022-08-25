@@ -377,6 +377,7 @@ public class TherminolComparisonTests : testOutputHelper
 
 	}
  
+
 	// here i need to test the therminol pipe abstract class for five things
 	// 1) double Pr
 	// 2) SpecificHeatCapacity Cp
@@ -690,7 +691,6 @@ public class TherminolComparisonTests : testOutputHelper
 		Assert.Equal(referenceThermalConductivity, testThermalConductivity);
 
 	}
-
 
 
 	/***************************************************************
