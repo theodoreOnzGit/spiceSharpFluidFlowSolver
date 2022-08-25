@@ -948,7 +948,18 @@ public class TherminolComparisonTests : testOutputHelper
 		throw new NotImplementedException();
 	}
 
+	[Theory]
+	[InlineData()]
+	public void WhenSetTemperatureListExpectCorrectDensity(){
+		throw new NotImplementedException();
+	}
 
+
+	[Theory]
+	[InlineData()]
+	public void WhenSetTemperatureListExpectCorrectViscosity(){
+		throw new NotImplementedException();
+	}
 
 
 

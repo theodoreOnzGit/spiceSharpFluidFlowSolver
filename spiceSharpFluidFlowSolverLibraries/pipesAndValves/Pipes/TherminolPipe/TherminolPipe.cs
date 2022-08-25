@@ -545,9 +545,28 @@ namespace SpiceSharp.Components
 				}
 				set{
 					// add validation
-					// add setting viscosity method
-					// add setting density method
+					if (value is null){
+						throw new NullReferenceException(
+								"temperatureList set to null");
+					}
+					// next i want to check the number of elements
+					// within this list
+					if(value.Count != this.numberOfSegments){
+						throw new InvalidOperationException(
+								"temperatureList needs " +
+								this.numberOfSegments.ToString() + 
+								" segments, \n" +
+								"you only have " +
+								value.Count.ToString() +
+								" segments \n");
+					}
+
+
 					this._temperatureList = value;
+					// add setting viscosity method
+					this.setViscosityList();
+					// add setting density method
+					this.setDensityList();
 				}
 			}
 
@@ -564,7 +583,100 @@ namespace SpiceSharp.Components
 			this.temperatureList = temporaryTemperatureList;
 		}
 
+
+
 		public abstract EngineeringUnits.Temperature getInitialTemperature();
+
+
+		// these are methods to help set the density and viscosity lists
+		//
+		private IList<Density> _densityList;
+		public virtual IList<Density> densityList {
+			get{
+				return this._densityList;
+			}
+			private set{
+
+				if (value is null){
+					throw new NullReferenceException(
+							"densityList set to null");
+				}
+				// next i want to check the number of elements
+				// within this list
+				if(value.Count != this.numberOfSegments){
+					throw new InvalidOperationException(
+							"densityList needs " +
+							this.numberOfSegments.ToString() + 
+							" segments, \n" +
+							"you only have " +
+							value.Count.ToString() +
+							" segments \n");
+				}
+
+
+				this._densityList = value;
+			}
+		}
+
+		public void setDensityList(){
+
+			IList<Density> temporaryDensityList = 
+				new List<Density>();
+
+			foreach (EngineeringUnits.Temperature temperature in 
+					this.temperatureList)
+			{
+				// basically for each temperature in temperature list
+				// i get the fluid density and add it to the density list
+				temporaryDensityList.Add(this.getFluidDensity(
+							temperature));
+			}
+			this.densityList = temporaryDensityList;
+		}
+
+		private IList<DynamicViscosity> _viscosityList;
+		public virtual IList<DynamicViscosity> viscosityList{
+			get{
+				return this._viscosityList;
+			}
+			private set{
+
+				if (value is null){
+					throw new NullReferenceException(
+							"viscosityList set to null");
+				}
+				// next i want to check the number of elements
+				// within this list
+				if(value.Count != this.numberOfSegments){
+					throw new InvalidOperationException(
+							"viscosityList needs " +
+							this.numberOfSegments.ToString() + 
+							" segments, \n" +
+							"you only have " +
+							value.Count.ToString() +
+							" segments \n");
+				}
+
+
+				this._viscosityList = value;
+			}
+		}
+
+		public void setViscosityList(){
+
+			IList<DynamicViscosity> temporaryDynamicViscosityList = 
+				new List<DynamicViscosity>();
+
+			foreach (EngineeringUnits.Temperature temperature in 
+					this.temperatureList)
+			{
+				// basically for each temperature in temperature list
+				// i get the fluid density and add it to the density list
+				temporaryDynamicViscosityList.Add(this.getFluidDynamicViscosity(
+							temperature));
+			}
+			this.viscosityList = temporaryDynamicViscosityList;
+		}
 
 		// now for this i'm going to initiate a new therminol class
 		// return the density
