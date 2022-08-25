@@ -729,6 +729,52 @@ namespace SpiceSharp.Components
 			this.thermalConductivityList = temporaryThermalConductivityList;
 		}
 
+		// now we do the same for heat capacity:
+		private IList<SpecificHeatCapacity> _heatCapacityList;
+		public virtual IList<SpecificHeatCapacity> heatCapacityList{
+			get{
+				return this._heatCapacityList;
+			}
+			private set{
+
+				if (value is null){
+					throw new NullReferenceException(
+							"heatCapacityList set to null");
+				}
+				// next i want to check the number of elements
+				// within this list
+				if(value.Count != this.numberOfSegments){
+					throw new InvalidOperationException(
+							"heatCapacityList needs " +
+							this.numberOfSegments.ToString() + 
+							" segments, \n" +
+							"you only have " +
+							value.Count.ToString() +
+							" segments \n");
+				}
+
+
+				this._heatCapacityList = value;
+			}
+		}
+
+		public void setSpecificHeatCapacityList(){
+
+			IList<SpecificHeatCapacity> temporarySpecificHeatCapacityList = 
+				new List<SpecificHeatCapacity>();
+
+			foreach (EngineeringUnits.Temperature temperature in 
+					this.temperatureList)
+			{
+				// basically for each temperature in temperature list
+				// i get the fluid density and add it to the density list
+				temporarySpecificHeatCapacityList.
+					Add(this.getFluidHeatCapacity(
+							temperature));
+			}
+			this.heatCapacityList = temporarySpecificHeatCapacityList;
+		}
+
 
 		// now for this i'm going to initiate a new therminol class
 		// return the density
