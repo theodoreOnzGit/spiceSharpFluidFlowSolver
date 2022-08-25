@@ -633,6 +633,7 @@ namespace SpiceSharp.Components
 			}
 			this.densityList = temporaryDensityList;
 		}
+		// here are methods to set viscosity
 
 		private IList<DynamicViscosity> _viscosityList;
 		public virtual IList<DynamicViscosity> viscosityList{
@@ -677,6 +678,57 @@ namespace SpiceSharp.Components
 			}
 			this.viscosityList = temporaryDynamicViscosityList;
 		}
+
+
+		// and now we also need to do pretty much the same for thermal
+		// conductivity and heat capacity due to us needing to figure out
+		// prandtl number
+
+		private IList<ThermalConductivity> _thermalConductivityList;
+		public virtual IList<ThermalConductivity> thermalConductivityList{
+			get{
+				return this._thermalConductivityList;
+			}
+			private set{
+
+				if (value is null){
+					throw new NullReferenceException(
+							"thermalConductivityList set to null");
+				}
+				// next i want to check the number of elements
+				// within this list
+				if(value.Count != this.numberOfSegments){
+					throw new InvalidOperationException(
+							"thermalConductivityList needs " +
+							this.numberOfSegments.ToString() + 
+							" segments, \n" +
+							"you only have " +
+							value.Count.ToString() +
+							" segments \n");
+				}
+
+
+				this._thermalConductivityList = value;
+			}
+		}
+
+		public void setThermalConductivityList(){
+
+			IList<ThermalConductivity> temporaryThermalConductivityList = 
+				new List<ThermalConductivity>();
+
+			foreach (EngineeringUnits.Temperature temperature in 
+					this.temperatureList)
+			{
+				// basically for each temperature in temperature list
+				// i get the fluid density and add it to the density list
+				temporaryThermalConductivityList.
+					Add(this.getFluidThermalConductivity(
+							temperature));
+			}
+			this.thermalConductivityList = temporaryThermalConductivityList;
+		}
+
 
 		// now for this i'm going to initiate a new therminol class
 		// return the density

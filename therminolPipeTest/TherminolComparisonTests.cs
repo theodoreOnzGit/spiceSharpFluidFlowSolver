@@ -962,6 +962,17 @@ public class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	[Theory]
+	[InlineData()]
+	public void WhenSetTemperatureListExpectCorrectThermalConductivity(){
+		throw new NotImplementedException();
+	}
+	
+	[Theory]
+	[InlineData()]
+	public void WhenSetTemperatureListExpectCorrectSpecificHeatCapacity(){
+		throw new NotImplementedException();
+	}
 
 	/*******************
 	 * The following section has Fact tests,
