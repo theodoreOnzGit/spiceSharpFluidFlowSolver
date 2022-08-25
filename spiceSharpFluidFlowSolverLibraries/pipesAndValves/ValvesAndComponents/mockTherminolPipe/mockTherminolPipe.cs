@@ -58,9 +58,6 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
-		public override IList<EngineeringUnits.Temperature> 
-			temperatureList { get; set; } = 
-			new List<EngineeringUnits.Temperature>();
 
 
 		public override void setHydraulicDiameters(){

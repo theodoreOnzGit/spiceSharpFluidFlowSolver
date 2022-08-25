@@ -991,7 +991,7 @@ public class TherminolComparisonTests : testOutputHelper
 		// And assert everything
 		foreach (Density segmentDensity in testDensityList){
 			Assert.Equal(expectedDensity.As(DensityUnit.KilogramPerCubicMeter),
-					0);
+					segmentDensity.As(DensityUnit.KilogramPerCubicMeter));
 		}
 
 
