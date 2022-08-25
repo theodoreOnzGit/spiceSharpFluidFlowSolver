@@ -32,6 +32,7 @@ namespace SpiceSharp.Components
             Connect(nodeA, nodeB);
 			this.setComponentLength();
 			this.setHydraulicDiameters();
+			this.setTemperatureList(this.getInitialTemperature());
 			// i'm going to set some defaults for this system
         }
 
@@ -40,6 +41,7 @@ namespace SpiceSharp.Components
         public TherminolPipe(string name) : base(name, 2){
 			this.setComponentLength();
 			this.setHydraulicDiameters();
+			this.setTemperatureList(this.getInitialTemperature());
 			Console.WriteLine("\n Please Remember to call the Connect(inlet,outlet) method)\n");
 			Console.WriteLine("ie ObjectName.Connect('inletName','outletName'); \n");
 			// i'm going to set some defaults for this system
@@ -561,6 +563,7 @@ namespace SpiceSharp.Components
 
 			this.temperatureList = temporaryTemperatureList;
 		}
+
 		public abstract EngineeringUnits.Temperature getInitialTemperature();
 
 		// now for this i'm going to initiate a new therminol class
