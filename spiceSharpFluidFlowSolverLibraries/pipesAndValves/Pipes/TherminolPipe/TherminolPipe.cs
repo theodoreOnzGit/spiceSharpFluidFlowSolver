@@ -549,6 +549,18 @@ namespace SpiceSharp.Components
 				}
 			}
 
+		public virtual void setTemperatureList(EngineeringUnits.Temperature
+				uniformTemperature){
+			IList<EngineeringUnits.Temperature> temporaryTemperatureList =
+				new List<EngineeringUnits.Temperature>();
+
+			for (int i = 1; i <= this.numberOfSegments; i++)
+			{
+				temporaryTemperatureList.Add(uniformTemperature);
+			}
+
+			this.temperatureList = temporaryTemperatureList;
+		}
 		public abstract EngineeringUnits.Temperature getInitialTemperature();
 
 		// now for this i'm going to initiate a new therminol class
