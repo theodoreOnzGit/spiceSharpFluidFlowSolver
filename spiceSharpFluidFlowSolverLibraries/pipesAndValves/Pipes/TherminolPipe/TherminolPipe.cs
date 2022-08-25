@@ -563,11 +563,11 @@ namespace SpiceSharp.Components
 					}
 
 
-					this._temperatureList = value;
 					// add setting viscosity method
 					this.setViscosityList();
 					// add setting density method
 					this.setDensityList();
+					this._temperatureList = value;
 				}
 			}
 
