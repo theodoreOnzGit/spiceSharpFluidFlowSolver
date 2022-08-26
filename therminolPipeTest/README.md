@@ -271,7 +271,235 @@ I do tests for all five quantities, Pr, Cp, mu, k and rho. Which are
 Prandtl number, SpecificHeatCapcity, dynamic viscosity, thermal conductivity
 and density.
 
+These tests pass so i'm comfortable.
 
+## Is my nodalisation working correctly?
+
+I have seen in SAM that pipes are discretised into finite volumes or nodes
+to facilitate heat transfer calculations.
+
+When nodalisation comes, there are two considerations at least. Firstly is
+courant number, is my timestep short enough to ensure Co<1?.
+
+But more of concern here is that my nodalisation code is working correctly.
+
+By default, i just want the end user to specify how many segments there are
+in the pipe, and the therminolPipe class will then cut the pipe up into
+equal segments.
+
+To test if it's working correctly, i use this test:
+
+```csharp
+[Fact]
+public void WhenNumberOfNodesSetExpectEqualLength(){
+
+    // Setup
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(1.0, LengthUnit.Meter);
+    testPipe.numberOfSegments = 10;
+    // now let's retrieve the length list
+
+    IList<Length> testPipeLengthList = new List<Length>();
+
+    foreach (Length segmentLength in testPipe.lengthList)
+    {
+        testPipeLengthList.Add(segmentLength);
+    }
+
+    // so let me just get the first length off this list
+    Length firstLength = testPipeLengthList[0];
+
+    // Act
+
+    // then i'll go through a for loop whether the legnths are
+    // equal, if equal i will add to an integer known as the checksum
+    // if the interger in the checksum is equal to the 
+    // number of nodes, then the test passes
+    //
+    int checksum = 0;
+
+    foreach (Length segmentLength in testPipeLengthList)
+    {
+        if(firstLength.As(LengthUnit.Meter) ==
+                segmentLength.As(LengthUnit.Meter)){
+            checksum++;
+        }
+
+    }
+    // Assert
+    //
+    Assert.Equal(testPipe.numberOfSegments,checksum);
+}
+```
+
+The test works so im ok.
+
+Next, i want to find out if i set a number of nodes, is the length of
+each segment equal to the total length divided by the number of segments:
+
+```csharp
+
+[Theory]
+[InlineData(5,1.0)]
+[InlineData(50,10.0)]
+[InlineData(70,1.0)]
+[InlineData(1,2.0)]
+public void WhenNumberOfNodesSetLengthEqual1dividebyNoOfSegments(
+        int numberOfSegments, double componentLength){
+
+    // Setup
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+    testPipe.numberOfSegments = numberOfSegments;
+    Length expectedLength = testPipe.componentLength/numberOfSegments;
+    // now let's retrieve the length list
+
+    IList<Length> testPipeLengthList = new List<Length>();
+
+    foreach (Length segmentLength in testPipe.lengthList)
+    {
+        testPipeLengthList.Add(segmentLength);
+    }
+
+    // so let me just get the first length off this list
+    Length firstLength = testPipeLengthList[0];
+
+    // Act
+
+    // then i'll go through a for loop whether the legnths are
+    // equal, if equal i will add to an integer known as the checksum
+    // if the interger in the checksum is equal to the 
+    // number of nodes, then the test passes
+    //
+
+    foreach (Length segmentLength in testPipeLengthList)
+    {
+        // now i know for each length i'm not supposed to use
+        // so many assert.Equal in one test
+        // but i want the test to fail if even one of the lengths 
+        // isn't equal, so that's why i do it this way
+        // the lazy way
+        Assert.Equal(expectedLength.As(LengthUnit.Meter),
+                segmentLength.As(LengthUnit.Meter));
+    }
+    // Assert
+    //
+}
+```
+test passed, ok
+
+Next, is some execptions to warn the user, I cannot have 0 or less than 0
+segments. 
+So i want a dividebyZeroException thrown when the user gives this value
+
+```csharp
+
+[Theory]
+[InlineData(0)]
+[InlineData(-1)]
+public void WhenZeroSegmentsSetExpectDivideByZeroException(
+        int numberOfSegments){
+
+    // Setup
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(10.0, LengthUnit.Meter);
+
+    Assert.Throws<DivideByZeroException>(() => 
+            testPipe.numberOfSegments = numberOfSegments);
+
+}
+```
+test passed, i'm ok. Not exactly the best exception name, but it will
+do for now
+
+
+Next thing to do are diameter tests.
+
+Basically when I have a pipe of differing entrance and exit diameters,
+I want the code to linearly interpolate hydraulic diameters along the pipe.
+
+This can be overridden by the user.
+
+But i want the functionality.
+
+The first test of these is a base case, if i set both entrance and exit
+hydraulic diameter to be equal, the hydraulic diameter along the whole
+pipe should be the same.
+
+```csharp
+
+
+[Theory]
+[InlineData(5,1.0)]
+[InlineData(50,10.0)]
+[InlineData(70,1.0)]
+[InlineData(1,2.0)]
+public void WhenNumberOfNodesSetExpectCorrectSegmentLength(
+        int numberOfSegments, double componentLength){
+
+    // Setup
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+    // Act
+    testPipe.numberOfSegments = numberOfSegments;
+
+    Length expectedDiameter = testPipe.entranceHydraulicDiameter;
+
+    IList<Length> diameterList = testPipe.hydraulicDiameterList;
+
+    // Assert
+    foreach (Length diameter in diameterList)
+    {
+        Assert.Equal(expectedDiameter.As(LengthUnit.Meter)
+                , diameter.As(LengthUnit.Meter));
+    }
+
+}
+```
+Test passed, i'm ok
+
+The next test checks if there are a correct number of hydraulic diameters
+within the list of hydraulic diameters along the pipe length.
+```csharp
+
+[Theory]
+[InlineData(5,1.0,1.5)]
+[InlineData(50,10.0,2.0)]
+[InlineData(70,1.0,0.5)]
+[InlineData(1,2.0,0.9)]
+public void WhenUnequalDiametersSetExpectCorrectCount(
+        int numberOfSegments, double componentLength,
+        double expansionRatio){
+
+    // Setup
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+
+    // Act
+    testPipe.numberOfSegments = numberOfSegments;
+
+    testPipe.exitHydraulicDiameter = testPipe.entranceHydraulicDiameter *
+        expansionRatio;
+
+
+
+    IList<Length> diameterList = testPipe.hydraulicDiameterList;
+
+    Assert.Equal(numberOfSegments,diameterList.Count);
+
+}
+```
+Test passed, i'm ok.
 
 
 
