@@ -9,7 +9,7 @@ using SharpFluids;
 
 namespace therminolPipeTest;
 
-public class TherminolComparisonTests : testOutputHelper
+public partial class TherminolComparisonTests : testOutputHelper
 {
 	public TherminolComparisonTests(ITestOutputHelper outputHelper):
 		base(outputHelper){
@@ -42,7 +42,10 @@ public class TherminolComparisonTests : testOutputHelper
 		//
 		this.cout("prandtl number of therminol and room temp and pressure");
 		this.cout(therminol.Prandtl.ToString());
+		
     }
+
+
 
 	[Theory]
 	[InlineData(0.5)]
@@ -55,6 +58,7 @@ public class TherminolComparisonTests : testOutputHelper
 
 
 		// Setup
+		
 
 		Pressure testPressure = Pressure.FromBar(pressureBars);
 		
