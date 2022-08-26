@@ -568,6 +568,10 @@ namespace SpiceSharp.Components
 					this.setViscosityList();
 					// add setting density method
 					this.setDensityList();
+					// add heat capacity setting method
+					this.setSpecificHeatCapacityList();
+					// add thermal conductivity setting method
+					this.setThermalConductivityList();
 				}
 			}
 
