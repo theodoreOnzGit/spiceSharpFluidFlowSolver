@@ -829,5 +829,92 @@ public partial class TherminolComparisonTests : testOutputHelper
 
 
 	}
+	/******************************************
+	 *
+	 * This next series of tests checks if i am able to set
+	 * a non uniform temperature across the pipe
+	 * and then when i do, i wanted to check if i am able to
+	 * get the correct thermodynamic properties
+	 *
+	 *
+	 * *******************************************/
+
+	// this first test checks if setting the temperature  list
+	// works properly
+	// 
+	[Theory]
+	[InlineData(1, true)]
+	[InlineData(2, false)]
+	[InlineData(3, true)]
+	[InlineData(4, false)]
+	[InlineData(5, true)]
+	public void WhenSetTemperatureListNonUniformExpectCorrectTemperature(
+			int numberOfSegments,
+			bool increaseTemperature){
+		// Setup
+		// let's first get the expected temperature:
+
+
+		EngineeringUnits.Temperature referenceTemperature =
+			new EngineeringUnits.Temperature(70.0,
+					TemperatureUnit.DegreeCelsius);
+		// next let's setup our testpipe and set the
+		// temperature to a non uniform temperature
+		//
+		// First i make the test pipe
+
+
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		// then i make a reference temperatureList
+		//
+		IList<EngineeringUnits.Temperature> 
+			referenceTemperatureList 
+			= new List<EngineeringUnits.Temperature>();
+
+		// then i want a varying temperature profile,
+		// which i can 
+		for(int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			EngineeringUnits.Temperature 
+				segmentTemperature = referenceTemperature;
+			if(increaseTemperature == true){
+				segmentTemperature +=
+					new Temperature(5.0*(segmentNumber-1),
+							TemperatureUnit.DegreeCelsius);
+			}else{
+
+				segmentTemperature -=
+					new Temperature(5.0*(segmentNumber-1),
+							TemperatureUnit.DegreeCelsius);
+			}
+
+			referenceTemperatureList.Add(
+					segmentTemperature);
+		}
+
+		testPipe.temperatureList = referenceTemperatureList;
+		// Act
+		// now let's get the testTemperatureList
+
+		IList<EngineeringUnits.Temperature> testTemperatureList = 
+			testPipe.temperatureList;
+
+		// And assert everything
+		for(int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			Assert.Equal(
+					referenceTemperatureList[segmentNumber-1].As(
+						TemperatureUnit.DegreeCelsius),
+					testTemperatureList[segmentNumber-1].As(
+						TemperatureUnit.DegreeCelsius));
+		}
+
+	}
 
 }

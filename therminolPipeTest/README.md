@@ -865,7 +865,9 @@ along the whole pipe is at the correct temperature.
 Next slew of tests is to check if i set differing temperatures along the pipe
 segment, are all my thermodynamic properties going to be the correct value?
 
-
+So basically, set a temperature list with some starting temperature.
+add 10 degrees for every segment added. And check if the thermodynamic
+properties give the correct values.
 
 
 

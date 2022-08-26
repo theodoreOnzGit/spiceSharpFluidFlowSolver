@@ -562,6 +562,7 @@ namespace SpiceSharp.Components
 								" segments \n");
 					}
 
+					
 
 					this._temperatureList = value;
 					// add setting viscosity method
