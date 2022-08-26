@@ -1273,4 +1273,128 @@ public partial class TherminolComparisonTests : testOutputHelper
 		}
 
 	}
+
+	[Theory]
+	[InlineData(1, true)]
+	[InlineData(2, false)]
+	[InlineData(3, true)]
+	[InlineData(4, false)]
+	[InlineData(5, true)]
+	public void WhenTemperatureListNonUniformExpectCorrectThermalConductivity(
+			int numberOfSegments,
+			bool increaseTemperature){
+		// Setup
+		// let's first get the expected temperature:
+
+
+		EngineeringUnits.Temperature referenceTemperature =
+			new EngineeringUnits.Temperature(70.0,
+					TemperatureUnit.DegreeCelsius);
+		// next let's setup our testpipe and set the
+		// temperature to a non uniform temperature
+		//
+		// First i make the test pipe
+
+
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		// then i make a reference temperatureList
+		//
+		IList<EngineeringUnits.Temperature> 
+			referenceTemperatureList 
+			= new List<EngineeringUnits.Temperature>();
+
+		// then i want a varying temperature profile,
+		// which i can 
+		for(int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			if(increaseTemperature == true){
+				EngineeringUnits.Temperature
+					segmentTemperature;
+				double segementTempCValue = 
+					referenceTemperature.As(TemperatureUnit.
+							DegreeCelsius);
+				segementTempCValue += 5.0*(segmentNumber-1);
+				segmentTemperature = new Temperature(
+						segementTempCValue, TemperatureUnit.
+						DegreeCelsius);
+				referenceTemperatureList.Add(
+						segmentTemperature);
+			}else{
+				EngineeringUnits.Temperature
+					segmentTemperature;
+				double segementTempCValue = 
+					referenceTemperature.As(TemperatureUnit.
+							DegreeCelsius);
+				segementTempCValue -= 5.0*(segmentNumber-1);
+				segmentTemperature = new Temperature(
+						segementTempCValue, TemperatureUnit.
+						DegreeCelsius);
+				referenceTemperatureList.Add(
+						segmentTemperature);
+			}
+
+		}
+
+		testPipe.temperatureList = referenceTemperatureList;
+
+		// now let's make a reference thermodynamic property list
+
+		IList<ThermalConductivity> getRefThermalConductivityList(
+				IList<EngineeringUnits.Temperature> 
+				temperatureList){
+			IList<ThermalConductivity> thermalConductivityList = 
+				new List<ThermalConductivity>();
+
+			foreach(EngineeringUnits.Temperature 
+					segmentTemperature in temperatureList){
+				thermalConductivityList.Add(
+						testPipe.getFluidThermalConductivity(
+							segmentTemperature));
+
+
+			}
+			return thermalConductivityList;
+		}
+
+		IList<ThermalConductivity> refThermalConductivityList = 
+			getRefThermalConductivityList(
+					referenceTemperatureList);
+
+
+
+		// Act
+		// now let's get the testTemperatureList
+
+		IList<ThermalConductivity> testThermalConductivityList = 
+			testPipe.thermalConductivityList;
+
+		// And assert everything
+		for(int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			Assert.Equal(
+					refThermalConductivityList[segmentNumber-1].
+					As(ThermalConductivityUnit.
+						WattPerMeterKelvin),
+					testThermalConductivityList[segmentNumber-1].
+					As(ThermalConductivityUnit.
+						WattPerMeterKelvin));
+
+			// this part is for printing if desired
+			// switch to false if you don't want to print
+			// the thermodynamic property out
+			bool debug = false;
+			if(debug){
+				this.cout(refThermalConductivityList[
+						segmentNumber-1].ToString());
+			}
+
+		}
+
+	}
 }
