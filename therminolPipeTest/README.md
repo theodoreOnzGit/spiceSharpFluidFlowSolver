@@ -173,7 +173,117 @@ Below 60C, Dowtherm A has a higher thermal conductivity than Therminol
 VP1. Above 60C, therminolVP1 has a higher thermal conductivity than
 Dowtherm A.
 
+
+
 ![Thermal Conductivity Viscosity of DowthermA vs TherminolVP1](./dowthermAvsTherminolComparisonData/thermalConductivityDowthermAvsTherminol.png)
+
+
+
+# Basic Pipe Functionality Tests
+
+I also conduct basic tests for my therminol pipe here.
+
+I need to make sure the code is functioning as intended, not exactly heavy
+theory here.
+
+
+## Methodology
+
+TherminolPipe is an abstract class, which means i cannot instantiate it without
+first getting another class to inherit from it. It is somewhere in between
+an interface and a full class. There is partial implementation, but the rest
+is up to the user.
+
+I make a mockTherminolPipe which does not implement new methods, but just
+sets simple pipe parameneters like pipe length and diameter, etc, so i can
+start testing if the class works.k
+
+## Are my thermodynamic functions working correctly?
+
+I will have several functions within my therminolPipe class, one to calculate
+heat capacity, one for thermal conductivity, one for viscosity and one for
+density. One also for Pr. These are temperature dependent, and i need to make
+sure these give the same output as when i use the sharpFluids code.
+
+```csharp
+// here i need to test the therminol pipe abstract class for five things
+// 1) double Pr
+// 2) SpecificHeatCapacity Cp
+// 3) Density rho
+// 4) DynamicViscosity mu
+// 5) ThermalConductivity k
+//
+// Test (1/5)
+[Theory]
+[InlineData(20)]
+[InlineData(30)]
+[InlineData(40)]
+[InlineData(50)]
+[InlineData(60)]
+[InlineData(70)]
+[InlineData(80)]
+[InlineData(90)]
+[InlineData(100)]
+[InlineData(120)]
+[InlineData(130)]
+[InlineData(140)]
+[InlineData(150)]
+[InlineData(160)]
+[InlineData(170)]
+[InlineData(180)]
+public void WhenAbstractTherminolPipeTemperatureVariedExpectPrandtl(
+        double tempCValue){
+    // this test checks if the functions returning prandtl number
+    // from the therminol pipe abstract class 
+    // will return the correct prandtl number
+    
+    
+    // Setup
+    Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+    Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+    EngineeringUnits.Temperature testTemperature;
+    testTemperature = new EngineeringUnits.
+        Temperature(tempCValue, TemperatureUnit.DegreeCelsius);
+
+    therminol.UpdatePT(referencePressure, testTemperature);
+    double referencePrandtlNumber = therminol.Prandtl;
+    double testPrandtlNumber;
+    // let's make  a mockTherminolPipe which inherits from the 
+    // therminolPipe Abstract class but implements all methods with
+    // throw new NotImplementedException()
+
+    TherminolPipe testPipe = new mockTherminolPipe("mockTherminolPipe",
+            "0","out");
+
+    testPrandtlNumber = testPipe.getFluidPrandtl(testTemperature);
+
+    // Act
+
+
+    // Assert
+    //
+    Assert.Equal(referencePrandtlNumber, testPrandtlNumber);
+
+}
+```
+
+I do tests for all five quantities, Pr, Cp, mu, k and rho. Which are
+Prandtl number, SpecificHeatCapcity, dynamic viscosity, thermal conductivity
+and density.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
