@@ -501,7 +501,366 @@ public void WhenUnequalDiametersSetExpectCorrectCount(
 ```
 Test passed, i'm ok.
 
+The next test checks if the diameter is interpolated according to the correct
+formula.
 
+```csharp
+	[Theory]
+	[InlineData(5,1.0,1.5)]
+	[InlineData(50,10.0,2.0)]
+	[InlineData(70,1.0,0.5)]
+	[InlineData(1,2.0,0.9)]
+	public void WhenUnequalDiametersSetExpectCorrectDiameter(
+			int numberOfSegments, double componentLength,
+			double expansionRatio){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		testPipe.exitHydraulicDiameter = testPipe.entranceHydraulicDiameter *
+			expansionRatio;
+
+		// here i return the expected diameter given a segment number
+		Length getExpectedDiameter(int segmentNumber){
+			Length interpolationLength = 
+				testPipe.getComponentLength()/
+				numberOfSegments 
+				*(segmentNumber - 0.5);
+
+			double interpolationSlope;
+			interpolationSlope = (testPipe.exitHydraulicDiameter 
+					- testPipe.entranceHydraulicDiameter)/(
+						testPipe.getComponentLength() - 
+						testPipe.entranceLengthValue);
+
+
+			return (interpolationLength - 
+					testPipe.entranceLengthValue)*interpolationSlope
+				+ testPipe.entranceHydraulicDiameter;
+		}
+
+
+
+		// Act
+
+		
+		IList<Length> diameterList = testPipe.hydraulicDiameterList;
+
+		void printDiameterList(IList<Length> diameterList){
+						foreach (var item in diameterList)
+			{
+				this.cout(item.ToString());
+			}
+			return;
+		}
+
+		// Assert
+
+		for (int segmentNumber = 1; 
+				segmentNumber <= numberOfSegments; 
+				segmentNumber++
+				)
+		{
+			
+			Length expectedDiameter = getExpectedDiameter(segmentNumber);
+			if(expectedDiameter.As(LengthUnit.Meter) !=
+					diameterList[segmentNumber-1].As(LengthUnit.Meter)){
+				printDiameterList(diameterList);
+			}
+			Assert.Equal(expectedDiameter.As(LengthUnit.Meter)
+					,diameterList[segmentNumber-1].As(LengthUnit.Meter));
+		}
+
+	}
+```
+
+Test passed, ok.
+
+There is one more test for hydraulic diameter i haven't implemented yet
+because the method of averaging the hydrualic diameter is not that trivial
+to code.
+
+[TBC]
+
+
+Next, i want to check how fluid properties can be varied along the pipe
+due to differing fluid temperatures.
+
+At the very least base case, if the pipe is isothermal, i should expect
+the fluid properties to be same long the whole pipe no matter what is the
+temperature i give to it and no matter how many segments i supply.
+
+But first, i want to check if my temperature list is working correctly,
+
+So if i set the temperature to some uniform value, is my temperature
+going to be truly uniform over the whole pipe?
+
+```csharp
+
+[Theory]
+[InlineData(1,25.0)]
+[InlineData(2,30.5)]
+[InlineData(3, 65.6)]
+[InlineData(4, 122.8)]
+[InlineData(5, 80.5)]
+public void WhenSetTemperatureListExpectCorrectTemperature(
+        int numberOfSegments,
+        double temperatureValC){
+    // Setup
+    // let's first get the expected temperature:
+
+
+    EngineeringUnits.Temperature expectedTemperature =
+        new EngineeringUnits.Temperature(temperatureValC,
+                TemperatureUnit.DegreeCelsius);
+    // next let's setup our testpipe and set the
+    // temperature to a uniform temperature
+
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+    testPipe.numberOfSegments = numberOfSegments;
+    testPipe.setTemperatureList(
+            new EngineeringUnits.Temperature(
+                temperatureValC, TemperatureUnit.DegreeCelsius));
+
+    // Act
+    // now let's get the densityList
+
+    IList<EngineeringUnits.Temperature> testTemperatureList = 
+        testPipe.temperatureList;
+
+    // And assert everything
+    foreach (EngineeringUnits.Temperature 
+            segmentTemperature in testTemperatureList){
+        Assert.Equal(expectedTemperature.As(TemperatureUnit.
+                    DegreeCelsius), 
+                segmentTemperature.As(TemperatureUnit.DegreeCelsius));
+    }
+
+
+}
+
+```
+
+The test works.
+
+Now let's do base case tests for density and all other properties.
+
+```csharp
+
+[Theory]
+[InlineData(1,25.0)]
+[InlineData(2,30.5)]
+[InlineData(3, 65.6)]
+[InlineData(4, 122.8)]
+[InlineData(5, 80.5)]
+public void WhenSetTemperatureListExpectCorrectDensity(
+        int numberOfSegments,
+        double temperatureValC){
+    // Setup
+    // let's first get the expected density:
+
+    Density expectedFluidDensity(EngineeringUnits.Temperature 
+            fluidTemp){
+        Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+        Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+        therminol.UpdatePT(referencePressure, fluidTemp);
+        return therminol.Density.ToUnit(DensityUnit.KilogramPerCubicMeter);
+    }
+
+    Density expectedDensity = expectedFluidDensity(new 
+            EngineeringUnits.Temperature(temperatureValC,
+                TemperatureUnit.DegreeCelsius));
+    // next let's setup our testpipe and set the
+    // temperature to a uniform temperature
+
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+    testPipe.numberOfSegments = numberOfSegments;
+    testPipe.setTemperatureList(
+            new EngineeringUnits.Temperature(
+                temperatureValC, TemperatureUnit.DegreeCelsius));
+
+    // Act
+    // now let's get the densityList
+
+    IList<Density> testDensityList = testPipe.densityList;
+
+    // And assert everything
+    foreach (Density segmentDensity in testDensityList){
+        Assert.Equal(expectedDensity.As(DensityUnit.KilogramPerCubicMeter),
+                segmentDensity.As(DensityUnit.KilogramPerCubicMeter));
+    }
+
+
+}
+
+
+[Theory]
+[InlineData(1,25.0)]
+[InlineData(2,30.5)]
+[InlineData(3, 65.6)]
+[InlineData(4, 122.8)]
+[InlineData(5, 80.5)]
+public void WhenSetTemperatureListExpectCorrectViscosity(
+        int numberOfSegments,
+        double temperatureValC){
+    // Setup
+    // let's first get the expected viscosity:
+
+    DynamicViscosity expectedFluidDynamicViscosity
+        (EngineeringUnits.Temperature fluidTemp){
+        Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+        Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+        therminol.UpdatePT(referencePressure, fluidTemp);
+        return therminol.DynamicViscosity.ToUnit(
+                DynamicViscosityUnit. PascalSecond);
+    }
+
+    DynamicViscosity expectedDynamicViscosity = expectedFluidDynamicViscosity(new 
+            EngineeringUnits.Temperature(temperatureValC,
+                TemperatureUnit.DegreeCelsius));
+    // next let's setup our testpipe and set the
+    // temperature to a uniform temperature
+
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+    testPipe.numberOfSegments = numberOfSegments;
+    testPipe.setTemperatureList(
+            new EngineeringUnits.Temperature(
+                temperatureValC, TemperatureUnit.DegreeCelsius));
+
+    // Act
+    // now let's get the viscosityList
+
+    IList<DynamicViscosity> testDynamicViscosityList 
+        = testPipe.viscosityList;
+
+    // And assert everything
+    foreach (DynamicViscosity segmentDynamicViscosity in testDynamicViscosityList){
+        Assert.Equal(expectedDynamicViscosity.
+                As(DynamicViscosityUnit.PascalSecond),
+                segmentDynamicViscosity.
+                As(DynamicViscosityUnit.PascalSecond));
+    }
+}
+
+
+[Theory]
+[InlineData(1,25.0)]
+[InlineData(2,30.5)]
+[InlineData(3, 65.6)]
+[InlineData(4, 122.8)]
+[InlineData(5, 80.5)]
+public void WhenSetTemperatureListExpectCorrectThermalConductivity(
+        int numberOfSegments,
+        double temperatureValC){
+    // Setup
+    // let's first get the expected thermalConductivity:
+
+    ThermalConductivity expectedFluidThermalConductivity
+        (EngineeringUnits.Temperature fluidTemp){
+        Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+        Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+        therminol.UpdatePT(referencePressure, fluidTemp);
+        return therminol.Conductivity.ToUnit(
+                ThermalConductivityUnit.WattPerMeterKelvin);
+    }
+
+    ThermalConductivity expectedThermalConductivity = expectedFluidThermalConductivity(new 
+            EngineeringUnits.Temperature(temperatureValC,
+                TemperatureUnit.DegreeCelsius));
+    // next let's setup our testpipe and set the
+    // temperature to a uniform temperature
+
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+    testPipe.numberOfSegments = numberOfSegments;
+    testPipe.setTemperatureList(
+            new EngineeringUnits.Temperature(
+                temperatureValC, TemperatureUnit.DegreeCelsius));
+
+    // Act
+    // now let's get the thermalConductivityList
+
+    IList<ThermalConductivity> testThermalConductivityList 
+        = testPipe.thermalConductivityList;
+
+    // And assert everything
+    foreach (ThermalConductivity segmentThermalConductivity in testThermalConductivityList){
+        Assert.Equal(expectedThermalConductivity.
+                As(ThermalConductivityUnit.WattPerMeterKelvin),
+                segmentThermalConductivity.
+                As(ThermalConductivityUnit.WattPerMeterKelvin));
+    }
+}
+
+[Theory]
+[InlineData(1,25.0)]
+[InlineData(2,30.5)]
+[InlineData(3, 65.6)]
+[InlineData(4, 122.8)]
+[InlineData(5, 80.5)]
+public void WhenSetTemperatureListExpectCorrectSpecificHeat(
+        int numberOfSegments,
+        double temperatureValC){
+    // Setup
+    // let's first get the expected heatCapacity:
+
+    SpecificHeatCapacity expectedFluidSpecificHeatCapacity
+        (EngineeringUnits.Temperature fluidTemp){
+        Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+        Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+        therminol.UpdatePT(referencePressure, fluidTemp);
+        return therminol.Cp.ToUnit(
+                SpecificHeatCapacityUnit.JoulePerKilogramKelvin);
+    }
+
+    SpecificHeatCapacity expectedSpecificHeatCapacity = expectedFluidSpecificHeatCapacity(new 
+            EngineeringUnits.Temperature(temperatureValC,
+                TemperatureUnit.DegreeCelsius));
+    // next let's setup our testpipe and set the
+    // temperature to a uniform temperature
+
+    TherminolPipe testPipe = 
+        new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+    testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+    testPipe.numberOfSegments = numberOfSegments;
+    testPipe.setTemperatureList(
+            new EngineeringUnits.Temperature(
+                temperatureValC, TemperatureUnit.DegreeCelsius));
+
+    // Act
+    // now let's get the densityList
+
+    IList<SpecificHeatCapacity> testSpecificHeatCapacityList 
+        = testPipe.heatCapacityList;
+
+    // And assert everything
+    foreach (SpecificHeatCapacity segmentSpecificHeatCapacity in testSpecificHeatCapacityList){
+        Assert.Equal(expectedSpecificHeatCapacity.
+                As(SpecificHeatCapacityUnit.JoulePerKilogramKelvin),
+                segmentSpecificHeatCapacity.
+                As(SpecificHeatCapacityUnit.JoulePerKilogramKelvin));
+    }
+}
+```
+
+All these tests pass, so it's all good. Meaning to say if i set the pipe
+to be isothermal, the density, viscosity, heat capacity and thermal conductivity
+along the whole pipe is at the correct temperature.
 
 
 
