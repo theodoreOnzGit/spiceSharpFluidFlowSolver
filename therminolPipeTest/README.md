@@ -862,6 +862,8 @@ All these tests pass, so it's all good. Meaning to say if i set the pipe
 to be isothermal, the density, viscosity, heat capacity and thermal conductivity
 along the whole pipe is at the correct temperature.
 
+Next slew of tests is to check if i set differing temperatures along the pipe
+segment, are all my thermodynamic properties going to be the correct value?
 
 
 
