@@ -652,8 +652,8 @@ public partial class TherminolComparisonTests : testOutputHelper
 					DynamicViscosityUnit. PascalSecond);
 		}
 
-		DynamicViscosity expectedDynamicViscosity = expectedFluidDynamicViscosity(new 
-				EngineeringUnits.Temperature(temperatureValC,
+		DynamicViscosity expectedDynamicViscosity = expectedFluidDynamicViscosity(
+				new EngineeringUnits.Temperature(temperatureValC,
 					TemperatureUnit.DegreeCelsius));
 		// next let's setup our testpipe and set the
 		// temperature to a uniform temperature
@@ -848,7 +848,7 @@ public partial class TherminolComparisonTests : testOutputHelper
 	[InlineData(3, true)]
 	[InlineData(4, false)]
 	[InlineData(5, true)]
-	public void WhenSetTemperatureListNonUniformExpectCorrectTemperature(
+	public void WhenTemperatureListNonUniformExpectCorrectTemperature(
 			int numberOfSegments,
 			bool increaseTemperature){
 		// Setup
@@ -880,21 +880,32 @@ public partial class TherminolComparisonTests : testOutputHelper
 		for(int segmentNumber = 1;
 				segmentNumber <= numberOfSegments;
 				segmentNumber++){
-			EngineeringUnits.Temperature 
-				segmentTemperature = referenceTemperature;
 			if(increaseTemperature == true){
-				segmentTemperature +=
-					new Temperature(5.0*(segmentNumber-1),
-							TemperatureUnit.DegreeCelsius);
+				EngineeringUnits.Temperature
+					segmentTemperature;
+				double segementTempCValue = 
+					referenceTemperature.As(TemperatureUnit.
+							DegreeCelsius);
+				segementTempCValue += 5.0*(segmentNumber-1);
+				segmentTemperature = new Temperature(
+						segementTempCValue, TemperatureUnit.
+						DegreeCelsius);
+				referenceTemperatureList.Add(
+						segmentTemperature);
 			}else{
-
-				segmentTemperature -=
-					new Temperature(5.0*(segmentNumber-1),
-							TemperatureUnit.DegreeCelsius);
+				EngineeringUnits.Temperature
+					segmentTemperature;
+				double segementTempCValue = 
+					referenceTemperature.As(TemperatureUnit.
+							DegreeCelsius);
+				segementTempCValue -= 5.0*(segmentNumber-1);
+				segmentTemperature = new Temperature(
+						segementTempCValue, TemperatureUnit.
+						DegreeCelsius);
+				referenceTemperatureList.Add(
+						segmentTemperature);
 			}
 
-			referenceTemperatureList.Add(
-					segmentTemperature);
 		}
 
 		testPipe.temperatureList = referenceTemperatureList;
@@ -913,6 +924,121 @@ public partial class TherminolComparisonTests : testOutputHelper
 						TemperatureUnit.DegreeCelsius),
 					testTemperatureList[segmentNumber-1].As(
 						TemperatureUnit.DegreeCelsius));
+			EngineeringUnits.Temperature segmentTemperature;
+			segmentTemperature = testTemperatureList[
+				segmentNumber-1];
+		}
+
+	}
+
+	[Theory]
+	[InlineData(1, true)]
+	[InlineData(2, false)]
+	[InlineData(3, true)]
+	[InlineData(4, false)]
+	[InlineData(5, true)]
+	public void WhenTemperatureListNonUniformExpectCorrectViscosity(
+			int numberOfSegments,
+			bool increaseTemperature){
+		// Setup
+		// let's first get the expected temperature:
+
+
+		EngineeringUnits.Temperature referenceTemperature =
+			new EngineeringUnits.Temperature(70.0,
+					TemperatureUnit.DegreeCelsius);
+		// next let's setup our testpipe and set the
+		// temperature to a non uniform temperature
+		//
+		// First i make the test pipe
+
+
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		// then i make a reference temperatureList
+		//
+		IList<EngineeringUnits.Temperature> 
+			referenceTemperatureList 
+			= new List<EngineeringUnits.Temperature>();
+
+		// then i want a varying temperature profile,
+		// which i can 
+		for(int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			if(increaseTemperature == true){
+				EngineeringUnits.Temperature
+					segmentTemperature;
+				double segementTempCValue = 
+					referenceTemperature.As(TemperatureUnit.
+							DegreeCelsius);
+				segementTempCValue += 5.0*(segmentNumber-1);
+				segmentTemperature = new Temperature(
+						segementTempCValue, TemperatureUnit.
+						DegreeCelsius);
+				referenceTemperatureList.Add(
+						segmentTemperature);
+			}else{
+				EngineeringUnits.Temperature
+					segmentTemperature;
+				double segementTempCValue = 
+					referenceTemperature.As(TemperatureUnit.
+							DegreeCelsius);
+				segementTempCValue -= 5.0*(segmentNumber-1);
+				segmentTemperature = new Temperature(
+						segementTempCValue, TemperatureUnit.
+						DegreeCelsius);
+				referenceTemperatureList.Add(
+						segmentTemperature);
+			}
+
+		}
+
+		testPipe.temperatureList = referenceTemperatureList;
+
+		// now let's make a reference thermodynamic property list
+
+		IList<DynamicViscosity> getRefDynamicViscosityList(
+				IList<EngineeringUnits.Temperature> 
+				temperatureList){
+			IList<DynamicViscosity> dynamicViscosityList = 
+				new List<DynamicViscosity>();
+
+			foreach(EngineeringUnits.Temperature 
+					segmentTemperature in temperatureList){
+				dynamicViscosityList.Add(
+						testPipe.getFluidDynamicViscosity(
+							segmentTemperature));
+
+
+			}
+			return dynamicViscosityList;
+		}
+
+		IList<DynamicViscosity> refDynamicViscosityList = 
+			getRefDynamicViscosityList(
+					referenceTemperatureList);
+
+
+
+		// Act
+		// now let's get the testTemperatureList
+
+		IList<DynamicViscosity> testDynamicViscosityList = 
+			testPipe.viscosityList;
+
+		// And assert everything
+		for(int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			Assert.Equal(
+					refDynamicViscosityList[segmentNumber-1].
+					As(DynamicViscosityUnit.PascalSecond),
+					testDynamicViscosityList[segmentNumber-1].
+					As(DynamicViscosityUnit.PascalSecond));
 		}
 
 	}
