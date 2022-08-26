@@ -641,7 +641,7 @@ public partial class TherminolComparisonTests : testOutputHelper
 			int numberOfSegments,
 			double temperatureValC){
 		// Setup
-		// let's first get the expected density:
+		// let's first get the expected viscosity:
 
 		DynamicViscosity expectedFluidDynamicViscosity
 			(EngineeringUnits.Temperature fluidTemp){
@@ -668,7 +668,7 @@ public partial class TherminolComparisonTests : testOutputHelper
 					temperatureValC, TemperatureUnit.DegreeCelsius));
 
 		// Act
-		// now let's get the densityList
+		// now let's get the viscosityList
 
 		IList<DynamicViscosity> testDynamicViscosityList 
 			= testPipe.viscosityList;
@@ -684,9 +684,54 @@ public partial class TherminolComparisonTests : testOutputHelper
 
 
 	[Theory]
-	[InlineData()]
-	public void WhenSetTemperatureListExpectCorrectThermalConductivity(){
-		throw new NotImplementedException();
+	[InlineData(1,25.0)]
+	[InlineData(2,30.5)]
+	[InlineData(3, 65.6)]
+	[InlineData(4, 122.8)]
+	[InlineData(5, 80.5)]
+	public void WhenSetTemperatureListExpectCorrectThermalConductivity(
+			int numberOfSegments,
+			double temperatureValC){
+		// Setup
+		// let's first get the expected thermalConductivity:
+
+		ThermalConductivity expectedFluidThermalConductivity
+			(EngineeringUnits.Temperature fluidTemp){
+			Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+			Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+			therminol.UpdatePT(referencePressure, fluidTemp);
+			return therminol.Conductivity.ToUnit(
+					ThermalConductivityUnit.WattPerMeterKelvin);
+		}
+
+		ThermalConductivity expectedThermalConductivity = expectedFluidThermalConductivity(new 
+				EngineeringUnits.Temperature(temperatureValC,
+					TemperatureUnit.DegreeCelsius));
+		// next let's setup our testpipe and set the
+		// temperature to a uniform temperature
+
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		testPipe.setTemperatureList(
+				new EngineeringUnits.Temperature(
+					temperatureValC, TemperatureUnit.DegreeCelsius));
+
+		// Act
+		// now let's get the thermalConductivityList
+
+		IList<ThermalConductivity> testThermalConductivityList 
+			= testPipe.thermalConductivityList;
+
+		// And assert everything
+		foreach (ThermalConductivity segmentThermalConductivity in testThermalConductivityList){
+			Assert.Equal(expectedThermalConductivity.
+					As(ThermalConductivityUnit.WattPerMeterKelvin),
+					segmentThermalConductivity.
+					As(ThermalConductivityUnit.WattPerMeterKelvin));
+		}
 	}
 	
 	[Theory]
@@ -699,7 +744,7 @@ public partial class TherminolComparisonTests : testOutputHelper
 			int numberOfSegments,
 			double temperatureValC){
 		// Setup
-		// let's first get the expected density:
+		// let's first get the expected heatCapacity:
 
 		SpecificHeatCapacity expectedFluidSpecificHeatCapacity
 			(EngineeringUnits.Temperature fluidTemp){
@@ -750,7 +795,7 @@ public partial class TherminolComparisonTests : testOutputHelper
 			int numberOfSegments,
 			double temperatureValC){
 		// Setup
-		// let's first get the expected density:
+		// let's first get the expected temperature:
 
 
 		EngineeringUnits.Temperature expectedTemperature =
