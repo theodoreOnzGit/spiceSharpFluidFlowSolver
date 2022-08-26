@@ -326,13 +326,6 @@ public partial class TherminolComparisonTests : testOutputHelper
 
 	}
 
-	[Fact]
-	public void test1(){
-		EngineeringUnits.Temperature temp = 
-			new EngineeringUnits.Temperature(0.0,
-					TemperatureUnit.SI);
-		Assert.True(true);
-	}
 	/***************************************************************
 	 * The following section outlines tests for nodalisation
 	 *
@@ -639,9 +632,54 @@ public partial class TherminolComparisonTests : testOutputHelper
 
 
 	[Theory]
-	[InlineData()]
-	public void WhenSetTemperatureListExpectCorrectViscosity(){
-		throw new NotImplementedException();
+	[InlineData(1,25.0)]
+	[InlineData(2,30.5)]
+	[InlineData(3, 65.6)]
+	[InlineData(4, 122.8)]
+	[InlineData(5, 80.5)]
+	public void WhenSetTemperatureListExpectCorrectViscosity(
+			int numberOfSegments,
+			double temperatureValC){
+		// Setup
+		// let's first get the expected density:
+
+		DynamicViscosity expectedFluidDynamicViscosity
+			(EngineeringUnits.Temperature fluidTemp){
+			Fluid therminol = new Fluid(FluidList.InCompTherminolVP1);
+			Pressure referencePressure = new Pressure(1.013e5, PressureUnit.Pascal);
+			therminol.UpdatePT(referencePressure, fluidTemp);
+			return therminol.DynamicViscosity.ToUnit(
+					DynamicViscosityUnit. PascalSecond);
+		}
+
+		DynamicViscosity expectedDynamicViscosity = expectedFluidDynamicViscosity(new 
+				EngineeringUnits.Temperature(temperatureValC,
+					TemperatureUnit.DegreeCelsius));
+		// next let's setup our testpipe and set the
+		// temperature to a uniform temperature
+
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		testPipe.setTemperatureList(
+				new EngineeringUnits.Temperature(
+					temperatureValC, TemperatureUnit.DegreeCelsius));
+
+		// Act
+		// now let's get the densityList
+
+		IList<DynamicViscosity> testDynamicViscosityList 
+			= testPipe.viscosityList;
+
+		// And assert everything
+		foreach (DynamicViscosity segmentDynamicViscosity in testDynamicViscosityList){
+			Assert.Equal(expectedDynamicViscosity.
+					As(DynamicViscosityUnit.PascalSecond),
+					segmentDynamicViscosity.
+					As(DynamicViscosityUnit.PascalSecond));
+		}
 	}
 
 
