@@ -1116,18 +1116,18 @@ public partial class TherminolComparisonTests : testOutputHelper
 		IList<Density> getRefDensityList(
 				IList<EngineeringUnits.Temperature> 
 				temperatureList){
-			IList<Density> dynamicViscosityList = 
+			IList<Density> densityList = 
 				new List<Density>();
 
 			foreach(EngineeringUnits.Temperature 
 					segmentTemperature in temperatureList){
-				dynamicViscosityList.Add(
+				densityList.Add(
 						testPipe.getFluidDensity(
 							segmentTemperature));
 
 
 			}
-			return dynamicViscosityList;
+			return densityList;
 		}
 
 		IList<Density> refDensityList = 
@@ -1151,6 +1151,124 @@ public partial class TherminolComparisonTests : testOutputHelper
 					As(DensityUnit.KilogramPerCubicMeter),
 					testDensityList[segmentNumber-1].
 					As(DensityUnit.KilogramPerCubicMeter));
+
+		}
+
+	}
+
+	[Theory]
+	[InlineData(1, true)]
+	[InlineData(2, false)]
+	[InlineData(3, true)]
+	[InlineData(4, false)]
+	[InlineData(5, true)]
+	public void WhenTemperatureListNonUniformExpectCorrectSpecificHeatCapacity(
+			int numberOfSegments,
+			bool increaseTemperature){
+		// Setup
+		// let's first get the expected temperature:
+
+
+		EngineeringUnits.Temperature referenceTemperature =
+			new EngineeringUnits.Temperature(70.0,
+					TemperatureUnit.DegreeCelsius);
+		// next let's setup our testpipe and set the
+		// temperature to a non uniform temperature
+		//
+		// First i make the test pipe
+
+
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(0.5, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		// then i make a reference temperatureList
+		//
+		IList<EngineeringUnits.Temperature> 
+			referenceTemperatureList 
+			= new List<EngineeringUnits.Temperature>();
+
+		// then i want a varying temperature profile,
+		// which i can 
+		for(int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			if(increaseTemperature == true){
+				EngineeringUnits.Temperature
+					segmentTemperature;
+				double segementTempCValue = 
+					referenceTemperature.As(TemperatureUnit.
+							DegreeCelsius);
+				segementTempCValue += 5.0*(segmentNumber-1);
+				segmentTemperature = new Temperature(
+						segementTempCValue, TemperatureUnit.
+						DegreeCelsius);
+				referenceTemperatureList.Add(
+						segmentTemperature);
+			}else{
+				EngineeringUnits.Temperature
+					segmentTemperature;
+				double segementTempCValue = 
+					referenceTemperature.As(TemperatureUnit.
+							DegreeCelsius);
+				segementTempCValue -= 5.0*(segmentNumber-1);
+				segmentTemperature = new Temperature(
+						segementTempCValue, TemperatureUnit.
+						DegreeCelsius);
+				referenceTemperatureList.Add(
+						segmentTemperature);
+			}
+
+		}
+
+		testPipe.temperatureList = referenceTemperatureList;
+
+		// now let's make a reference thermodynamic property list
+
+		IList<SpecificHeatCapacity> getRefSpecificHeatCapacityList(
+				IList<EngineeringUnits.Temperature> 
+				temperatureList){
+			IList<SpecificHeatCapacity> heatCapacityList = 
+				new List<SpecificHeatCapacity>();
+
+			foreach(EngineeringUnits.Temperature 
+					segmentTemperature in temperatureList){
+				heatCapacityList.Add(
+						testPipe.getFluidHeatCapacity(
+							segmentTemperature));
+
+
+			}
+			return heatCapacityList;
+		}
+
+		IList<SpecificHeatCapacity> refSpecificHeatCapacityList = 
+			getRefSpecificHeatCapacityList(
+					referenceTemperatureList);
+
+
+
+		// Act
+		// now let's get the testTemperatureList
+
+		IList<SpecificHeatCapacity> testSpecificHeatCapacityList = 
+			testPipe.heatCapacityList;
+
+		// And assert everything
+		for(int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			Assert.Equal(
+					refSpecificHeatCapacityList[segmentNumber-1].
+					As(SpecificHeatCapacityUnit.
+						JoulePerKilogramKelvin),
+					testSpecificHeatCapacityList[segmentNumber-1].
+					As(SpecificHeatCapacityUnit.
+						JoulePerKilogramKelvin));
+
+			//this.cout(refSpecificHeatCapacityList[
+			//		segmentNumber-1].ToString());
 
 		}
 
