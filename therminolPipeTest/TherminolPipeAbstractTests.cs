@@ -574,11 +574,99 @@ public partial class TherminolComparisonTests : testOutputHelper
 		}
 
 	}
+	
+	[Theory]
+	[InlineData(5,2.79e-2)]
+	[InlineData(50,5.44e-3)]
+	[InlineData(70,1.76e-1)]
+	[InlineData(1,0.1)]
+	public void WhenUniformHydraulicDiameterExpectCorrectDiameter(
+			int numberOfSegments, double expectedHydraulicDiameterValMeters){
+		bool debug = false;
+		// Setup
+		Length expectedHydraulicDiameter = new Length(
+				expectedHydraulicDiameterValMeters,LengthUnit.Meter);
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.entranceHydraulicDiameter = expectedHydraulicDiameter;
+		testPipe.exitHydraulicDiameter = expectedHydraulicDiameter;
+		testPipe.numberOfSegments = numberOfSegments;
+
+
+		// Act
+		if(debug){
+			IList<Length> hydraulicDiameterList = testPipe.
+				hydraulicDiameterList;
+			foreach (Length hydraulicDiameter in hydraulicDiameterList)
+			{
+				this.cout(hydraulicDiameter.ToString());
+			}
+		}
+
+		Length testHydraulicDiameter = 
+			testPipe.getHydraulicDiameter();
+		
+		//
+		// Assert
+		Assert.Equal(expectedHydraulicDiameterValMeters,
+				testHydraulicDiameter.As(LengthUnit.Meter));
+	}
 
 	[Theory]
-	[InlineData()]
-	public void WhenGetHydraulicDiameterExpectCorrectAverage(){
+	[InlineData(5,1.0,1.5)]
+	[InlineData(50,10.0,2.0)]
+	[InlineData(70,1.0,0.5)]
+	[InlineData(1,2.0,0.9)]
+	public void WhenGetHydraulicDiameterExpectCorrectAverage(
+			int numberOfSegments, double componentLength,
+			double expansionRatio){
 		throw new NotImplementedException();
+	}
+
+
+	// here are tests for area lists
+	// so taht when hydraulic diameter is set,
+	// area lists are alos set
+	
+	[Theory]
+	[InlineData(5,2.79e-2)]
+	[InlineData(50,5.44e-3)]
+	[InlineData(70,1.76e-1)]
+	[InlineData(1,0.1)]
+	public void WhenUniformHydraulicDiameterExpectCorrectArea(
+			int numberOfSegments, double expectedHydraulicDiameterValMeters){
+		bool debug = false;
+		// Setup
+		Length expectedHydraulicDiameter = new Length(
+				expectedHydraulicDiameterValMeters,LengthUnit.Meter);
+		Area expectedArea = expectedHydraulicDiameter.Pow(2);
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.entranceHydraulicDiameter = expectedHydraulicDiameter;
+		testPipe.exitHydraulicDiameter = expectedHydraulicDiameter;
+		testPipe.numberOfSegments = numberOfSegments;
+
+
+		// Act
+		if(debug){
+			IList<Length> hydraulicDiameterList = testPipe.
+				hydraulicDiameterList;
+			foreach (Length hydraulicDiameter in hydraulicDiameterList)
+			{
+				this.cout(hydraulicDiameter.ToString());
+			}
+		}
+		IList<Area> testAreaList = testPipe.areaList;
+		
+		//
+		// Assert
+		
+		foreach (Area segmentArea in testAreaList){
+			Assert.Equal(Math.Pow(expectedHydraulicDiameterValMeters,2.0),
+					segmentArea.As(AreaUnit.SquareMeter),10);
+		}
 	}
 
 	[Theory]

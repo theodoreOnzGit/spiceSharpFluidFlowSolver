@@ -114,6 +114,18 @@ which is set by the user. As diameter is more commonly used to
 measure pipes, i will then use diameter as the default method
 of setting areas, rather than the other way round.
 
+And once i've gotten each cross sectional area, the average
+cross sectional area of the pipe will be as follows:
+$$ \frac{\sum_i^n (k_{darcyi} \frac{L_i}{D_i} + K_i)}
+{\rho_{series}A_{XSseries}^2 } 
+= \sum_i^n  \frac{k_{darcyi} \frac{L_i}{D_i} + K_i}{\rho_i A_{XSi}^2} 
+   $$
+With boussinesq approximation, this becomes
+$$ \frac{\sum_i^n (k_{darcyi} \frac{L_i}{D_i} + K_i)}
+{A_{XSseries}^2 } 
+= \sum_i^n  \frac{k_{darcyi} \frac{L_i}{D_i} + K_i}{ A_{XSi}^2} 
+   $$
+
 So basically, i need a list of temperatures, for which it will 
 automatically calculate a list of densities, viscosities and
 thermal conductivities and heat capacities also.

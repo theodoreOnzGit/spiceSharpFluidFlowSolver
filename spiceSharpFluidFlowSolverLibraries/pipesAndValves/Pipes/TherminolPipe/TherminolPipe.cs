@@ -94,7 +94,7 @@ namespace SpiceSharp.Components
 				if(value.As(LengthUnit.Meter) <= 0)
 					throw new InvalidOperationException("diameter <= 0 m");
 				this._componentLength = value;
-				this.setLengthListUniform(this.numberOfSegments);
+				this.setAllPipeDimensions(this.numberOfSegments);
 			}
 		}
 
@@ -151,7 +151,7 @@ namespace SpiceSharp.Components
 				if(value.As(LengthUnit.Meter) <= 0)
 					throw new InvalidOperationException("diameter <= 0 m");
 				this._entranceHydraulicDiameter = value;
-				this.setLengthListUniform(this.numberOfSegments);
+				this.setAllPipeDimensions(this.numberOfSegments);
 			}
 		}
 
@@ -165,7 +165,7 @@ namespace SpiceSharp.Components
 				if(value.As(LengthUnit.Meter) <= 0)
 					throw new InvalidOperationException("diameter <= 0 m");
 				this._exitHydraulicDiameter = value;
-				this.setLengthListUniform(this.numberOfSegments);
+				this.setAllPipeDimensions(this.numberOfSegments);
 			}
 		}
 
@@ -503,6 +503,48 @@ namespace SpiceSharp.Components
 			}
 		}
 
+		// we also use area a LOT, so it's useful to have an areaList too
+		private IList<Area> _areaList;
+		public virtual IList<Area> areaList { 
+			get{
+				return this._areaList;
+			}
+			private set{
+				// first let me check if value is null
+				if (value is null){
+					throw new NullReferenceException(
+							"areaList set to null");
+				}
+				// next i want to check the number of elements
+				// within this list
+				if(value.Count != this.numberOfSegments){
+					throw new InvalidOperationException(
+							"areaList needs " +
+							this.numberOfSegments.ToString() + 
+							" segments, \n" +
+							"you only have " +
+							value.Count.ToString() +
+							" segments \n");
+				}
+
+				this._areaList = value;
+			}
+		}
+		
+		public void generateAreaList(){
+			// after generating the hydraulic diameter list
+			// we can generate an area list
+			IList<Area> temporaryAreaList = new List<Area>();
+			foreach (Length hydraulicDiameter in this.hydraulicDiameterList)
+			{
+				Area segmentArea = 
+					hydraulicDiameter.Pow(2);
+				temporaryAreaList.Add(segmentArea);
+
+			}
+			this.areaList = temporaryAreaList;
+
+		}
 
 		public void setLengthListUniform(int numberOfSegments){
 			// this function helps to evenly split a pipe into
@@ -523,6 +565,15 @@ namespace SpiceSharp.Components
 			this.lengthList = tempLengthList;
 
 			return;
+		}
+
+		public void setAllPipeDimensions(int numberOfSegments){
+			// basically this list helps to set all diameters and areas
+			// whenever a property of length changes.
+			this.setLengthListUniform(numberOfSegments);
+			this.generateHydraulicDiameterList();
+			this.generateAreaList();
+
 		}
 
 		/**********************************************************************
