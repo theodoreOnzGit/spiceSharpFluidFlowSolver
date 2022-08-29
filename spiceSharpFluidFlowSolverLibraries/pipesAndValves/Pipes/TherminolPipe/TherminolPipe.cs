@@ -253,21 +253,18 @@ namespace SpiceSharp.Components
 			//
 
 			IList<AreaMomentOfInertia> areaSqList;
-			IList<AreaMomentOfInertia> getAreaSqList(IList<Length>
-					diameterList){
+			IList<AreaMomentOfInertia> getAreaSqList(IList<Area>
+					areaList){
 				IList<AreaMomentOfInertia> areaSqList = 
 					new List<AreaMomentOfInertia>();
-				foreach (Length diameter in diameterList)
+				foreach (Area segmentArea in areaList)
 				{
-					Area xsArea;
-					xsArea = diameter.Pow(2);
-					xsArea *= (1.0/4.0)*Math.PI;
-					areaSqList.Add(xsArea.Pow(2));
+					areaSqList.Add(segmentArea.Pow(2));
 				}
 				return areaSqList;
 			}
 
-			areaSqList = getAreaSqList(hydraulicDiameterList);
+			areaSqList = getAreaSqList(this.areaList);
 
 
 			// now we will get to calculate the xsArea finally
