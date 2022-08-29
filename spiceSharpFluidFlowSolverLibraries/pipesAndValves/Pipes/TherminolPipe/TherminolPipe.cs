@@ -258,6 +258,10 @@ namespace SpiceSharp.Components
 					kSegment;
 			}
 
+			///  here I'm calculating
+			/// the sum of
+			/// (kDarcy*L/D + kForm)/(A^2)
+
 			double dimensionlessAreaSqDenominator = 0.0;
 			for (int segmentNumber = 1; 
 					segmentNumber <= this.numberOfSegments; 
@@ -273,12 +277,8 @@ namespace SpiceSharp.Components
 			}
 
 			double getOneOverAreaSq(){
-				/// first here I'm calculating
-				/// the sum of
-				/// (kDarcy*L/D + kForm)/(A^2)
-
-				// now i need to divide it by the sum of
-				/// (kDarcy*L/D + kForm)
+			// now i need to divide it by the sum of
+			/// (kDarcy*L/D + kForm)
 				double oneOverAreaSq_meter4 =
 					dimensionlessAreaSqDenominator/
 					xsAreaSqWeightingNumerator;

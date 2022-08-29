@@ -582,7 +582,7 @@ public partial class TherminolComparisonTests : testOutputHelper
 	[InlineData(1,0.1)]
 	public void WhenUniformHydraulicDiameterExpectCorrectDiameter(
 			int numberOfSegments, double expectedHydraulicDiameterValMeters){
-		bool debug = true;
+		bool debug = false;
 		// Setup
 		Length expectedHydraulicDiameter = new Length(
 				expectedHydraulicDiameterValMeters,LengthUnit.Meter);
@@ -713,7 +713,101 @@ public partial class TherminolComparisonTests : testOutputHelper
 	public void WhenGetHydraulicDiameterExpectCorrectAverage(
 			int numberOfSegments, double componentLength,
 			double expansionRatio){
-		throw new NotImplementedException();
+		//Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.exitHydraulicDiameter = 
+			testPipe.entranceHydraulicDiameter*
+			expansionRatio;
+
+		testPipe.numberOfSegments = numberOfSegments;
+
+		// let's get the expected hydraulic diameter
+		// i'm assuming the length and diameter lists are 
+		// areaLists also...
+		// correct
+		// and the get DarcyK and kSegments are also correct
+		// these are tested in other unit tests
+
+		// first we'll get the darcyKList
+		
+		IList<double> DarcyKList = 
+			testPipe.getDarcyKList(testPipe.hydraulicDiameterList);
+		
+		// second the length to diameter list:
+		IList<double> lengthToDiameterList = 
+			testPipe.getLengthToDiameterList(
+					testPipe.lengthList,
+					testPipe.hydraulicDiameterList);
+
+		// third the segment K, assumed to be K/numberOfSegments
+		double segmentK = testPipe.getFormLossCoefficientK()/
+			testPipe.numberOfSegments;
+
+		// fourth let's get the areaList
+		IList<Area> areaList = 
+			testPipe.areaList;
+
+		// fifth 
+		//  i calculate the sum of
+		/// (kDarcy*L/D + kForm)
+		double kDarcyLbyDPlusKForm = 0.0;
+		for (int segmentNumber = 1; 
+				segmentNumber <= testPipe.numberOfSegments; 
+				segmentNumber++)
+		{
+			kDarcyLbyDPlusKForm += 
+				DarcyKList[segmentNumber-1]*
+				lengthToDiameterList[segmentNumber-1]+
+				segmentK;
+		}
+
+		// sixth
+		// i calculate the sum 
+		/// (kDarcy*L/D + kForm)/(A^2)
+
+		double kDarcyLbyDPlusKFormDivideByAreaSq = 0.0;
+		for (int segmentNumber = 1; 
+				segmentNumber <= testPipe.numberOfSegments; 
+				segmentNumber++)
+		{
+			kDarcyLbyDPlusKFormDivideByAreaSq += 
+				(DarcyKList[segmentNumber-1]*
+				 lengthToDiameterList[segmentNumber-1]+
+				 segmentK)/
+				areaList[segmentNumber-1].Pow(2).
+				As(AreaMomentOfInertiaUnit.
+						MeterToTheFourth);
+		}
+		// seventh i calculate expected area 
+
+		double oneOverAreaSq = 
+			kDarcyLbyDPlusKFormDivideByAreaSq/
+			kDarcyLbyDPlusKForm;
+		Area averageXSArea = 
+			new Area(Math.Pow(oneOverAreaSq,-0.5),
+					AreaUnit.SquareMeter);
+
+		// eighth, calcualte expected hydraulic diameter
+		Length expectedHydraulicDiameter =
+			averageXSArea.Sqrt()*2.0/Math.Sqrt(Math.PI);
+
+		// Act
+		// let me get the hydraulic diameter from
+		// the code..
+
+		Length testHydraulicDiameter = 
+			testPipe.getHydraulicDiameter();
+
+		
+
+		// Assert
+
+		Assert.Equal(expectedHydraulicDiameter.As(
+					LengthUnit.Meter)
+				,testHydraulicDiameter.As(
+					LengthUnit.Meter),4);
 	}
 
 
