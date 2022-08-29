@@ -958,6 +958,85 @@ public partial class TherminolComparisonTests : testOutputHelper
 	}
 
 
+	// height tests are present here to help with
+	// calculating mean hydrostatic pressure drop
+	//
+	
+	// first test, whenever i set the length
+	// my total height must be the sum of the heights
+	// given in the height List
+	// or z List
+	[Theory]
+	[InlineData(5,1.0)]
+	[InlineData(50,10.0)]
+	[InlineData(70,1.0)]
+	[InlineData(1,2.0)]
+	public void WhenSetLengthExpectZListEqualgetZ(
+			int numberOfSegments, double componentLength){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+
+		Length expectedHeight = testPipe.getZ();
+
+		// Act
+
+
+		IList<Length> zList = testPipe.getZList();
+		Length testHeight = new Length(0.0,
+				LengthUnit.Meter);
+
+		foreach (Length segmentHeight in zList)
+		{
+			testHeight += segmentHeight;
+		}
+		
+
+		// Assert
+		Assert.Equal(expectedHeight.As(LengthUnit.Meter)
+				, testHeight.As(LengthUnit.Meter));
+	}
+
+	// this next test checks if the individual segment
+	// heights are equal to the total height divide by number of
+	// segments
+	[Theory]
+	[InlineData(5,1.0)]
+	[InlineData(50,10.0)]
+	[InlineData(70,1.0)]
+	[InlineData(1,2.0)]
+	public void WhenSetLengthExpectZListEqualgetZDividebySegment(
+			int numberOfSegments, double componentLength){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+
+		Length expectedHeight = testPipe.getZ()/
+			numberOfSegments;
+
+		// Act
+
+
+		IList<Length> zList = testPipe.getZList();
+
+		// Assert
+		foreach (Length segmentHeight in zList)
+		{
+			Assert.Equal(expectedHeight.As(LengthUnit.Meter)
+					, segmentHeight.As(LengthUnit.Meter));
+		}
+
+	}
+
+
 	[Theory]
 	[InlineData(1,25.0)]
 	[InlineData(2,30.5)]

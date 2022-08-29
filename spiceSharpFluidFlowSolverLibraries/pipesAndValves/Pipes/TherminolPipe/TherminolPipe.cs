@@ -348,11 +348,37 @@ namespace SpiceSharp.Components
 			return Parameters.hydrostaticPressureChange();
 		}
 
+		public abstract Angle getInclineAngle();
+
 		public Length getZ(){
 			Length heightChange =
 				 this.getComponentLength()* 
-				 Math.Sin(Parameters.inclineAngle.As(AngleUnit.Radian));
+				 Math.Sin(this.getInclineAngle().
+						 As(AngleUnit.Radian));
 			return heightChange;
+		}
+
+		public virtual IList<Length> getZList(){
+			IList<Length> zList =
+				new List<Length>();
+			// basically the method gets the list of lengths
+			// and multiplies each by the incline angle
+
+			IList<Length> lengthList =
+				this.lengthList;
+			//
+
+			for (int segmentNumber = 1;
+					segmentNumber <= this.numberOfSegments;
+					segmentNumber++){
+				Length heightChange = 
+					lengthList[segmentNumber-1]*
+					Math.Sin(this.getInclineAngle().As(
+								AngleUnit.Radian));
+				zList.Add(heightChange);
+
+			}
+			return zList;
 		}
 
 

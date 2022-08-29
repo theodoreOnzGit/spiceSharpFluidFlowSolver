@@ -92,6 +92,9 @@ namespace SpiceSharp.Components
         {
 			return new Temperature(25.0, TemperatureUnit.DegreeCelsius);
         }
+		public override Angle getInclineAngle(){
+			return new Angle(0.0,AngleUnit.Degree);
+		}
 
     }
 }
