@@ -612,7 +612,8 @@ public partial class TherminolComparisonTests : testOutputHelper
 		//
 		// Assert
 		Assert.Equal(expectedHydraulicDiameterValMeters,
-				testHydraulicDiameter.As(LengthUnit.Meter));
+				testHydraulicDiameter.As(LengthUnit.Meter),
+				10);
 	}
 
 	[Theory]
