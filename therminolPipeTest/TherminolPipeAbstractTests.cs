@@ -614,6 +614,51 @@ public partial class TherminolComparisonTests : testOutputHelper
 	}
 
 	[Theory]
+	[InlineData(5,2.79e-2)]
+	[InlineData(50,5.44e-3)]
+	[InlineData(70,1.76e-1)]
+	[InlineData(1,0.1)]
+	public void WhenUniformHydraulicDiamterExpectCorrectLengthToDiameter(
+			int numberOfSegments, double expectedHydraulicDiameterValMeters){
+		//Setup
+		Length expectedHydraulicDiameter = new Length(
+				expectedHydraulicDiameterValMeters,LengthUnit.Meter);
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.entranceHydraulicDiameter = expectedHydraulicDiameter;
+		testPipe.exitHydraulicDiameter = expectedHydraulicDiameter;
+		testPipe.numberOfSegments = numberOfSegments;
+
+		double expectedLengthToDiameter = 
+			testPipe.getComponentLength()/expectedHydraulicDiameter;
+		// after getting the expected L/D ratio
+		// i then get my L/D list
+		//
+		IList<double> testLengthToDiameterList = 
+			testPipe.getLengthToDiameterList(testPipe.lengthList,
+					testPipe.hydraulicDiameterList);
+		// for a simple uniform hydraulic diameter case
+		// i should expect that when i sum up all L/D i would
+		// get the expected L/D
+		//Act
+
+		double testLengthToDiameter = 0.0;
+		for (int segmentNumber = 1;
+				segmentNumber <= numberOfSegments;
+				segmentNumber++){
+			testLengthToDiameter += (testLengthToDiameterList
+					[segmentNumber-1]);
+		}
+
+		// Assert
+		Assert.Equal(expectedLengthToDiameter,
+				testLengthToDiameter,5);
+
+
+	}
+
+	[Theory]
 	[InlineData(5,1.0,1.5)]
 	[InlineData(50,10.0,2.0)]
 	[InlineData(70,1.0,0.5)]

@@ -227,24 +227,9 @@ namespace SpiceSharp.Components
 			IList<Length> lengthList = this.lengthList;
 
 
-			IList<double> getLengthToDiameterList(IList<Length> lengthList,
-					IList<Length> diameterList){
-
-				IList<double> lengthToDiameterList = new List<double>();
-
-				for (int segmentNumber = 1; 
-						segmentNumber <= this.numberOfSegments; 
-						segmentNumber++)
-				{
-					lengthToDiameterList.Add(
-						lengthList[segmentNumber-1]/
-						hydraulicDiameterList[segmentNumber-1]);
-				}
-				return lengthToDiameterList;
-			}
 
 			IList<double> lengthToDiameterList = 
-				getLengthToDiameterList(lengthList,hydraulicDiameterList);
+				this.getLengthToDiameterList(lengthList,hydraulicDiameterList);
 
 			// thirdly, the big K, which is for me, just K/noOfSegments
 			double kSegment = this.getFormLossCoefficientK()/
@@ -306,6 +291,22 @@ namespace SpiceSharp.Components
 
 			Area xsArea = areaSq.Sqrt();
 			return xsArea;
+		}
+
+		public IList<double> getLengthToDiameterList(IList<Length> lengthList,
+				IList<Length> diameterList){
+
+			IList<double> lengthToDiameterList = new List<double>();
+
+			for (int segmentNumber = 1; 
+					segmentNumber <= this.numberOfSegments; 
+					segmentNumber++)
+			{
+				lengthToDiameterList.Add(
+						lengthList[segmentNumber-1]/
+						hydraulicDiameterList[segmentNumber-1]);
+			}
+			return lengthToDiameterList;
 		}
 
 		public abstract Length getSurfaceRoughness();
