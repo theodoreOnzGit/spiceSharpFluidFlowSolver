@@ -411,7 +411,7 @@ namespace SpiceSharp.Components
 				if(value <= 0)
 					throw new DivideByZeroException("numberOfSegments <= 0");
 				this._numberOfSegments = value;
-				this.setLengthListUniform(value);
+				this.setAllPipeDimensions(value);
 				this.setTemperatureList(this.getInitialTemperature());
 			}
 		}
