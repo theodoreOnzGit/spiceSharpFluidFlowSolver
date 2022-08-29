@@ -756,7 +756,7 @@ public partial class TherminolComparisonTests : testOutputHelper
 		// Assert
 		
 		foreach (Area segmentArea in testAreaList){
-			Assert.Equal(Math.Pow(expectedHydraulicDiameterValMeters,2.0),
+			Assert.Equal(expectedArea.As(AreaUnit.SquareMeter),
 					segmentArea.As(AreaUnit.SquareMeter),10);
 		}
 	}
