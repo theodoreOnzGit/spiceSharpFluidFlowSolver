@@ -1035,7 +1035,118 @@ public partial class TherminolComparisonTests : testOutputHelper
 		}
 
 	}
+	
+	// our next test checks if the averaged density is
+	// same as the expected density in isothermal case
+	//
+	[Theory]
+	[InlineData(5,1.0)]
+	[InlineData(50,10.0)]
+	[InlineData(70,1.0)]
+	[InlineData(1,2.0)]
+	public void WhenSetLengthIsothermalCaseExpectDensityEqual(
+			int numberOfSegments, double componentLength){
 
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		
+		EngineeringUnits.Temperature
+			referenceTemperature = 
+			testPipe.getInitialTemperature();
+
+		Density expectedDensity = testPipe.
+			getFluidDensity(referenceTemperature);
+
+		// Act
+
+		IList<Density> densityList =
+			testPipe.densityList;
+
+		Density testDensity = 
+			new Density(0.0,
+					DensityUnit.KilogramPerCubicMeter);
+
+		IList<Length> zList = 
+			testPipe.getZList();
+
+		for (int segmentNumber = 1;
+				segmentNumber <= testPipe.numberOfSegments;
+				segmentNumber++){
+			testDensity += densityList[segmentNumber-1]*
+				zList[segmentNumber-1]/
+				testPipe.getZ();
+		}
+
+		testDensity = testPipe.getFluidDensity();
+
+		// Assert
+		Assert.Equal(expectedDensity.As(DensityUnit.
+					KilogramPerCubicMeter),
+				testDensity.As(DensityUnit.
+					KilogramPerCubicMeter));
+
+
+
+	}
+	
+	[Theory]
+	[InlineData(5,1.0)]
+	[InlineData(50,10.0)]
+	[InlineData(70,1.0)]
+	[InlineData(1,2.0)]
+	public void WhenNonIsothermalCaseExpectDensityCorrectAverage(
+			int numberOfSegments, double componentLength){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		
+		EngineeringUnits.Temperature
+			referenceTemperature = 
+			testPipe.getInitialTemperature();
+
+		Density expectedDensity = testPipe.
+			getFluidDensity(referenceTemperature);
+
+		// Act
+
+		IList<Density> densityList =
+			testPipe.densityList;
+
+		Density testDensity = 
+			new Density(0.0,
+					DensityUnit.KilogramPerCubicMeter);
+
+		IList<Length> zList = 
+			testPipe.getZList();
+
+		for (int segmentNumber = 1;
+				segmentNumber <= testPipe.numberOfSegments;
+				segmentNumber++){
+			testDensity += densityList[segmentNumber-1]*
+				zList[segmentNumber-1]/
+				testPipe.getZ();
+		}
+
+		testDensity = testPipe.getFluidDensity();
+
+		// Assert
+		Assert.Equal(expectedDensity.As(DensityUnit.
+					KilogramPerCubicMeter),
+				testDensity.As(DensityUnit.
+					KilogramPerCubicMeter));
+		throw new NotImplementedException();
+
+
+
+	}
 
 	[Theory]
 	[InlineData(1,25.0)]

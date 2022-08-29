@@ -84,9 +84,6 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
-		public override Density getFluidDensity(){
-			throw new NotImplementedException();
-		}
 
         public override EngineeringUnits.Temperature getInitialTemperature()
         {

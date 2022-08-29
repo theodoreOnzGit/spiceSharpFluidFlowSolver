@@ -338,7 +338,23 @@ namespace SpiceSharp.Components
 
 		}
 
-		public abstract Density getFluidDensity();
+		public virtual Density getFluidDensity(){
+			Density fluidDensity = 
+				new Density(0.0,
+						DensityUnit.KilogramPerCubicMeter);
+
+			IList<Length> zList = this.getZList();
+			for (int segmentNumber = 1;
+					segmentNumber <= this.numberOfSegments;
+					segmentNumber++){
+				fluidDensity += densityList[segmentNumber-1]*
+					zList[segmentNumber-1]/
+					this.getZ();
+			}
+
+			return fluidDensity.ToUnit(DensityUnit.
+					KilogramPerCubicMeter);
+		}
 
 		public abstract KinematicViscosity getFluidKinematicViscosity();
 
