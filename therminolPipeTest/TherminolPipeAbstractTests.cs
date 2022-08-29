@@ -582,7 +582,7 @@ public partial class TherminolComparisonTests : testOutputHelper
 	[InlineData(1,0.1)]
 	public void WhenUniformHydraulicDiameterExpectCorrectDiameter(
 			int numberOfSegments, double expectedHydraulicDiameterValMeters){
-		bool debug = false;
+		bool debug = true;
 		// Setup
 		Length expectedHydraulicDiameter = new Length(
 				expectedHydraulicDiameterValMeters,LengthUnit.Meter);
@@ -601,7 +601,9 @@ public partial class TherminolComparisonTests : testOutputHelper
 			foreach (Length hydraulicDiameter in hydraulicDiameterList)
 			{
 				this.cout(hydraulicDiameter.ToString());
+				this.cout(testPipe.getXSArea().ToString());
 			}
+
 		}
 
 		Length testHydraulicDiameter = 
@@ -729,7 +731,8 @@ public partial class TherminolComparisonTests : testOutputHelper
 		// Setup
 		Length expectedHydraulicDiameter = new Length(
 				expectedHydraulicDiameterValMeters,LengthUnit.Meter);
-		Area expectedArea = expectedHydraulicDiameter.Pow(2);
+		Area expectedArea = expectedHydraulicDiameter.Pow(2)*
+			Math.PI/4.0;
 		TherminolPipe testPipe = 
 			new mockTherminolPipe("mockTherminolPipe", "0","out");
 

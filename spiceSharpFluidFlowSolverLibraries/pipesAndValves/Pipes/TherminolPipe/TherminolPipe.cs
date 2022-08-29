@@ -258,11 +258,7 @@ namespace SpiceSharp.Components
 					kSegment;
 			}
 
-			AreaMomentOfInertia getOneOverAreaSq(){
-				AreaMomentOfInertia areaSqDimensionedOne = 
-					new AreaMomentOfInertia(1.0, 
-							AreaMomentOfInertiaUnit.
-							MeterToTheFourth);
+			double getOneOverAreaSq(){
 				/// first here I'm calculating
 				/// the sum of
 				/// (kDarcy*L/D + kForm)/(A^2)
@@ -285,17 +281,17 @@ namespace SpiceSharp.Components
 				double oneOverAreaSq_meter4 =
 					dimensionlessAreaSqDenominator/
 					xsAreaSqWeightingNumerator;
-				AreaMomentOfInertia oneOverAreaSqDenominator = 
-					areaSqDimensionedOne/
-					oneOverAreaSq_meter4;
-
-				return oneOverAreaSqDenominator;
+				double areaSq_meter4 = 
+					Math.Pow(oneOverAreaSq_meter4,-1.0);
+				return areaSq_meter4;
 			}
 
-			AreaMomentOfInertia areaSq =
+			double areaSq =
 				getOneOverAreaSq();
 
-			Area xsArea = areaSq.Sqrt();
+			Area xsArea =
+				new Area(Math.Pow(areaSq,0.5),
+						AreaUnit.SquareMeter);
 			return xsArea;
 		}
 
@@ -558,6 +554,7 @@ namespace SpiceSharp.Components
 			{
 				Area segmentArea = 
 					hydraulicDiameter.Pow(2);
+				segmentArea *= Math.PI/4.0;
 				temporaryAreaList.Add(segmentArea);
 
 			}
