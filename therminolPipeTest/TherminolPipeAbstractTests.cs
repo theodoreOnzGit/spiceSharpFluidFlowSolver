@@ -659,6 +659,50 @@ public partial class TherminolComparisonTests : testOutputHelper
 	}
 
 	[Theory]
+	[InlineData(5,2.79e-2)]
+	[InlineData(50,5.44e-3)]
+	[InlineData(70,1.76e-1)]
+	[InlineData(1,0.1)]
+	public void WhenUniformHydraulicDiamterExpectCorrectDarcyKList(
+			int numberOfSegments, double expectedHydraulicDiameterValMeters){
+		//Setup
+		Length expectedHydraulicDiameter = new Length(
+				expectedHydraulicDiameterValMeters,LengthUnit.Meter);
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.entranceHydraulicDiameter = expectedHydraulicDiameter;
+		testPipe.exitHydraulicDiameter = expectedHydraulicDiameter;
+		testPipe.numberOfSegments = numberOfSegments;
+
+		// let's now get the expected darcy K when fully turbulent
+
+		double pipeRoughnessRatio = 
+			testPipe.getSurfaceRoughness()
+			/expectedHydraulicDiameter;
+		double expectedDarcyK = 
+			testPipe.getFullyTurbulentDarcyK(
+					pipeRoughnessRatio);
+
+		// next let's get the darcy k List
+		// Act
+
+		IList<double> darcyKList = 
+			testPipe.getDarcyKList(
+					testPipe.hydraulicDiameterList);
+
+		// Assert
+		// now we expect the darcy K when fully turbulent
+		// to be the SAME for each segment
+		foreach(double testDarcyK in darcyKList){
+			Assert.Equal(expectedDarcyK,
+					testDarcyK,5);
+		}
+
+
+	}
+
+	[Theory]
 	[InlineData(5,1.0,1.5)]
 	[InlineData(50,10.0,2.0)]
 	[InlineData(70,1.0,0.5)]
