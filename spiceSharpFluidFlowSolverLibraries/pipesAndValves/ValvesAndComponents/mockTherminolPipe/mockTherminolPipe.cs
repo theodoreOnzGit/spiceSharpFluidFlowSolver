@@ -50,9 +50,6 @@ namespace SpiceSharp.Components
 			throw new NotImplementedException();
 		}
 
-		public override DynamicViscosity getFluidDynamicViscosity(){
-			throw new NotImplementedException();
-		}
 
 		public override double getFluidPrandtl(){
 			throw new NotImplementedException();
