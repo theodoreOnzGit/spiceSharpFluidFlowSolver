@@ -1094,12 +1094,13 @@ public partial class TherminolComparisonTests : testOutputHelper
 	}
 	
 	[Theory]
-	[InlineData(5,1.0)]
-	[InlineData(50,10.0)]
-	[InlineData(70,1.0)]
-	[InlineData(1,2.0)]
+	[InlineData(5,1.0, 30)]
+	[InlineData(50,10.0, 50.0)]
+	[InlineData(70,1.0, 75.0)]
+	[InlineData(1,2.0, 10.0)]
 	public void WhenNonIsothermalCaseExpectDensityCorrectAverage(
-			int numberOfSegments, double componentLength){
+			int numberOfSegments, double componentLength,
+			double temperatureIncreaseValueC){
 
 		// Setup
 		TherminolPipe testPipe = 
@@ -1108,19 +1109,33 @@ public partial class TherminolComparisonTests : testOutputHelper
 		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
 		testPipe.numberOfSegments = numberOfSegments;
 		
-		EngineeringUnits.Temperature
-			referenceTemperature = 
-			testPipe.getInitialTemperature();
+		IList<EngineeringUnits.Temperature> temperatureList =
+			new List<EngineeringUnits.Temperature>();
 
-		Density expectedDensity = testPipe.
-			getFluidDensity(referenceTemperature);
+		double temperatureIncrement = temperatureIncreaseValueC/numberOfSegments;
 
-		// Act
+		for (int segmentNumber = 1; 
+				segmentNumber <= numberOfSegments; 
+				segmentNumber++)
+		{
+			double temperatureIncreaseValue = 
+				temperatureIncrement*segmentNumber;
+			EngineeringUnits.Temperature temperatureIncrease =
+				new Temperature(temperatureIncreaseValue,
+						TemperatureUnit.Kelvin);
+			EngineeringUnits.Temperature segmentTemperature =
+				temperatureIncrease + testPipe.getInitialTemperature();
+			temperatureList.Add(segmentTemperature);
+		}
+
+		// now i'm setting the test pipe temperature list
+		testPipe.temperatureList = temperatureList;
+
 
 		IList<Density> densityList =
 			testPipe.densityList;
 
-		Density testDensity = 
+		Density expectedDensity = 
 			new Density(0.0,
 					DensityUnit.KilogramPerCubicMeter);
 
@@ -1130,19 +1145,19 @@ public partial class TherminolComparisonTests : testOutputHelper
 		for (int segmentNumber = 1;
 				segmentNumber <= testPipe.numberOfSegments;
 				segmentNumber++){
-			testDensity += densityList[segmentNumber-1]*
+			expectedDensity += densityList[segmentNumber-1]*
 				zList[segmentNumber-1]/
 				testPipe.getZ();
 		}
+		// Act
 
-		testDensity = testPipe.getFluidDensity();
+		Density testDensity = testPipe.getFluidDensity();
 
 		// Assert
 		Assert.Equal(expectedDensity.As(DensityUnit.
 					KilogramPerCubicMeter),
 				testDensity.As(DensityUnit.
 					KilogramPerCubicMeter));
-		throw new NotImplementedException();
 
 
 

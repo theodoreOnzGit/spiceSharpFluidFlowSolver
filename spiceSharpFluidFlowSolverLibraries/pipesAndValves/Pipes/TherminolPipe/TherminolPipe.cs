@@ -671,6 +671,18 @@ namespace SpiceSharp.Components
 								value.Count.ToString() +
 								" segments \n");
 					}
+					foreach(EngineeringUnits.Temperature 
+							segmentTemperature in value){
+						if(segmentTemperature.As(TemperatureUnit.DegreeCelsius)
+								< 20.0){
+							throw new ArgumentException("temperature <20C, too low");
+						}
+						if(segmentTemperature.As(TemperatureUnit.DegreeCelsius)
+								> 180.0){
+							throw new ArgumentException("temperature >180C, too high");
+						}
+
+					}
 
 					
 
