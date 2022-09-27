@@ -358,7 +358,45 @@ namespace SpiceSharp.Components
 
 		public abstract KinematicViscosity getFluidKinematicViscosity();
 
-		public abstract DynamicViscosity getFluidDynamicViscosity();
+		public virtual DynamicViscosity getFluidDynamicViscosity(){
+			IList<DynamicViscosity> viscosityList =
+				this.viscosityList;
+
+			IList<Density> densityList = this.densityList;
+			Density seriesDensity = this.getFluidDensity();
+
+			IList<Length> lengthList = this.lengthList;
+			Length seriesLength = this.getComponentLength();
+
+			IList<Area> areaList = this.areaList;
+			Area seriesArea = this.getXSArea();
+
+
+
+			DynamicViscosity fluidDynamicViscosity = 
+				new DynamicViscosity(0.0,
+						DynamicViscosityUnit.PascalSecond);
+
+
+			for (int segmentNumber = 1;
+					segmentNumber <= this.numberOfSegments;
+					segmentNumber++){
+				double areaRatio = seriesArea.Pow(2)/
+					areaList[segmentNumber-1].Pow(2);
+				double lengthRatio = lengthList[segmentNumber-1]/
+					seriesLength;
+				double densityRatio = seriesDensity/
+					densityList[segmentNumber-1];
+				fluidDynamicViscosity += viscosityList[segmentNumber-1]*
+					areaRatio*
+					lengthRatio*
+					densityRatio;
+
+			}
+			return fluidDynamicViscosity.ToUnit(DynamicViscosityUnit.
+					PascalSecond);
+
+		}
 
 		public Pressure getHydrostaticPressureChange(){
 			return Parameters.hydrostaticPressureChange();
@@ -670,6 +708,18 @@ namespace SpiceSharp.Components
 								"you only have " +
 								value.Count.ToString() +
 								" segments \n");
+					}
+					foreach(EngineeringUnits.Temperature 
+							segmentTemperature in value){
+						if(segmentTemperature.As(TemperatureUnit.DegreeCelsius)
+								< 20.0){
+							throw new ArgumentException("temperature <20C, too low");
+						}
+						if(segmentTemperature.As(TemperatureUnit.DegreeCelsius)
+								> 180.0){
+							throw new ArgumentException("temperature >180C, too high");
+						}
+
 					}
 
 					

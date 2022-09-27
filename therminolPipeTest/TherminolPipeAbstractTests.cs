@@ -1094,11 +1094,85 @@ public partial class TherminolComparisonTests : testOutputHelper
 	}
 	
 	[Theory]
+	[InlineData(5,1.0, 30)]
+	[InlineData(50,10.0, 50.0)]
+	[InlineData(70,1.0, 75.0)]
+	[InlineData(1,2.0, 10.0)]
+	public void WhenNonIsothermalCaseExpectDensityCorrectAverage(
+			int numberOfSegments, double componentLength,
+			double temperatureIncreaseValueC){
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		
+		IList<EngineeringUnits.Temperature> temperatureList =
+			new List<EngineeringUnits.Temperature>();
+
+		double temperatureIncrement = temperatureIncreaseValueC/numberOfSegments;
+
+		for (int segmentNumber = 1; 
+				segmentNumber <= numberOfSegments; 
+				segmentNumber++)
+		{
+			double temperatureIncreaseValue = 
+				temperatureIncrement*segmentNumber;
+			EngineeringUnits.Temperature temperatureIncrease =
+				new Temperature(temperatureIncreaseValue,
+						TemperatureUnit.Kelvin);
+			EngineeringUnits.Temperature segmentTemperature =
+				temperatureIncrease + testPipe.getInitialTemperature();
+			temperatureList.Add(segmentTemperature);
+		}
+
+		// now i'm setting the test pipe temperature list
+		testPipe.temperatureList = temperatureList;
+
+
+		IList<Density> densityList =
+			testPipe.densityList;
+
+		Density expectedDensity = 
+			new Density(0.0,
+					DensityUnit.KilogramPerCubicMeter);
+
+		IList<Length> zList = 
+			testPipe.getZList();
+
+		for (int segmentNumber = 1;
+				segmentNumber <= testPipe.numberOfSegments;
+				segmentNumber++){
+			expectedDensity += densityList[segmentNumber-1]*
+				zList[segmentNumber-1]/
+				testPipe.getZ();
+		}
+		// Act
+
+		Density testDensity = testPipe.getFluidDensity();
+
+		// Assert
+		Assert.Equal(expectedDensity.As(DensityUnit.
+					KilogramPerCubicMeter),
+				testDensity.As(DensityUnit.
+					KilogramPerCubicMeter));
+
+
+
+	}
+	// here is a simple test for an isothermal case,
+	// that if the number of segments and component lengths are set
+	// the average viscosity should be equal that of the viscosity
+	// at that temperature
+
+	[Theory]
 	[InlineData(5,1.0)]
 	[InlineData(50,10.0)]
 	[InlineData(70,1.0)]
 	[InlineData(1,2.0)]
-	public void WhenNonIsothermalCaseExpectDensityCorrectAverage(
+	public void WhenSetLengthIsothermalCaseExpectDynamicViscosityEqual(
 			int numberOfSegments, double componentLength){
 
 		// Setup
@@ -1112,17 +1186,17 @@ public partial class TherminolComparisonTests : testOutputHelper
 			referenceTemperature = 
 			testPipe.getInitialTemperature();
 
-		Density expectedDensity = testPipe.
-			getFluidDensity(referenceTemperature);
+		DynamicViscosity expectedDynamicViscosity = testPipe.
+			getFluidDynamicViscosity(referenceTemperature);
 
 		// Act
 
-		IList<Density> densityList =
-			testPipe.densityList;
+		IList<DynamicViscosity> viscosityList =
+			testPipe.viscosityList;
 
-		Density testDensity = 
-			new Density(0.0,
-					DensityUnit.KilogramPerCubicMeter);
+		DynamicViscosity testDynamicViscosity = 
+			new DynamicViscosity(0.0,
+					DynamicViscosityUnit.PascalSecond);
 
 		IList<Length> zList = 
 			testPipe.getZList();
@@ -1130,23 +1204,121 @@ public partial class TherminolComparisonTests : testOutputHelper
 		for (int segmentNumber = 1;
 				segmentNumber <= testPipe.numberOfSegments;
 				segmentNumber++){
-			testDensity += densityList[segmentNumber-1]*
+			testDynamicViscosity += viscosityList[segmentNumber-1]*
 				zList[segmentNumber-1]/
 				testPipe.getZ();
 		}
 
-		testDensity = testPipe.getFluidDensity();
+		testDynamicViscosity = testPipe.getFluidDynamicViscosity();
 
 		// Assert
-		Assert.Equal(expectedDensity.As(DensityUnit.
-					KilogramPerCubicMeter),
-				testDensity.As(DensityUnit.
-					KilogramPerCubicMeter));
-		throw new NotImplementedException();
+		Assert.Equal(expectedDynamicViscosity.As(DynamicViscosityUnit.
+					PascalSecond),
+				testDynamicViscosity.As(DynamicViscosityUnit.
+					PascalSecond),10);
 
 
 
 	}
+	// now here is the test case for viscosity in a non isothermal case
+	[Theory]
+	[InlineData(5,1.0, 30)]
+	[InlineData(50,10.0, 50.0)]
+	[InlineData(70,1.0, 75.0)]
+	[InlineData(1,2.0, 10.0)]
+	public void WhenNonIsothermalCaseExpectDynamicViscosityCorrectAverage(
+			int numberOfSegments, double componentLength,
+			double temperatureIncreaseValueC){
+		// im testing for a non-isothermal case whether the viscosity average
+		// is averaging the way i want it
+		//
+		// (mu * L)/(\rho_{series} * A_xs^2_{series}) 
+		// = sum (mu_i * L_i)/(\rho_i * A_xs^2_i)
+		// i am assuming all the underlying methods to get area
+		// density, viscosityList,
+		// and the series area and density all work correctly
+
+		// Setup
+		TherminolPipe testPipe = 
+			new mockTherminolPipe("mockTherminolPipe", "0","out");
+
+		testPipe.componentLength = new Length(componentLength, LengthUnit.Meter);
+		testPipe.numberOfSegments = numberOfSegments;
+		
+		IList<EngineeringUnits.Temperature> temperatureList =
+			new List<EngineeringUnits.Temperature>();
+
+		double temperatureIncrement = temperatureIncreaseValueC/numberOfSegments;
+
+		for (int segmentNumber = 1; 
+				segmentNumber <= numberOfSegments; 
+				segmentNumber++)
+		{
+			double temperatureIncreaseValue = 
+				temperatureIncrement*segmentNumber;
+			EngineeringUnits.Temperature temperatureIncrease =
+				new Temperature(temperatureIncreaseValue,
+						TemperatureUnit.Kelvin);
+			EngineeringUnits.Temperature segmentTemperature =
+				temperatureIncrease + testPipe.getInitialTemperature();
+			temperatureList.Add(segmentTemperature);
+		}
+
+		// now i'm setting the test pipe temperature list
+		testPipe.temperatureList = temperatureList;
+
+
+		IList<DynamicViscosity> viscosityList =
+			testPipe.viscosityList;
+
+		IList<Density> densityList = testPipe.densityList;
+		Density seriesDensity = testPipe.getFluidDensity();
+
+		IList<Length> lengthList = testPipe.lengthList;
+		Length seriesLength = testPipe.getComponentLength();
+
+		IList<Area> areaList = testPipe.areaList;
+		Area seriesArea = testPipe.getXSArea();
+
+
+
+		DynamicViscosity expectedDynamicViscosity = 
+			new DynamicViscosity(0.0,
+					DynamicViscosityUnit.PascalSecond);
+
+
+		for (int segmentNumber = 1;
+				segmentNumber <= testPipe.numberOfSegments;
+				segmentNumber++){
+			double areaRatio = seriesArea.Pow(2)/
+				areaList[segmentNumber-1].Pow(2);
+			double lengthRatio = lengthList[segmentNumber-1]/
+				seriesLength;
+			double densityRatio = seriesDensity/
+				densityList[segmentNumber-1];
+			expectedDynamicViscosity += viscosityList[segmentNumber-1]*
+				areaRatio*
+				lengthRatio*
+				densityRatio;
+			
+		}
+		// Act
+
+		DynamicViscosity testDynamicViscosity = testPipe.getFluidDynamicViscosity();
+
+		// Assert
+		Assert.Equal(expectedDynamicViscosity.As(DynamicViscosityUnit.
+					PascalSecond),
+				testDynamicViscosity.As(DynamicViscosityUnit.
+					PascalSecond),10);
+
+
+
+	}
+
+	// here are unit tests
+	// where we expect all temperature dependent properties to be set
+	// correctly upon setting temperature
 
 	[Theory]
 	[InlineData(1,25.0)]
