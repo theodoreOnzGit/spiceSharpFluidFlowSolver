@@ -3,6 +3,7 @@ using SpiceSharp.Components;
 using SpiceSharp.Simulations;
 using EngineeringUnits;
 using EngineeringUnits.Units;
+using System.Diagnostics;
 
 using spiceSharpFluidFlowSolverLibraries;
 
@@ -11,12 +12,12 @@ namespace tests;
 public partial class fluidEntityTests : testOutputHelper
 {
 	// here we test if the FluidParallelSubCircuit
-	// will function with the fluidSeriesCircuit in giving us the correct 
+	// will function with the fluidSeriesCircuit in giving us the correct
 	// flowrate
-	
+
 	//[Theory(Skip = "temporary skip for fast debug")]
 	// here we test fluidParallelCircuit
-	
+
 	[Theory]
 	[InlineData(1.45)]
 	[InlineData(-1.45)]
@@ -54,7 +55,7 @@ public partial class fluidEntityTests : testOutputHelper
 
 
 		// Build the circuit
-		SpiceSharp.Entities.IFluidEntityCollection ckt = 
+		SpiceSharp.Entities.IFluidEntityCollection ckt =
 			new FluidSeriesCircuit(
 				new VoltageSource("V1", "out", "0", pressureDrop),
 				new FluidParallelSubCircuit("X1", subckt).Connect("out" , "0")
@@ -92,7 +93,7 @@ public partial class fluidEntityTests : testOutputHelper
 		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
 
 
-		ISteadyStateFlowSimulation steadyStateSim = 
+		ISteadyStateFlowSimulation steadyStateSim =
 			new PrototypeSteadyStateFlowSimulation(
 				"PrototypeSteadyStateFlowSimulation");
 		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
@@ -116,7 +117,7 @@ public partial class fluidEntityTests : testOutputHelper
 		//		massFlowRateTestResult.ToString());
 
 		// Assert
-		// 
+		//
 		// Note that the Math.Abs is there because some massflowrates
 		// are negative.
 		// And also the massFlowRateTestResult are both
@@ -176,7 +177,7 @@ public partial class fluidEntityTests : testOutputHelper
 		testPipe3.Connect("out","0");
 
 		// Build the circuit
-		SpiceSharp.Entities.IFluidEntityCollection ckt = 
+		SpiceSharp.Entities.IFluidEntityCollection ckt =
 			new FluidSeriesCircuit(
 				new VoltageSource("V1", "out", "0", pressureDrop),
 				testPipe,
@@ -216,7 +217,7 @@ public partial class fluidEntityTests : testOutputHelper
 		massFlowRate = massFlowRate.ToUnit(MassFlowUnit.KilogramPerSecond);
 
 
-		ISteadyStateFlowSimulation steadyStateSim = 
+		ISteadyStateFlowSimulation steadyStateSim =
 			new PrototypeSteadyStateFlowSimulation(
 				"PrototypeSteadyStateFlowSimulation");
 		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
@@ -240,7 +241,7 @@ public partial class fluidEntityTests : testOutputHelper
 		//		massFlowRateTestResult.ToString());
 
 		// Assert
-		// 
+		//
 		// Note that the Math.Abs is there because some massflowrates
 		// are negative.
 		// And also the massFlowRateTestResult are both
@@ -253,9 +254,8 @@ public partial class fluidEntityTests : testOutputHelper
 		//throw new Exception();
 	}
 
-	// [Theory]
 	//[Theory(Skip = "expedited testing, temporary skip")]
-	[Theory(Skip = "temporarily deprecated, put on hold")]
+	// [Theory]
 	[InlineData(1.45)]
 	[InlineData(0.45)]
 	[InlineData(-1.45)]
@@ -297,7 +297,7 @@ public partial class fluidEntityTests : testOutputHelper
 
 
 		// Build the circuit
-		SpiceSharp.Entities.IFluidEntityCollection ckt = 
+		SpiceSharp.Entities.IFluidEntityCollection ckt =
 			new FluidSeriesCircuit(
 				new VoltageSource("V1", "out", "0", pressureDrop),
 				fluidSubCkt
@@ -306,7 +306,7 @@ public partial class fluidEntityTests : testOutputHelper
 		// Setup the simulation and export our current
 
 
-		ISteadyStateFlowSimulation steadyStateSim = 
+		ISteadyStateFlowSimulation steadyStateSim =
 			new PrototypeSteadyStateFlowSimulation(
 				"PrototypeSteadyStateFlowSimulation");
 		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
@@ -332,7 +332,7 @@ public partial class fluidEntityTests : testOutputHelper
 		//		massFlowRateTestResult.ToString());
 
 		// Assert
-		// 
+		//
 		// Note that the Math.Abs is there because some massflowrates
 		// are negative.
 		// And also the massFlowRateTestResult are both
@@ -345,6 +345,65 @@ public partial class fluidEntityTests : testOutputHelper
 		//throw new Exception();
 	}
 
+	[Theory]
+	[InlineData(1.45)]
+	[InlineData(0.45)]
+	[InlineData(-1.45)]
+	[InlineData(0.0)]
+	public void When_FluidSeriesCircuitwithParallelSubCkt_getMassFlowrate_getTime(
+			double pressureDrop){
+
+		// for this test i'm going to have 3 pipes in parallel with the
+		// same pressure drop across all of them (no pump curve here
+		// or anything)
+		// for the same pressure drop across all three pipes, i
+		// should expect 3x the mass flowrate
+		//
+		// this basically ensures that FluidParalleSubCircuit functions
+		// like subcircuit if given the same parameters
+
+		// this step is needed to cast the testPipe as the
+		// correct type
+		//
+		Component preCastPipe = new IsothermalPipeSlowIteration("isothermalPipe1","out","0");
+		IsothermalPipeSlowIteration testPipe = (IsothermalPipeSlowIteration)preCastPipe;
+		testPipe.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipeSlowIteration("isothermalPipe2","out","0");
+		IsothermalPipeSlowIteration testPipe2 = (IsothermalPipeSlowIteration)preCastPipe;
+		testPipe2.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipeSlowIteration("isothermalPipe3","out","0");
+		IsothermalPipeSlowIteration testPipe3 = (IsothermalPipeSlowIteration)preCastPipe;
+		testPipe3.Connect("parallelIn","parallelOut");
+
+		var subckt = new SubcircuitDefinition(new Circuit(
+					testPipe,
+					testPipe2,
+					testPipe3),
+				"parallelIn", "parallelOut");
+
+		FluidParallelSubCircuit fluidSubCkt
+			= new FluidParallelSubCircuit("X1", subckt);
+		fluidSubCkt.Connect("out" , "0");
+
+
+		// Build the circuit
+		SpiceSharp.Entities.IFluidEntityCollection ckt =
+			new FluidSeriesCircuit(
+				new VoltageSource("V1", "out", "0", pressureDrop),
+				fluidSubCkt
+				);
+
+        Stopwatch stopwatch = new Stopwatch();
+		stopwatch.Start();
+
+		MassFlow massFlowRateTestResult;
+		massFlowRateTestResult = ckt.getMassFlowRate(
+				new SpecificEnergy(pressureDrop,
+					SpecificEnergyUnit.JoulePerKilogram));
+
+		stopwatch.Stop();
+		Assert.Equal(stopwatch.ElapsedMilliseconds,0);
+	}
 
 	// here we will test if the FluidParallelSubCircuit
 	// will function by itself in giving us the correct
@@ -370,6 +429,9 @@ public partial class fluidEntityTests : testOutputHelper
 		// this step is needed to cast the testPipe as the
 		// correct type
 		//
+		//
+		// Note that this version uses the
+		// interpolation method to speed things up
 		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
 		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
 		testPipe.Connect("parallelIn","parallelOut");
@@ -392,7 +454,7 @@ public partial class fluidEntityTests : testOutputHelper
 
 
 		// Build the circuit
-		SpiceSharp.Entities.IFluidEntityCollection ckt = 
+		SpiceSharp.Entities.IFluidEntityCollection ckt =
 			new FluidSeriesCircuit(
 				new VoltageSource("V1", "out", "0", pressureDrop),
 				fluidSubCkt
@@ -401,7 +463,7 @@ public partial class fluidEntityTests : testOutputHelper
 		// Setup the simulation and export our current
 
 
-		ISteadyStateFlowSimulation steadyStateSim = 
+		ISteadyStateFlowSimulation steadyStateSim =
 			new PrototypeSteadyStateFlowSimulation(
 				"PrototypeSteadyStateFlowSimulation");
 		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
@@ -427,7 +489,7 @@ public partial class fluidEntityTests : testOutputHelper
 		//		massFlowRateTestResult.ToString());
 
 		// Assert
-		// 
+		//
 		// Note that the Math.Abs is there because some massflowrates
 		// are negative.
 		// And also the massFlowRateTestResult are both
@@ -440,6 +502,165 @@ public partial class fluidEntityTests : testOutputHelper
 		//throw new Exception();
 	}
 
+	[Theory]
+	[InlineData(1.45)]
+	[InlineData(0.45)]
+	[InlineData(-1.45)]
+	[InlineData(0.0)]
+	public void When_FluidParallelSubcircuit_getMassFlowrate_measureTime(
+			double pressureDrop){
+
+		// for this test i'm going to have 3 pipes in parallel with the
+		// same pressure drop across all of them (no pump curve here
+		// or anything)
+		// for the same pressure drop across all three pipes, i
+		// should expect 3x the mass flowrate
+		//
+		// this basically ensures that FluidParalleSubCircuit functions
+		// like subcircuit if given the same parameters
+
+		// this step is needed to cast the testPipe as the
+		// correct type
+		//
+		//
+		// Note that this version uses the
+		// interpolation method to speed things up
+		Component preCastPipe = new IsothermalPipe("isothermalPipe1","out","0");
+		IsothermalPipe testPipe = (IsothermalPipe)preCastPipe;
+		testPipe.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipe("isothermalPipe2","out","0");
+		IsothermalPipe testPipe2 = (IsothermalPipe)preCastPipe;
+		testPipe2.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipe("isothermalPipe3","out","0");
+		IsothermalPipe testPipe3 = (IsothermalPipe)preCastPipe;
+		testPipe3.Connect("parallelIn","parallelOut");
+
+		var subckt = new SubcircuitDefinition(new Circuit(
+					testPipe,
+					testPipe2,
+					testPipe3),
+				"parallelIn", "parallelOut");
+
+		FluidParallelSubCircuit fluidSubCkt
+			= new FluidParallelSubCircuit("X1", subckt);
+		fluidSubCkt.Connect("out" , "0");
+
+
+		// Build the circuit
+		SpiceSharp.Entities.IFluidEntityCollection ckt =
+			new FluidSeriesCircuit(
+				new VoltageSource("V1", "out", "0", pressureDrop),
+				fluidSubCkt
+				);
+
+		// Setup the simulation and export our current
+
+
+		ISteadyStateFlowSimulation steadyStateSim =
+			new PrototypeSteadyStateFlowSimulation(
+				"PrototypeSteadyStateFlowSimulation");
+		var currentExport = new RealPropertyExport(steadyStateSim, "V1", "i");
+		steadyStateSim.ExportSimulationData += (sender, args) =>
+		{
+			var current = -currentExport.Value;
+			steadyStateSim.simulationResult = current;
+		};
+		steadyStateSim.Run(ckt);
+
+		currentExport.Destroy();
+		// </example_customcomponent_nonlinearresistor_test>
+		//
+		double massFlowRateReferenceValueKgPerS;
+		massFlowRateReferenceValueKgPerS = steadyStateSim.simulationResult;
+
+        Stopwatch stopwatch = new Stopwatch();
+		stopwatch.Start();
+		MassFlow massFlowRateTestResult;
+		massFlowRateTestResult = fluidSubCkt.getMassFlowRate(
+				new SpecificEnergy(pressureDrop,
+					SpecificEnergyUnit.JoulePerKilogram));
+
+		stopwatch.Stop();
+		//this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
+		//		massFlowRateTestResult.ToString());
+
+		// Assert
+		//
+		// Note that the Math.Abs is there because some massflowrates
+		// are negative.
+		// And also the massFlowRateTestResult are both
+		// MassFlow objects, ie. dimensioned units
+		// so i need to convert them to double using the .As()
+		// method
+		Assert.True(stopwatch.ElapsedMilliseconds < 50);
+		Assert.Equal(stopwatch.ElapsedMilliseconds,0);
+
+		//throw new Exception();
+	}
+
+	// this test checks for two layers of iteration
+	// the inner
+	[Theory]
+	[InlineData(1.45)]
+	[InlineData(0.45)]
+	[InlineData(-1.45)]
+	[InlineData(0.0)]
+	public void When_FluidParallelSubcircuit_slowIteration_getMassFlowrate_testTime(
+			double pressureDrop){
+
+		// for this test i'm going to have 3 pipes in parallel with the
+		// same pressure drop across all of them (no pump curve here
+		// or anything)
+		// for the same pressure drop across all three pipes, i
+		// should expect 3x the mass flowrate
+		//
+		// this basically ensures that FluidParalleSubCircuit functions
+		// like subcircuit if given the same parameters
+
+		// this step is needed to cast the testPipe as the
+		// correct type
+		//
+		//
+		// Note that this version uses the
+		// interpolation method to speed things up
+		Component preCastPipe = new IsothermalPipeSlowIteration("isothermalPipe1","out","0");
+		IsothermalPipeSlowIteration testPipe = (IsothermalPipeSlowIteration)preCastPipe;
+		testPipe.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipeSlowIteration("isothermalPipe2","out","0");
+		IsothermalPipeSlowIteration testPipe2 = (IsothermalPipeSlowIteration)preCastPipe;
+		testPipe2.Connect("parallelIn","parallelOut");
+		preCastPipe = new IsothermalPipeSlowIteration("isothermalPipe3","out","0");
+		IsothermalPipeSlowIteration testPipe3 = (IsothermalPipeSlowIteration)preCastPipe;
+		testPipe3.Connect("parallelIn","parallelOut");
+
+		var subckt = new SubcircuitDefinition(new Circuit(
+					testPipe,
+					testPipe2,
+					testPipe3),
+				"parallelIn", "parallelOut");
+
+		FluidParallelSubCircuit fluidSubCkt
+			= new FluidParallelSubCircuit("X1", subckt);
+		fluidSubCkt.Connect("out" , "0");
+
+
+
+        Stopwatch stopwatch = new Stopwatch();
+		stopwatch.Start();
+		MassFlow massFlowRateTestResult;
+		massFlowRateTestResult = fluidSubCkt.getMassFlowRate(
+				new SpecificEnergy(pressureDrop,
+					SpecificEnergyUnit.JoulePerKilogram));
+
+		stopwatch.Stop();
+
+		//this.cout("\n PrototypeSteadyStateFlowSimulation massFlowRateTestResult:" +
+		//		massFlowRateTestResult.ToString());
+
+		// Assert that time taken time is less than 50 ms
+		Assert.True(stopwatch.ElapsedMilliseconds < 50);
+		Assert.Equal(stopwatch.ElapsedMilliseconds,0);
+	}
 	[Theory]
 	[InlineData(0.5,0.1,0.3)]
 	[InlineData(0.4,0.2,0.3)]
@@ -485,10 +706,10 @@ public partial class fluidEntityTests : testOutputHelper
 		FluidParallelSubCircuit fluidSubCkt
 			= new FluidParallelSubCircuit("X1", subckt);
 		fluidSubCkt.Connect("out" , "0");
-		
+
 		//Act
 		//
-		Length _actualAverageHydraulicDiameter = 
+		Length _actualAverageHydraulicDiameter =
 			fluidSubCkt.getHydraulicDiameter();
 
 		// Assert
@@ -511,14 +732,14 @@ public partial class fluidEntityTests : testOutputHelper
 		//
 		// First let's get the lengths
 
-		KinematicViscosity kinViscosity1 = 
-			new KinematicViscosity(vis1, 
+		KinematicViscosity kinViscosity1 =
+			new KinematicViscosity(vis1,
 					KinematicViscosityUnit.SquareMeterPerSecond);
-		KinematicViscosity kinViscosity2 = 
-			new KinematicViscosity(vis2, 
+		KinematicViscosity kinViscosity2 =
+			new KinematicViscosity(vis2,
 					KinematicViscosityUnit.SquareMeterPerSecond);
-		KinematicViscosity kinViscosity3 = 
-			new KinematicViscosity(vis3, 
+		KinematicViscosity kinViscosity3 =
+			new KinematicViscosity(vis3,
 					KinematicViscosityUnit.SquareMeterPerSecond);
 
 		KinematicViscosity expectedAverageKinematicViscosity =
@@ -550,10 +771,10 @@ public partial class fluidEntityTests : testOutputHelper
 		FluidParallelSubCircuit fluidSubCkt
 			= new FluidParallelSubCircuit("X1", subckt);
 		fluidSubCkt.Connect("out" , "0");
-		
+
 		//Act
 		//
-		KinematicViscosity _actualAverageFluidKinematicViscosity = 
+		KinematicViscosity _actualAverageFluidKinematicViscosity =
 			fluidSubCkt.getFluidKinematicViscosity();
 
 		// Assert
@@ -601,8 +822,8 @@ public partial class fluidEntityTests : testOutputHelper
 
 		// let me get my total area from these pipes
 		Area expectedTotalArea =
-			(testPipe.getXSArea() + 
-			 testPipe2.getXSArea() + 
+			(testPipe.getXSArea() +
+			 testPipe2.getXSArea() +
 			 testPipe3.getXSArea());
 
 		var subckt = new SubcircuitDefinition(new Circuit(
@@ -614,10 +835,10 @@ public partial class fluidEntityTests : testOutputHelper
 		FluidParallelSubCircuit fluidSubCkt
 			= new FluidParallelSubCircuit("X1", subckt);
 		fluidSubCkt.Connect("out" , "0");
-		
+
 		//Act
 		//
-		Area _actualArea = 
+		Area _actualArea =
 			fluidSubCkt.getXSArea();
 
 		// Assert
@@ -645,7 +866,7 @@ public partial class fluidEntityTests : testOutputHelper
 		//
 		// First let's get the lengths and kinematic Viscosities
 		//
-		// Because my testpipe obtains density by finding ratios of 
+		// Because my testpipe obtains density by finding ratios of
 		// kinematicViscosity to dynamic Viscosity
 		// i will just randomly switch up the kinematic viscosity up
 
@@ -653,14 +874,14 @@ public partial class fluidEntityTests : testOutputHelper
 		Length hydraulicDiameter2 = new Length(diameter2, LengthUnit.Meter);
 		Length hydraulicDiameter3 = new Length(diameter3, LengthUnit.Meter);
 
-		KinematicViscosity kinViscosity1 = 
-			new KinematicViscosity(kinVis1, 
+		KinematicViscosity kinViscosity1 =
+			new KinematicViscosity(kinVis1,
 					KinematicViscosityUnit.Centistokes);
-		KinematicViscosity kinViscosity2 = 
-			new KinematicViscosity(kinVis2, 
+		KinematicViscosity kinViscosity2 =
+			new KinematicViscosity(kinVis2,
 					KinematicViscosityUnit.Centistokes);
-		KinematicViscosity kinViscosity3 = 
-			new KinematicViscosity(kinVis3, 
+		KinematicViscosity kinViscosity3 =
+			new KinematicViscosity(kinVis3,
 					KinematicViscosityUnit.Centistokes);
 
 
@@ -686,8 +907,8 @@ public partial class fluidEntityTests : testOutputHelper
 
 		// let me get my total area from these pipes
 		Area expectedTotalArea =
-			(testPipe.getXSArea() + 
-			 testPipe2.getXSArea() + 
+			(testPipe.getXSArea() +
+			 testPipe2.getXSArea() +
 			 testPipe3.getXSArea());
 
 		// the above area will help me weight my densities
@@ -700,7 +921,7 @@ public partial class fluidEntityTests : testOutputHelper
 
 		{
 			double sqrtDensity;
-			sqrtDensity = 
+			sqrtDensity =
 				testPipe.getXSArea().As(AreaUnit.SI) *
 				Math.Pow(testPipe.getFluidDensity().As(DensityUnit.SI),0.5) +
 				testPipe2.getXSArea().As(AreaUnit.SI) *
@@ -709,7 +930,7 @@ public partial class fluidEntityTests : testOutputHelper
 				Math.Pow(testPipe3.getFluidDensity().As(DensityUnit.SI),0.5);
 
 			sqrtDensity /= expectedTotalArea.As(AreaUnit.SI);
-			double densityValue = 
+			double densityValue =
 				Math.Pow(sqrtDensity,2.0);
 
 			_expectedAverageDensity = new Density(
@@ -727,12 +948,12 @@ public partial class fluidEntityTests : testOutputHelper
 		FluidParallelSubCircuit fluidSubCkt
 			= new FluidParallelSubCircuit("X1", subckt);
 		fluidSubCkt.Connect("out" , "0");
-		
+
 		//Act
 		//
-		Density _actualAverageDensity = 
+		Density _actualAverageDensity =
 			fluidSubCkt.getFluidDensity();
-	
+
 
 		// Assert
 
@@ -741,7 +962,7 @@ public partial class fluidEntityTests : testOutputHelper
 				);
 
 	}
-	
+
 	[Theory]
 	[InlineData(10980)]
 	[InlineData(-10980)]
@@ -785,14 +1006,14 @@ public partial class fluidEntityTests : testOutputHelper
 
 
 
-		SpecificEnergy expectedPressureDropObj = 
+		SpecificEnergy expectedPressureDropObj =
 			fluidSubCkt.getKinematicPressureDropUsingIteration(
 					new MassFlow(massFlowrateValue, MassFlowUnit.KilogramPerSecond));
 		double expectedPressureDrop = expectedPressureDropObj.As(
 				SpecificEnergyUnit.JoulePerKilogram);
 		// Act
 
-		SpecificEnergy resultPressureDropObj = 
+		SpecificEnergy resultPressureDropObj =
 			fluidSubCkt.getKinematicPressureDrop(
 					new MassFlow(massFlowrateValue, MassFlowUnit.KilogramPerSecond));
 		double resultPressureDrop = resultPressureDropObj.As(
@@ -846,7 +1067,7 @@ public partial class fluidEntityTests : testOutputHelper
 
 
 		// Build the circuit
-		SpiceSharp.Entities.IFluidEntityCollection ckt = 
+		SpiceSharp.Entities.IFluidEntityCollection ckt =
 			new FluidSeriesCircuit(
 				new CurrentSource("I1", "out", "0", massFlowrateValue),
 				fluidSubCkt
@@ -855,7 +1076,7 @@ public partial class fluidEntityTests : testOutputHelper
 		// Setup the simulation and export our current
 
 
-		ISteadyStateFlowSimulation steadyStateSim = 
+		ISteadyStateFlowSimulation steadyStateSim =
 			new PrototypeSteadyStateFlowSimulation(
 				"PrototypeSteadyStateFlowSimulation");
 		var currentExport = new RealPropertyExport(steadyStateSim, "I1", "i");
@@ -877,7 +1098,7 @@ public partial class fluidEntityTests : testOutputHelper
 		// the above test also fails
 		// numerical instability...
 
-		SpecificEnergy expectedPressureDropObj = 
+		SpecificEnergy expectedPressureDropObj =
 			fluidSubCkt.getKinematicPressureDrop(
 					new MassFlow(massFlowrateValue, MassFlowUnit.KilogramPerSecond));
 
@@ -891,7 +1112,7 @@ public partial class fluidEntityTests : testOutputHelper
 
 
 	// basically this test sees when i elevate parallel branches unevenly
-	// I should expect an exception thrown 
+	// I should expect an exception thrown
 	[Theory]
 	[InlineData()]
 	public void WhenParallelSubCktElevatedUnevenly_ExpectParallelSubCktException(){
@@ -903,7 +1124,7 @@ public partial class fluidEntityTests : testOutputHelper
 	public void WhenParallelSubCktElevated_ExpectCorrectMassFlowrate(){
 		throw new NotImplementedException();
 	}
-	
+
 	[Theory]
 	[InlineData()]
 	public void WhenParallelSubCktElevatedChgTemp_ExpectCorrectMassFlow(){
